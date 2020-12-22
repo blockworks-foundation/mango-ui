@@ -11,7 +11,16 @@ export const ENDPOINTS: EndpointInfo[] = [
     endpoint: 'https://solana-api.projectserum.com',
     custom: false,
   },
-  { name: 'localnet', endpoint: 'http://127.0.0.1:8899', custom: false },
+  {
+    name: 'devnnet',
+    endpoint: 'https://devnet.solana.com',
+    custom: false,
+  },
+  {
+    name: 'localnet',
+    endpoint: 'http://127.0.0.1:8899',
+    custom: false,
+  },
 ];
 
 const accountListenerCount = new Map();
