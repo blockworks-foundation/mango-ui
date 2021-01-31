@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-import { useConnection, useConnectionConfig } from '../utils/connection';
+import { ENDPOINTS, useConnection, useConnectionConfig } from '../utils/connection';
 import { useWallet } from '../utils/wallet';
 
 import { MangoClient, IDS, MangoGroup, MarginAccount } from '@mango/client';
@@ -11,13 +11,19 @@ export default function MainPage() {
   const connection = useConnection();
   const { endpoint } = useConnectionConfig();
 
+  let endpointName;
+  for (let i = 0; i < ENDPOINTS.length; i++) {
+    if (endpoint === ENDPOINTS[i].endpoint) {
+      endpointName = ENDPOINTS[i].name
+    }
+  }
+
   const client = new MangoClient()
   const { wallet, connected } = useWallet();
   const [mangoGroup, setMangoGroup] = useState<MangoGroup | undefined>(undefined);
 
-
-  const mangoGroupIds = IDS[endpoint].mangoGroups[0]  // TODO allow selection of mango group with drop down
-  const mangoGroupPk = new PublicKey(mangoGroupIds.mangoGroupPk)
+  const mangoGroupIds = IDS[endpointName].mango_groups.BTC_ETH_USDC // TODO allow selection of mango group with drop down
+  const mangoGroupPk = new PublicKey(mangoGroupIds.mango_group_pk)
 
   async function fetchMangoGroup() {
     let result = await client.getMangoGroup(connection, mangoGroupPk);
@@ -36,7 +42,7 @@ export default function MainPage() {
     if (mangoGroup !== undefined) {
       let result = await client.getMarginAccountsForOwner(
         connection,
-        new PublicKey(IDS[endpoint].mango_program_id),
+        new PublicKey(IDS[endpointName].mango_program_id),
         mangoGroup,
         wallet,
       )
@@ -59,7 +65,7 @@ export default function MainPage() {
       Select the margin account:
 
       { marginAccounts.map(a =>
-        <><p> {a.owner.toString()} </p></>
+        <><p> {a.publicKey.toBase58()} </p></>
       ) }
     </>
   );
