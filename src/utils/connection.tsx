@@ -12,7 +12,7 @@ export const ENDPOINTS: EndpointInfo[] = [
     custom: false,
   },
   {
-    name: 'devnnet',
+    name: 'devnet',
     endpoint: 'https://devnet.solana.com',
     custom: false,
   },

@@ -1540,6 +1540,16 @@
     "@types/yargs" "^15.0.0"
     chalk "^4.0.0"
 
+"@mango/client@file:../../mango/client-ts":
+  version "0.1.0"
+  dependencies:
+    "@project-serum/serum" "^0.13.18"
+    "@project-serum/sol-wallet-adapter" "^0.1.4"
+    "@solana/web3.js" "^0.90.0"
+    bn.js "^5.1.2"
+    buffer-layout "^1.2.0"
+    double.js "^1.0.14"
+
 "@mrmlnc/readdir-enhanced@^2.2.1":
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/@mrmlnc/readdir-enhanced/-/readdir-enhanced-2.2.1.tgz#524af240d1a360527b730475ecfa1344aa540dde"
@@ -1591,6 +1601,15 @@
     bn.js "^5.1.2"
     buffer-layout "^1.2.0"
 
+"@project-serum/serum@^0.13.18":
+  version "0.13.20"
+  resolved "https://registry.yarnpkg.com/@project-serum/serum/-/serum-0.13.20.tgz#a3f6d8637198a7ba758207b9b802af49f6c47175"
+  integrity sha512-jSuWgK11FLgRV6VCWfsxiWxexJLEI2f57mR55e+PX53gnZHeXiIF61+M0Kr4XH2yHg5ZzpSHmVrSAO4lw2hygw==
+  dependencies:
+    "@solana/web3.js" "0.86.1"
+    bn.js "^5.1.2"
+    buffer-layout "^1.2.0"
+
 "@project-serum/serum@^0.13.8":
   version "0.13.14"
   resolved "https://registry.yarnpkg.com/@project-serum/serum/-/serum-0.13.14.tgz#f39e6d3d1aaab811fbec17a304c926522e477299"
@@ -1600,7 +1619,7 @@
     bn.js "^5.1.2"
     buffer-layout "^1.2.0"
 
-"@project-serum/sol-wallet-adapter@^0.1.1":
+"@project-serum/sol-wallet-adapter@^0.1.1", "@project-serum/sol-wallet-adapter@^0.1.4":
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/@project-serum/sol-wallet-adapter/-/sol-wallet-adapter-0.1.4.tgz#dfcc2339bdcc352b16deab5055d0b818b1da1e3e"
   integrity sha512-bjcBx2iEEqIZUNgOkfEpqgzsEha8lU0IbzWZWVkRdIpdZnTguomHmarZ7Z9zvZvjI2M9fZ8wA/0m/s2GXYoQVQ==
@@ -1622,6 +1641,29 @@
     bn.js "^5.0.0"
     bs58 "^4.0.1"
     buffer "^5.4.3"
+    buffer-layout "^1.2.0"
+    crypto-hash "^1.2.2"
+    esdoc-inject-style-plugin "^1.0.0"
+    jayson "^3.0.1"
+    keccak "^3.0.1"
+    mz "^2.7.0"
+    node-fetch "^2.2.0"
+    npm-run-all "^4.1.5"
+    rpc-websockets "^7.4.2"
+    secp256k1 "^4.0.2"
+    superstruct "^0.8.3"
+    tweetnacl "^1.0.0"
+    ws "^7.0.0"
+
+"@solana/web3.js@^0.90.0":
+  version "0.90.5"
+  resolved "https://registry.yarnpkg.com/@solana/web3.js/-/web3.js-0.90.5.tgz#5be7d78a19f0b5e01bf82c52e3cbf0bb72a38cfd"
+  integrity sha512-2elnwfIkdtrUjLdTBKu7Rc3mTv95k2cn+JtNtmO2fY/PFRZm7mnGS/gk/wWzGCpBVLiqz2o6o21oONqyDtLG/w==
+  dependencies:
+    "@babel/runtime" "^7.3.1"
+    bn.js "^5.0.0"
+    bs58 "^4.0.1"
+    buffer "^6.0.1"
     buffer-layout "^1.2.0"
     crypto-hash "^1.2.2"
     esdoc-inject-style-plugin "^1.0.0"
@@ -1796,6 +1838,11 @@
   version "1.0.7"
   resolved "https://registry.yarnpkg.com/@tsconfig/node12/-/node12-1.0.7.tgz#677bd9117e8164dc319987dd6ff5fc1ba6fbf18b"
   integrity sha512-dgasobK/Y0wVMswcipr3k0HpevxFJLijN03A8mYfEPvWvOs14v0ZlYTR4kIgMx8g4+fTyTFv8/jLCIfRqLDJ4A==
+
+"@tsconfig/node14@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@tsconfig/node14/-/node14-1.0.0.tgz#5bd046e508b1ee90bc091766758838741fdefd6e"
+  integrity sha512-RKkL8eTdPv6t5EHgFKIVQgsDapugbuOptNd9OOunN/HAkzmmTnZELx1kNCK0rSdUYGmiFMM3rRQMAWiyp023LQ==
 
 "@types/aria-query@^4.2.0":
   version "4.2.0"
@@ -2913,6 +2960,11 @@ base64-js@^1.0.2:
   resolved "https://registry.yarnpkg.com/base64-js/-/base64-js-1.3.1.tgz#58ece8cb75dd07e71ed08c736abc5fac4dbf8df1"
   integrity sha512-mLQ4i2QO1ytvGWFWmcngKO//JXAQueZvwEKtjgQFM4jIK0kU+ytMfplL8j+n5mspOfjHwoAg+9yhb7BwAHm36g==
 
+base64-js@^1.3.1:
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/base64-js/-/base64-js-1.5.1.tgz#1b1b440160a5bf7ad40b650f095963481903930a"
+  integrity sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==
+
 base@^0.11.1:
   version "0.11.2"
   resolved "https://registry.yarnpkg.com/base/-/base-0.11.2.tgz#7bde5ced145b6d551a90db87f83c558b4eb48a8f"
@@ -3187,6 +3239,14 @@ buffer@^5.4.3:
   dependencies:
     base64-js "^1.0.2"
     ieee754 "^1.1.4"
+
+buffer@^6.0.1:
+  version "6.0.3"
+  resolved "https://registry.yarnpkg.com/buffer/-/buffer-6.0.3.tgz#2ace578459cc8fbe2a70aaa8f52ee63b6a74c6c6"
+  integrity sha512-FTiCpNxtwiZZHEZbcbTIcZjERVICn9yq/pDFkTl95/AxzD1naBctN7YO68riM/gLSDY7sdrMby8hofADYuuqOA==
+  dependencies:
+    base64-js "^1.3.1"
+    ieee754 "^1.2.1"
 
 bufferutil@^4.0.1:
   version "4.0.1"
@@ -4584,6 +4644,11 @@ dotenv@8.2.0:
   version "8.2.0"
   resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-8.2.0.tgz#97e619259ada750eea3e4ea3e26bceea5424b16a"
   integrity sha512-8sJ78ElpbDJBHNeBzUbUVLsqKdccaa/BXF1uPTw3GrvQTBgrQrtObr2mUrE38vzYd8cEv+m/JBfDLioYcfXoaw==
+
+double.js@^1.0.14:
+  version "1.0.14"
+  resolved "https://registry.yarnpkg.com/double.js/-/double.js-1.0.14.tgz#f138b1e75c0317d5d684cdd5727a45e71d7a6c9f"
+  integrity sha512-Bpx4dxqUlcoUop+h4ywPsw2CSVMy5rYzZnmLggFo3HTzLH77JwCzUMl4TgBIhByKuz4xCx1coOq657H0tj8r8g==
 
 duplexer@^0.1.1:
   version "0.1.2"
@@ -6148,6 +6213,11 @@ ieee754@^1.1.4:
   version "1.1.13"
   resolved "https://registry.yarnpkg.com/ieee754/-/ieee754-1.1.13.tgz#ec168558e95aa181fd87d37f55c32bbcb6708b84"
   integrity sha512-4vf7I2LYV/HaWerSo3XmlMkp5eZ83i+/CDluXi/IGTs/O1sejBNhTtnxzmRZfvOUqj7lZjqHkeTvpgSFDlWZTg==
+
+ieee754@^1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/ieee754/-/ieee754-1.2.1.tgz#8eb7a10a63fff25d15a57b001586d177d1b0d352"
+  integrity sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==
 
 iferr@^0.1.5:
   version "0.1.5"
