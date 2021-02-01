@@ -5,6 +5,7 @@ import { useWallet } from '../utils/wallet';
 
 import { MangoClient, IDS, MangoGroup, MarginAccount } from '@mango/client';
 import { PublicKey } from '@solana/web3.js';
+import { zeroKey } from '@mango/client/lib/utils';
 
 export default function MainPage() {
 
@@ -38,6 +39,7 @@ export default function MainPage() {
 
   const [marginAccounts, setMarginAccounts] = useState<MarginAccount[]>([]);
 
+  const values: number[] = new Array(3)
   async function fetchMarginAccounts() {
     if (mangoGroup !== undefined) {
       let result = await client.getMarginAccountsForOwner(
@@ -46,6 +48,13 @@ export default function MainPage() {
         mangoGroup,
         wallet,
       )
+
+      for (const [i, ma] of result.entries()) {
+        ma.openOrdersAccounts = await ma.loadOpenOrders(connection, new PublicKey(IDS[endpointName].dex_program_id))
+        values[i] = await ma.getValue(connection, mangoGroup)
+        console.log(values[i])
+      }
+
       setMarginAccounts(result)
     }
 
@@ -58,14 +67,14 @@ export default function MainPage() {
     } else {
       setMarginAccounts([]);
     }
-  }, [mangoGroup, wallet, connected]);
+  }, [mangoGroup, wallet, connected, connection]);
 
   return (
     <>
       Select the margin account:
 
-      { marginAccounts.map(a =>
-        <><p> {a.publicKey.toBase58()} </p></>
+      { marginAccounts.map((ma, i) =>
+        <><p> {ma.publicKey.toBase58()} {values[i]} </p></>
       ) }
     </>
   );
