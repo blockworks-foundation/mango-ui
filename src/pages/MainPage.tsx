@@ -12,12 +12,14 @@ export default function MainPage() {
   const connection = useConnection();
   const { endpoint } = useConnectionConfig();
 
-  let endpointName;
+  let endpointName = 'devnet';
   for (let i = 0; i < ENDPOINTS.length; i++) {
     if (endpoint === ENDPOINTS[i].endpoint) {
       endpointName = ENDPOINTS[i].name
     }
   }
+
+  console.log('endpoint', endpointName);
 
   const client = new MangoClient()
   const { wallet, connected } = useWallet();
