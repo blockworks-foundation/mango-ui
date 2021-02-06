@@ -7,36 +7,29 @@ import { MangoClient, IDS, MangoGroup, MarginAccount } from '@mango/client';
 import { PublicKey } from '@solana/web3.js';
 import { zeroKey } from '@mango/client/lib/utils';
 
-export default function MainPage() {
+
+
+function MarginAccountList() {
 
   const connection = useConnection();
-  const { endpoint } = useConnectionConfig();
+  const { endpoint, endpointInfo } = useConnectionConfig();
 
-  let endpointName = 'devnet';
-  for (let i = 0; i < ENDPOINTS.length; i++) {
-    if (endpoint === ENDPOINTS[i].endpoint) {
-      endpointName = ENDPOINTS[i].name
-    }
-  }
-
-  console.log('endpoint', endpointName);
-
-  const client = new MangoClient()
+  const client = new MangoClient();
   const { wallet, connected } = useWallet();
   const [mangoGroup, setMangoGroup] = useState<MangoGroup | undefined>(undefined);
 
-  const mangoGroupIds = IDS[endpointName].mango_groups.BTC_ETH_USDC // TODO allow selection of mango group with drop down
-  const mangoGroupPk = new PublicKey(mangoGroupIds.mango_group_pk)
+  const mangoGroupIds = IDS[endpointInfo!.name].mango_groups.BTC_ETH_USDC; // TODO allow selection of mango group with drop down
+  const mangoGroupPk = new PublicKey(mangoGroupIds.mango_group_pk);
 
   async function fetchMangoGroup() {
     let result = await client.getMangoGroup(connection, mangoGroupPk);
-    setMangoGroup(result)
+    setMangoGroup(result);
   }
 
   // load mango goup, whenever connection changes
   useEffect(() => {
     fetchMangoGroup();
-  }, [connection]);
+  }, [connection, endpointInfo]);
 
 
   const [marginAccounts, setMarginAccounts] = useState<MarginAccount[]>([]);
@@ -46,18 +39,18 @@ export default function MainPage() {
     if (mangoGroup !== undefined) {
       let result = await client.getMarginAccountsForOwner(
         connection,
-        new PublicKey(IDS[endpointName].mango_program_id),
+        new PublicKey(IDS[endpointInfo!.name].mango_program_id),
         mangoGroup,
         wallet,
-      )
+      );
 
       for (const [i, ma] of result.entries()) {
-        ma.openOrdersAccounts = await ma.loadOpenOrders(connection, new PublicKey(IDS[endpointName].dex_program_id))
-        values[i] = await ma.getValue(connection, mangoGroup)
-        console.log(values[i])
+        ma.openOrdersAccounts = await ma.loadOpenOrders(connection, new PublicKey(IDS[endpointInfo!.name].dex_program_id));
+        values[i] = await ma.getValue(connection, mangoGroup);
+        console.log(values[i]);
       }
 
-      setMarginAccounts(result)
+      setMarginAccounts(result);
     }
 
   }
@@ -80,4 +73,25 @@ export default function MainPage() {
       ) }
     </>
   );
+
+}
+
+
+
+
+
+
+export default function MainPage() {
+
+  const connection = useConnection();
+  const { endpoint, endpointInfo } = useConnectionConfig();
+
+  if (IDS[endpointInfo!.name] === undefined) {
+    return (
+      <>
+        Endpoint {endpointInfo!.name} does not yet have a valid mango markets contract deployed
+      </>);
+  } else {
+    return (<MarginAccountList />)
+  }
 }
