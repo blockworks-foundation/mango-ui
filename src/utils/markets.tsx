@@ -16,7 +16,7 @@ import {
   useLocalStorageState,
 } from './utils';
 import { refreshCache, useAsyncData } from './fetch-loop';
-import { useAccountData, useAccountInfo, useConnection } from './connection';
+import { useAccountData, useAccountInfo, useConnection, useConnectionConfig } from './connection';
 import { useWallet } from './wallet';
 import tuple from 'immutable-tuple';
 import { notify } from './notifications';
@@ -41,6 +41,7 @@ import {
 import { WRAPPED_SOL_MINT } from '@project-serum/serum/lib/token-instructions';
 import { Order } from '@project-serum/serum/lib/market';
 import BonfidaApi from './bonfidaConnector';
+import { IDS } from '@mango/client';
 
 // Used in debugging, should be false in production
 const _IGNORE_DEPRECATED = false;
@@ -50,11 +51,29 @@ export const USE_MARKETS: MarketInfo[] = _IGNORE_DEPRECATED
   : MARKETS;
 
 export function useMarketsList() {
-  return USE_MARKETS.filter(({ deprecated }) => !deprecated);
+  const { endpointInfo } = useConnectionConfig();
+
+  const spotMarkets = IDS[endpointInfo!.name]?.spot_markets || {};
+  const dexProgram = IDS[endpointInfo!.name]?.dex_program_id || "";
+  const mangoMarkets = Object.entries(spotMarkets).map(([name, address]) => {
+    return {
+      address: new PublicKey(address as string),
+      programId: new PublicKey(dexProgram as string),
+      deprecated: false,
+      name
+    }});
+
+  return mangoMarkets;
+}
+
+export function useDefaultMarket() {
+  const marketsList = useMarketsList();
+  return marketsList[0];
 }
 
 export function useAllMarkets() {
   const connection = useConnection();
+  const marketsList = useMarketsList();
   const { customMarkets } = useCustomMarkets();
 
   const getAllMarkets = async () => {
@@ -63,7 +82,7 @@ export function useAllMarkets() {
       marketName: string;
       programId: PublicKey;
     } | null> = await Promise.all(
-      getMarketInfos(customMarkets).map(async (marketInfo) => {
+      marketsList.map(async (marketInfo) => {
         try {
           const market = await Market.load(
             connection,
