@@ -3,7 +3,9 @@ import { Button, Col, Popover, Row, Select, Typography } from 'antd';
 import styled from 'styled-components';
 import Orderbook from '../components/Orderbook';
 import UserInfoTable from '../components/UserInfoTable';
-import StandaloneBalancesDisplay from '../components/StandaloneBalancesDisplay';
+import BalancesDisplay from '../components/mango/BalancesDisplay';
+import MarginInfo from '../components/mango/MarginInfo';
+import FloatingElement from '../components/layout/FloatingElement';
 import {
   getMarketInfos,
   getTradePageUrl,
@@ -28,8 +30,6 @@ import { useHistory, useParams } from 'react-router-dom';
 const { Option, OptGroup } = Select;
 
 const Wrapper = styled.div`
-  height: 100%;
-  display: flex;
   flex-direction: column;
   padding: 16px 16px;
   .borderNone .ant-select-selector {
@@ -334,7 +334,10 @@ const RenderNormal = ({ onChangeOrderRef, onPrice, onSize }) => {
         flexWrap: 'nowrap',
       }}
     >
-      <Col flex="auto" style={{ height: '100%', display: 'flex' }}>
+      <Col flex="auto" style={{ display: 'flex', flexDirection: 'column' }}>
+        <FloatingElement style={{ flex: 1, minHeight: '300px' }}>
+          Here goes charts
+        </FloatingElement>
         <UserInfoTable />
       </Col>
       <Col flex={'360px'} style={{ height: '100%' }}>
@@ -345,8 +348,9 @@ const RenderNormal = ({ onChangeOrderRef, onPrice, onSize }) => {
         flex="400px"
         style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
       >
+        <BalancesDisplay />
         <TradeForm setChangeOrderRef={onChangeOrderRef} />
-        <StandaloneBalancesDisplay />
+        <MarginInfo />
       </Col>
     </Row>
   );
@@ -375,8 +379,8 @@ const RenderSmall = ({ onChangeOrderRef, onPrice, onSize }) => {
           flex="400px"
           style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
         >
+          <BalancesDisplay />
           <TradeForm setChangeOrderRef={onChangeOrderRef} />
-          <StandaloneBalancesDisplay />
         </Col>
       </Row>
       <Row>
@@ -396,7 +400,7 @@ const RenderSmaller = ({ onChangeOrderRef, onPrice, onSize }) => {
           <TradeForm style={{ flex: 1 }} setChangeOrderRef={onChangeOrderRef} />
         </Col>
         <Col xs={24} sm={12}>
-          <StandaloneBalancesDisplay />
+          <BalancesDisplay />
         </Col>
       </Row>
       <Row
