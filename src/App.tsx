@@ -7,6 +7,8 @@ import { Spin } from 'antd';
 import ErrorBoundary from './components/ErrorBoundary';
 import { Routes } from './routes';
 import { PreferencesProvider } from './utils/preferences';
+// And our margin account provider
+import { MarginAccountProvider } from "./utils/marginAccounts";
 
 export default function App() {
   return (
@@ -16,9 +18,11 @@ export default function App() {
         <ConnectionProvider>
           <WalletProvider>
             <PreferencesProvider>
-              <Suspense fallback={() => <Spin size="large" />}>
-                <Routes />
-              </Suspense>
+              <MarginAccountProvider>
+                <Suspense fallback={() => <Spin size="large" />}>
+                  <Routes />
+                </Suspense>
+              </MarginAccountProvider>
             </PreferencesProvider>
           </WalletProvider>
         </ConnectionProvider>

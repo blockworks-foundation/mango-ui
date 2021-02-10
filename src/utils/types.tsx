@@ -3,6 +3,7 @@ import Wallet from '@project-serum/sol-wallet-adapter';
 import { Market, OpenOrders } from '@project-serum/serum';
 import { Event } from '@project-serum/serum/lib/queue';
 import { Order } from '@project-serum/serum/lib/market';
+import { MangoGroup, MarginAccount } from '@mango/client';
 
 export interface ConnectionContextValues {
   endpoint: string;
@@ -96,13 +97,13 @@ export interface Balances extends BalancesBase {
 export interface OpenOrdersBalances extends BalancesBase {
   market?: string | null | undefined;
   baseCurrencyAccount:
-    | { pubkey: PublicKey; account: AccountInfo<Buffer> }
-    | null
-    | undefined;
+  | { pubkey: PublicKey; account: AccountInfo<Buffer> }
+  | null
+  | undefined;
   quoteCurrencyAccount:
-    | { pubkey: PublicKey; account: AccountInfo<Buffer> }
-    | null
-    | undefined;
+  | { pubkey: PublicKey; account: AccountInfo<Buffer> }
+  | null
+  | undefined;
 }
 
 export interface DeprecatedOpenOrdersBalances extends BalancesBase {
@@ -137,4 +138,24 @@ export interface BonfidaTrade {
   side: string;
   feeCost: number;
   marketAddress: string;
+}
+
+export interface SwapContextValues {
+  slippage: number;
+  setSlippage: (newSlippage: number) => void;
+  tokenProgramId: PublicKey;
+  swapProgramId: PublicKey;
+  legacySwapProgramIds: PublicKey[];
+  programIds: () => { token: PublicKey; swap: PublicKey };
+}
+
+// Margin Account Type declaration
+export interface MarginAccountContextValues {
+  marginAccount: MarginAccount | null, // The current margin account trading with
+  marginAccounts: MarginAccount[] | [], // List of all margin account pk in a mango group 
+  mango_groups: string, // Identifier for the mango group
+  mangoGroup: MangoGroup | null, // The current mango group
+  setMarginAccount: (marginAccount: null | MarginAccount) => void,
+  createMarginAccount: () => void, // For creating a margin account
+  maPending: any, // Is the context updating
 }
