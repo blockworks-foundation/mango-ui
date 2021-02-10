@@ -6,6 +6,7 @@ import { useWallet } from '../utils/wallet';
 import { MangoClient, IDS, MangoGroup, MarginAccount } from '@mango/client';
 import { PublicKey } from '@solana/web3.js';
 import { zeroKey } from '@mango/client/lib/utils';
+console.log(IDS)
 
 
 
@@ -67,10 +68,11 @@ function MarginAccountList() {
   return (
     <>
       Select the margin account:
-
-      { marginAccounts.map((ma, i) =>
-        <><p> {ma.publicKey.toBase58()} {values[i]} </p></>
-      ) }
+      { marginAccounts.map((ma, i) => {
+        console.log(ma)
+        return <><p> {ma.publicKey.toBase58()} {values[i]} </p></>
+      }
+      )}
     </>
   );
 

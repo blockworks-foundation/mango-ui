@@ -23,11 +23,19 @@ import {
   InfoCircleOutlined,
   PlusCircleOutlined,
 } from '@ant-design/icons';
+// Spinner while we work on things
+import { Spin } from 'antd';
+import { LoadingOutlined } from '@ant-design/icons';
 import CustomMarketDialog from '../components/CustomMarketDialog';
 import { notify } from '../utils/notifications';
 import { useHistory, useParams } from 'react-router-dom';
+// Let's get the account hook
+import { useMarginAccount } from "../utils/marginAccounts";
+import { useWallet } from '../utils/wallet';
 
 const { Option, OptGroup } = Select;
+
+const antIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />;
 
 const Wrapper = styled.div`
   flex-direction: column;
@@ -75,6 +83,12 @@ function TradePageInner() {
     height: window.innerHeight,
     width: window.innerWidth,
   });
+  // To know when a transaction is up
+  const [pendingTrans, setPendingTrans] = useState(false);
+  // Get the account hooks
+  const { marginAccount, maPending, createMarginAccount } = useMarginAccount();
+  // Check connection ot wallet
+  const { connected } = useWallet();
 
   useEffect(() => {
     document.title = marketName ? `${marketName} — Serum` : 'Serum';
@@ -145,6 +159,13 @@ function TradePageInner() {
     setCustomMarkets(newCustomMarkets);
   };
 
+  // And for creating a margin account
+  const createAccount = () => {
+    setPendingTrans(true);
+    createMarginAccount();
+    setPendingTrans(false);
+  }
+
   return (
     <>
       <CustomMarketDialog
@@ -158,7 +179,7 @@ function TradePageInner() {
           style={{ paddingLeft: 5, paddingRight: 5 }}
           gutter={16}
         >
-          <Col>
+          <Col span={6}>
             <MarketSelector
               markets={markets}
               setHandleDeprecated={setHandleDeprecated}
@@ -168,7 +189,7 @@ function TradePageInner() {
             />
           </Col>
           {market ? (
-            <Col>
+            <Col span={4}>
               <Popover
                 content={<LinkAddress address={market.publicKey.toBase58()} />}
                 placement="bottomRight"
@@ -179,7 +200,7 @@ function TradePageInner() {
               </Popover>
             </Col>
           ) : null}
-          <Col>
+          <Col span={4}>
             <PlusCircleOutlined
               style={{ color: '#2abdd2' }}
               onClick={() => setAddMarketVisible(true)}
@@ -187,19 +208,37 @@ function TradePageInner() {
           </Col>
           {deprecatedMarkets && deprecatedMarkets.length > 0 && (
             <React.Fragment>
-              <Col>
+              <Col span={4}>
                 <Typography>
                   You have unsettled funds on old markets! Please go through
                   them to claim your funds.
                 </Typography>
               </Col>
-              <Col>
+              <Col span={4}>
                 <Button onClick={() => setHandleDeprecated(!handleDeprecated)}>
                   {handleDeprecated ? 'View new markets' : 'Handle old markets'}
                 </Button>
               </Col>
             </React.Fragment>
           )}
+          {/* Lets add the add margin account button */}
+          <Col span={6 + (market ? 4 : 0) + ((!deprecatedMarkets || deprecatedMarkets.length <= 0) ? 8 : 0)} flex="end">
+            <Button block size="large"
+              style={{ width: "220px", float: "right" }}
+              onClick={createAccount}
+              disabled={!connected || maPending.cma || maPending.sma || marginAccount ? true : false}
+            >
+              <div style={{ display: 'grid', gridTemplateColumns: maPending.cma ? '2fr 1fr' : '1fr' }}>
+                <div>
+                  {connected ? 'Create Margin Account' : 'Connect Wallet'}
+                </div>
+                {pendingTrans &&
+                  <Spin indicator={antIcon} />
+                }
+              </div>
+
+            </Button>
+          </Col>
         </Row>
         {component}
       </Wrapper>
@@ -283,15 +322,15 @@ function MarketSelector({
               ? -1
               : extractQuote(a.name) !== 'USDT' &&
                 extractQuote(b.name) === 'USDT'
-              ? 1
-              : 0,
+                ? 1
+                : 0,
           )
           .sort((a, b) =>
             extractBase(a.name) < extractBase(b.name)
               ? -1
               : extractBase(a.name) > extractBase(b.name)
-              ? 1
-              : 0,
+                ? 1
+                : 0,
           )
           .map(({ address, name, deprecated }, i) => (
             <Option
@@ -361,7 +400,7 @@ const RenderSmall = ({ onChangeOrderRef, onPrice, onSize }) => {
     <>
       <Row
         style={{
-          height: '900px',
+          height: '950px',
         }}
       >
         <Col flex="auto" style={{ height: '100%', display: 'flex' }}>
@@ -376,11 +415,12 @@ const RenderSmall = ({ onChangeOrderRef, onPrice, onSize }) => {
           <TradesTable smallScreen={true} />
         </Col>
         <Col
-          flex="400px"
+          flex="350px"
           style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
         >
           <BalancesDisplay />
           <TradeForm setChangeOrderRef={onChangeOrderRef} />
+          <MarginInfo />
         </Col>
       </Row>
       <Row>
@@ -416,7 +456,10 @@ const RenderSmaller = ({ onChangeOrderRef, onPrice, onSize }) => {
         </Col>
       </Row>
       <Row>
-        <Col flex="auto">
+        <Col xs={24} sm={12}>
+          <MarginInfo />
+        </Col>
+        <Col xs={24} sm={12} style={{ height: '100%', display: 'flex' }}>
           <UserInfoTable />
         </Col>
       </Row>

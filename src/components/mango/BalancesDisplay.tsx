@@ -1,7 +1,14 @@
 import { Button, Col, Divider, Row } from 'antd';
-import React from 'react';
+import React, { useMemo } from 'react';
 import FloatingElement from '../layout/FloatingElement';
 import styled from 'styled-components';
+// Let's get our account context
+import { useMarginAccount } from '../../utils/marginAccounts';
+// Spinner while we work on things
+import { Spin } from 'antd';
+import { LoadingOutlined } from '@ant-design/icons';
+
+const antIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />;
 
 const RowBox = styled(Row)`
   padding-top: 20px;
@@ -37,21 +44,21 @@ const ActionButton = styled(Button)`
   border-width: 0px;
 `;
 
-const mockData = [{
-  asset: 'BTC',
-  balance: (Math.random() * 100).toFixed(2),
-  interest: (Math.random() * 100).toFixed(2),
-}, {
-  asset: 'ETH',
-  balance: (Math.random() * 100).toFixed(2),
-  interest: (Math.random() * 100).toFixed(2),
-}, {
-  asset: 'USDC',
-  balance: (Math.random() * 100).toFixed(2),
-  interest: (Math.random() * 100).toFixed(2),
-}]
-
 export default function BalancesDisplay() {
+  const { marginAccount, mangoGroup, mango_groups, maPending } = useMarginAccount();
+  // Let's memoise the current balance screen to prevent too much re-renders
+  const tokenBalance = useMemo(() => {
+    return (marginAccount && mangoGroup) ? mango_groups.split('_').map((entry, i) => (
+      <Row key={i}>
+        <BalanceCol span={8}>{entry}</BalanceCol>
+        <BalanceCol span={8}>{marginAccount.getUiDeposit(mangoGroup, i)}</BalanceCol>
+        <InterestCol span={8}>{mangoGroup.getDepositRate(i)}%</InterestCol>
+      </Row>
+    )) :
+      <div style={{ textAlign: 'center' }}>
+        <p>No data For Current Account</p>
+      </div>
+  }, [mangoGroup, marginAccount])
   return (
     <FloatingElement style={{ flex: 0.5, paddingTop: 10 }}>
       <React.Fragment>
@@ -64,17 +71,17 @@ export default function BalancesDisplay() {
           <BalanceCol span={8}>Interest</BalanceCol>
         </SizeTitle>
         <ScrollBox>
-          {mockData.map((entry, i) => (
-            <Row key={i}>
-              <BalanceCol span={8}>{entry.asset}</BalanceCol>
-              <BalanceCol span={8}>{entry.balance}</BalanceCol>
-              <InterestCol span={8}>{entry.interest}%</InterestCol>
-            </Row>
-          ))}
+          {maPending.sma ?
+            <div style={{ display: 'grid', justifyContent: 'center' }}>
+              <Spin indicator={antIcon} />
+
+            </div>
+            : tokenBalance}
         </ScrollBox>
         <RowBox align="middle" justify="space-around">
           <Col style={{ width: 150 }}>
-            <ActionButton block size="large" onClick={() => console.log('deposit')}>
+            <ActionButton block size="large" onClick={() => console.log('deposit')}
+            >
               Deposit
             </ActionButton>
           </Col>
