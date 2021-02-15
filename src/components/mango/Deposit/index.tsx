@@ -78,7 +78,16 @@ const Deposit = (props: {
     setWorking(true);
     // Call the deposit function of mangoCLIENT
     // @ts-ignore
-    mangoClient.deposit(connection, mango_options.mango_program_id, mangoGroup, marginAccount, wallet, tokenAccount.effectiveMint, tokenAccount.pubkey, Number(inputRef.current.state.value)).then((transSig: string) => {
+    deposit(
+      connection,
+      mango_options.mango_program_id,
+      mangoGroup, marginAccount,
+      wallet,
+      tokenAccount.effectiveMint,
+      tokenAccount.pubkey,
+      // @ts-ignore
+      Number(inputRef.current.state.value)
+    ).then((transSig: string) => {
       setWorking(false);
       notify({
         // @ts-ignore
