@@ -16,17 +16,20 @@ const MarginAccountContext = React.createContext<null | MarginAccountContextValu
 // Create the margin account provider
 export function MarginAccountProvider({ children }) {
   // Get all state and functions we need for context
-  const { marginAccount, marginAccounts, mango_groups, mangoGroup, createMarginAccount, setMarginAccount, maPending } = useMarginAccountHelper();
+  const { marginAccount, marginAccounts, mango_groups, mangoOptions, mangoGroup, mangoClient, createMarginAccount, setMarginAccount, maPending, setMAPending } = useMarginAccountHelper();
   // Return a context with this values set as default
   return <MarginAccountContext.Provider
     value={{
       marginAccount,
       marginAccounts,
       mango_groups,
+      mangoOptions,
+      mangoClient,
       mangoGroup,
       createMarginAccount,
       setMarginAccount,
       maPending,
+      setMAPending,
     }}
   >
     {children}
@@ -61,7 +64,7 @@ const useMarginAccountHelper = () => {
   const [mangoOptions, setmangoOptions] = useState<any>(IDS[endpointInfo!.name]);
   // Now our mango client connection
   // Now our mango client instance
-  const [mangoClient] = useState<MangoClient>(new MangoClient())
+  const mangoClient = new MangoClient();
   /**
    * @summary Create a margin account for a mango group
    */
@@ -113,7 +116,7 @@ const useMarginAccountHelper = () => {
   useEffect(() => {
     // Set the default mango group
     if (!mangoGroup && mangoOptions) {
-      console.log('No mango group found. Get default')
+      // console.log('No mango group found. Get default')
       // No mango group yet, get the default
       // Did the user make any selection ??
       // Use default mango group of ETH_BTC_USDC
@@ -131,7 +134,6 @@ const useMarginAccountHelper = () => {
       })
     } else {
       // Get the margin account for the selected mango group
-      // console.log('Mango group exist ', mangoGroup);
     }
     if (!connected) {
       // We lost connection to wallet, remove the margin accounts
@@ -142,21 +144,15 @@ const useMarginAccountHelper = () => {
     }
     if (!marginAccounts || !marginAccount) {
       // No margin account for the user, get them
-      console.log('no margin account')
       getAllMarginAccountsForGroup().then((marginAccounts) => {
-        // console.log('Gotten margin acount ', marginAccounts)
-        // Set the margin accounts
         setMarginAccounts(marginAccounts)
-        if (marginAccounts.length > 0) {
-          setMarginAccount(marginAccounts[0])
-        }
       }).catch(() => {
         console.log('Could not get margin accounts for user in effect');
       })
     }
   }, [connected, connection, mangoOptions, mangoGroup])
   // TODO: Should the mango group change, reset our margin accounts and account
-  return { marginAccount, marginAccounts, mangoGroup, mango_groups, createMarginAccount, setMarginAccount, maPending };
+  return { marginAccount, marginAccounts, mangoGroup, mangoOptions, mango_groups, mangoClient, createMarginAccount, setMarginAccount, maPending, setMAPending };
 }
 
 // Easily pick what margin account context to use
@@ -180,10 +176,13 @@ export function useMarginAccount() {
     marginAccount: marginAccountContext.marginAccount,
     marginAccounts: marginAccountContext.marginAccounts,
     mango_groups: marginAccountContext.mango_groups,
+    mango_options: marginAccountContext.mangoOptions,
+    mangoClient: marginAccountContext.mangoClient,
     mangoGroup: marginAccountContext.mangoGroup,
     createMarginAccount: marginAccountContext.createMarginAccount,
     setMarginAccount: marginAccountContext.setMarginAccount,
     maPending: marginAccountContext.maPending,
+    setMAPending: marginAccountContext.setMAPending,
     keyMappings: buildPubKeytoAcountMapping,
   }
 }
