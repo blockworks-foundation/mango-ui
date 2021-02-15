@@ -10,6 +10,7 @@ import { useWallet } from '../utils/wallet';
 import { PublicKey } from "@solana/web3.js";
 import { MarginAccountContextValues } from "../utils/types";
 import { setConstantValue } from "typescript";
+import { initMarginAccount } from './mango';
 
 // Create a context to share account state across pages
 const MarginAccountContext = React.createContext<null | MarginAccountContextValues>(null);
@@ -86,7 +87,13 @@ const useMarginAccountHelper = () => {
       return;
     }
     // Carry on if we have mango group
-    mangoClient.initMarginAccount(connection, new PublicKey(mangoOptions.mango_program_id), new PublicKey(mangoOptions.dex_program_id), mangoGroup, wallet).then(async (marginAccountPK) => {
+
+    initMarginAccount(
+      connection,
+      new PublicKey(mangoOptions.mango_program_id),
+      mangoGroup,
+      wallet
+    ).then(async (marginAccountPK) => {
       // Let's get the margin account object
       let marginAccount = await mangoClient.getMarginAccount(connection, marginAccountPK);
       // Set the margin accounts PK
