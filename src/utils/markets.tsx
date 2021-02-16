@@ -52,8 +52,12 @@ export const USE_MARKETS: MarketInfo[] = _IGNORE_DEPRECATED
 
 export function useMarketsList() {
   const { endpointInfo } = useConnectionConfig();
-
+  // For now localnet is not active
+  if (endpointInfo && endpointInfo.name === 'localnet') {
+    return [];
+  }
   const spotMarkets = IDS[endpointInfo!.name]?.spot_markets || {};
+  // If no market for the endpoint, return
   const dexProgram = IDS[endpointInfo!.name]?.dex_program_id || "";
   const mangoMarkets = Object.entries(spotMarkets).map(([name, address]) => {
     return {
@@ -61,7 +65,8 @@ export function useMarketsList() {
       programId: new PublicKey(dexProgram as string),
       deprecated: false,
       name
-    }});
+    }
+  });
 
   return mangoMarkets;
 }
@@ -77,6 +82,7 @@ export function useAllMarkets() {
   const { customMarkets } = useCustomMarkets();
 
   const getAllMarkets = async () => {
+    // If no market list, return null
     const markets: Array<{
       market: Market;
       marketName: string;
@@ -601,11 +607,11 @@ export function useLocallyStoredFeeDiscountKey(): {
 export function useFeeDiscountKeys(): [
   (
     | {
-        pubkey: PublicKey;
-        feeTier: number;
-        balance: number;
-        mint: PublicKey;
-      }[]
+      pubkey: PublicKey;
+      feeTier: number;
+      balance: number;
+      mint: PublicKey;
+    }[]
     | null
     | undefined
   ),
@@ -894,8 +900,8 @@ export function useBalances(): Balances[] {
       orders:
         baseExists && market && openOrders
           ? market.baseSplSizeToNumber(
-              openOrders.baseTokenTotal.sub(openOrders.baseTokenFree),
-            )
+            openOrders.baseTokenTotal.sub(openOrders.baseTokenFree),
+          )
           : null,
       openOrders,
       unsettled:
@@ -912,8 +918,8 @@ export function useBalances(): Balances[] {
       orders:
         quoteExists && market && openOrders
           ? market.quoteSplSizeToNumber(
-              openOrders.quoteTokenTotal.sub(openOrders.quoteTokenFree),
-            )
+            openOrders.quoteTokenTotal.sub(openOrders.quoteTokenFree),
+          )
           : null,
       unsettled:
         quoteExists && market && openOrders
