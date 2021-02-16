@@ -3,7 +3,7 @@ import Wallet from '@project-serum/sol-wallet-adapter';
 import { Market, OpenOrders } from '@project-serum/serum';
 import { Event } from '@project-serum/serum/lib/queue';
 import { Order } from '@project-serum/serum/lib/market';
-import { MangoGroup, MarginAccount } from '@mango/client';
+import { MangoGroup, MarginAccount, MangoClient } from '@mango/client';
 
 export interface ConnectionContextValues {
   endpoint: string;
@@ -153,9 +153,17 @@ export interface SwapContextValues {
 export interface MarginAccountContextValues {
   marginAccount: MarginAccount | null, // The current margin account trading with
   marginAccounts: MarginAccount[] | [], // List of all margin account pk in a mango group 
-  mango_groups: string, // Identifier for the mango group
+  mango_groups: Array<string>, // Identifier for the mango group
+  mangoOptions: any, //The different parameters for our mango program
+  mangoClient: MangoClient, // Instance of mango clinet
   mangoGroup: MangoGroup | null, // The current mango group
   setMarginAccount: (marginAccount: null | MarginAccount) => void,
-  createMarginAccount: () => void, // For creating a margin account
+  setMarginAccounts: (marginAccounts: MarginAccount[]) => void,
+  createMarginAccount: () => Promise<void>, // For creating a margin account
   maPending: any, // Is the context updating
+  setMAPending: (any) => void, // Set the pending states on margin account transactions
+  getMarginAccount: () => void
 }
+
+// Type declaration for the margin accounts for the mango group
+export type mangoTokenAccounts = { mango_group: string, accounts: TokenAccount[] }
