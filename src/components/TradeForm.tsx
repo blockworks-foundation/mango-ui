@@ -8,7 +8,9 @@ import {
   useMarkPrice,
   useSelectedOpenOrdersAccount,
   useSelectedBaseCurrencyAccount,
-  useSelectedQuoteCurrencyAccount, useFeeDiscountKeys, useLocallyStoredFeeDiscountKey,
+  useSelectedQuoteCurrencyAccount,
+  useFeeDiscountKeys,
+  useLocallyStoredFeeDiscountKey,
 } from '../utils/markets';
 import { useWallet } from '../utils/wallet';
 import { notify } from '../utils/notifications';
@@ -18,6 +20,7 @@ import {
   floorToDecimal,
 } from '../utils/utils';
 import { useSendConnection } from '../utils/connection';
+import { useIpAddress } from '../utils/useIpAddress';
 import FloatingElement from './layout/FloatingElement';
 import { getUnixTs, placeOrder } from '../utils/send';
 import { SwitchChangeEventHandler } from 'antd/es/switch';
@@ -64,7 +67,10 @@ export default function TradeForm({
   const sendConnection = useSendConnection();
   const markPrice = useMarkPrice();
   useFeeDiscountKeys();
-  const { storedFeeDiscountKey: feeDiscountKey } = useLocallyStoredFeeDiscountKey();
+  const {
+    storedFeeDiscountKey: feeDiscountKey,
+  } = useLocallyStoredFeeDiscountKey();
+  const { ipAllowed } = useIpAddress();
 
   const [postOnly, setPostOnly] = useState(false);
   const [ioc, setIoc] = useState(false);
@@ -252,7 +258,7 @@ export default function TradeForm({
         wallet,
         baseCurrencyAccount: baseCurrencyAccount?.pubkey,
         quoteCurrencyAccount: quoteCurrencyAccount?.pubkey,
-        feeDiscountPubkey: feeDiscountKey
+        feeDiscountPubkey: feeDiscountKey,
       });
       refreshCache(tuple('getTokenAccounts', wallet, connected));
       setPrice(undefined);
@@ -359,28 +365,40 @@ export default function TradeForm({
           <Switch checked={ioc} onChange={iocOnChange} />
         </div>
       </div>
-      {side === 'buy' ? (
-        <BuyButton
-          disabled={!price || !baseSize}
-          onClick={onSubmit}
-          block
-          type="primary"
-          size="large"
-          loading={submitting}
-        >
-          Buy {baseCurrency}
-        </BuyButton>
+      {ipAllowed ? (
+        side === 'buy' ? (
+          <BuyButton
+            disabled={!price || !baseSize}
+            onClick={onSubmit}
+            block
+            type="primary"
+            size="large"
+            loading={submitting}
+          >
+            Buy {baseCurrency}
+          </BuyButton>
+        ) : (
+          <SellButton
+            disabled={!price || !baseSize}
+            onClick={onSubmit}
+            block
+            type="primary"
+            size="large"
+            loading={submitting}
+          >
+            Sell {baseCurrency}
+          </SellButton>
+        )
       ) : (
-        <SellButton
-          disabled={!price || !baseSize}
-          onClick={onSubmit}
-          block
-          type="primary"
+        <Button
           size="large"
-          loading={submitting}
+          style={{
+            margin: '20px 0px 0px 0px',
+          }}
+          disabled
         >
-          Sell {baseCurrency}
-        </SellButton>
+          Country Not Allowed
+        </Button>
       )}
     </FloatingElement>
   );
