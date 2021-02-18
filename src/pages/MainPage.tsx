@@ -48,7 +48,6 @@ function MarginAccountList() {
       );
 
       for (const [i, ma] of result.entries()) {
-        ma.openOrdersAccounts = await ma.loadOpenOrders(connection, new PublicKey(IDS[endpointInfo!.name].dex_program_id));
         values[i] = await ma.getValue(connection, mangoGroup);
         console.log(values[i]);
       }
