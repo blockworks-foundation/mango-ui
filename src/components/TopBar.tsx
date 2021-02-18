@@ -190,6 +190,11 @@ export default function TopBar() {
               ADD MARKET
             </Menu.Item>
           )}
+          {(!searchFocussed || location.pathname === '/stats') && (
+            <Menu.Item key="/stats" style={{ margin: '0 10px' }}>
+              STATS
+            </Menu.Item>
+          )}
           {!searchFocussed && (
             <Menu.SubMenu
               title="LEARN"
