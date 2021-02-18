@@ -357,8 +357,8 @@ export async function placeOrder(
     {
       PlaceOrder:
         clientId
-          ? { side, limitPrice, maxBaseQuantity, maxQuoteQuantity, selfTradeBehavior, orderType, clientId}
-          : { side, limitPrice, maxBaseQuantity, maxQuoteQuantity, selfTradeBehavior, orderType}
+          ? { side, limitPrice, maxBaseQuantity, maxQuoteQuantity, selfTradeBehavior, orderType, clientId, limit: 65535}
+          : { side, limitPrice, maxBaseQuantity, maxQuoteQuantity, selfTradeBehavior, orderType, limit: 65535}
     }
   )
 
