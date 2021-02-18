@@ -64,7 +64,9 @@ const useMangoStats = () => {
 
   useEffect(() => {
     const fetchStats = async () => {
-      const response = await fetch('http://localhost:8000/');
+      const response = await fetch(
+        `http://${process.env.REACT_APP_MANGO_STATS_API_URL}/`,
+      );
       const stats = await response.json();
 
       setStats(stats);
