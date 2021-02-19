@@ -1,17 +1,18 @@
-import { Button, Col, Divider, Row, Select } from 'antd';
-import React from 'react';
-import FloatingElement from '../layout/FloatingElement';
+import { Typography, Button, Col, Divider, Row, Select } from 'antd';
+import React, { useMemo } from 'react';
+import FloatingElement from '../../layout/FloatingElement';
 import styled from 'styled-components';
 // Popover for extra info
 import { Popover } from "antd";
 import { InfoCircleOutlined } from '@ant-design/icons';
 // Margin Account context
-import { useMarginAccount } from '../../utils/marginAccounts'
+import { useMarginAccount } from '../../../utils/marginAccounts'
 import { MarginAccount } from '@mango/client';
 import { PublicKey } from '@solana/web3.js';
 
 
-const { Option, OptGroup } = Select;
+const { Option } = Select;
+const { Text } = Typography;
 
 const RowBox = styled(Row)`
   padding-top: 5px;
@@ -69,7 +70,7 @@ export default function MarginInfo() {
   return (
     <FloatingElement style={{ flex: 0.5, paddingTop: 10 }}>
       <Divider style={{ borderColor: 'white' }}>
-        Switch Account
+        Switch Margin Account
         </Divider>
       <React.Fragment>
         <AccountSelector
@@ -89,14 +90,22 @@ export default function MarginInfo() {
             </Row>
           ))}
         </ScrollBox>
-        <RowBox align="middle" justify="space-around">
+        <RowBox align="middle" justify="center">
           <Col style={{ width: 150 }}>
-            <div style={{ display: "inline-flex" }}>
-              {settlePnLInfo()}
-              <ActionButton block size="large" >
-                Settle PnL
+            <ActionButton
+              icon={<Popover
+                content="Settle Profit and Loss"
+                placement="topRight"
+                trigger="hover"
+              >
+                <InfoCircleOutlined style={{ color: '#2abdd2' }} />
+              </Popover>}
+              block size="large"
+              onMouseOver={settlePnLInfo}
+            >
+              Settle PnL
             </ActionButton>
-            </div>
+
           </Col>
         </RowBox>
       </React.Fragment>
@@ -113,50 +122,45 @@ export default function MarginInfo() {
 function AccountSelector({ keyMappings, marginAccounts, marginAccount, setMarginAccount }) {
   // Build a map of pubkeys to margin accounts
   const mapping: Map<PublicKey, MarginAccount> = keyMappings();
+  const options = useMemo(() => {
+    return marginAccounts.length > 0 ?
+      // @ts-ignore
+      (marginAccounts.map((marginAccount: MarginAccount, i: number) =>
+      (
+        <Option
+          key={i}
+          value={marginAccount.publicKey.toString()}
+        >
+          <Text code>
+            {marginAccount.publicKey.toString().substr(0, 9) + '...' + marginAccount.publicKey.toString().substr(-9)}
+          </Text>
+        </Option>
+      )))
+      :
+      <Option
+        value="No Margin Account"
+        key=""
+        disabled={true}
+        style={{
+          // @ts-ignore
+          backgroundColor: 'rgb(39, 44, 61)'
+        }}
+      >
+        <Text keyboard type="warning">No Margin Account</Text>
+      </Option>
+  }, [marginAccounts]);
+
   return <div style={{ display: 'grid', justifyContent: 'center' }}>
     <Select
       size="large"
-      placeholder={marginAccount?.publicKey.toString() || "Select Margin Account"}
+      placeholder={"Select an account"}
+      value={marginAccount ? marginAccount.publicKey.toString() : undefined}
       listHeight={200}
-      style={{ width: '300px' }}
-      value={marginAccount?.publicKey.toString()}
+      style={{ width: '250px' }}
       // @ts-ignore
-      onSelect={(e) => setMarginAccount(mapping.get(e))}
+      onChange={(e) => setMarginAccount(mapping.get(e))}
     >
-      {
-        marginAccounts.length > 0 ? (
-          <>
-            <OptGroup label="BTC/ETH/USDC">
-              {
-                // @ts-ignore
-                marginAccounts.filter(account => account.publicKey.toBase58() !== marginAccount?.publicKey.toBase58()).map((marginAccount: MarginAccount, i) => (
-                  <Option
-                    value={marginAccount.publicKey.toString()}
-                    key={i}
-                    name={marginAccount.publicKey.toString()}
-                  >
-
-                  </Option>
-                ))
-              }
-            </OptGroup>
-          </>
-        ) :
-          (
-            <Option
-              value="No Margin Account"
-              key=""
-              name="No Margin Account"
-              disabled={true}
-              style={{
-
-                // @ts-ignore
-                backgroundColor: 'rgb(39, 44, 61)'
-              }}
-            >
-            </Option>
-          )
-      }
+      {options}
     </Select>
   </div>
 }

@@ -24,6 +24,8 @@ function MarginAccountList() {
 
   async function fetchMangoGroup() {
     let result = await client.getMangoGroup(connection, mangoGroupPk);
+    result.tokens.forEach((t, i) => console.log('Token ', i, t.toBase58()))
+    console.log('Mango group is ', result)
     setMangoGroup(result);
   }
 
@@ -46,7 +48,6 @@ function MarginAccountList() {
       );
 
       for (const [i, ma] of result.entries()) {
-        ma.openOrdersAccounts = await ma.loadOpenOrders(connection, new PublicKey(IDS[endpointInfo!.name].dex_program_id));
         values[i] = await ma.getValue(connection, mangoGroup);
         console.log(values[i]);
       }
