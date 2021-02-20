@@ -398,9 +398,7 @@ export function useBonfidaTrades() {
     if (!marketAddress) {
       return null;
     }
-    const result = await BonfidaApi.getRecentTrades(marketAddress);
-    console.log('getBonfidaTrades', marketAddress, result);
-    return result;
+    return await BonfidaApi.getRecentTrades(marketAddress);
   }
 
   return useAsyncData(
