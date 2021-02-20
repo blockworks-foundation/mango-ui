@@ -17,6 +17,7 @@ import { TOKEN_PROGRAM_ID } from './tokens';
 import BN from 'bn.js';
 import { Market, OpenOrders } from '@project-serum/serum';
 import { Order } from '@project-serum/serum/lib/market';
+import { SRM_DECIMALS } from '@project-serum/serum/lib/token-instructions';
 
 export async function initMarginAccount(
   connection: Connection,
@@ -80,7 +81,6 @@ export async function deposit(
     { isSigner: false, isWritable: true, pubkey: mangoGroup.publicKey },
     { isSigner: false, isWritable: true, pubkey: marginAccount.publicKey },
     { isSigner: true, isWritable: false, pubkey: wallet.publicKey },
-    { isSigner: false, isWritable: false, pubkey: token },
     { isSigner: false, isWritable: true, pubkey: tokenAcc },
     { isSigner: false, isWritable: true, pubkey: mangoGroup.vaults[tokenIndex] },
     { isSigner: false, isWritable: false, pubkey: TOKEN_PROGRAM_ID },
@@ -129,9 +129,8 @@ export async function withdraw(
     { isSigner: false, isWritable: false, pubkey: SYSVAR_CLOCK_PUBKEY },
     ...marginAccount.openOrders.map((pubkey) => ({ isSigner: false, isWritable: false, pubkey })),
     ...mangoGroup.oracles.map((pubkey) => ({ isSigner: false, isWritable: false, pubkey })),
-    ...mangoGroup.tokens.map((pubkey) => ({ isSigner: false, isWritable: false, pubkey })),
   ]
-  const data = encodeMangoInstruction({ Withdraw: { tokenIndex: new BN(tokenIndex), quantity: nativeQuantity } })
+  const data = encodeMangoInstruction({ Withdraw: { quantity: nativeQuantity } })
   const instruction = new TransactionInstruction({ keys, data, programId })
   const transaction = new Transaction()
   transaction.add(instruction)
@@ -165,7 +164,6 @@ export async function borrow(
     { isSigner: false, isWritable: false, pubkey: SYSVAR_CLOCK_PUBKEY },
     ...marginAccount.openOrders.map((pubkey) => ({ isSigner: false, isWritable: false, pubkey })),
     ...mangoGroup.oracles.map((pubkey) => ({ isSigner: false, isWritable: false, pubkey })),
-    ...mangoGroup.tokens.map((pubkey) => ({ isSigner: false, isWritable: false, pubkey })),
   ]
   const data = encodeMangoInstruction({ Borrow: { tokenIndex: new BN(tokenIndex), quantity: nativeQuantity } })
 
@@ -205,21 +203,72 @@ export async function settleBorrow(
     { isSigner: false, isWritable: false, pubkey: SYSVAR_CLOCK_PUBKEY }
   ]
   const data = encodeMangoInstruction({ SettleBorrow: { tokenIndex: new BN(tokenIndex), quantity: nativeQuantity } })
-
-
   const instruction = new TransactionInstruction({ keys, data, programId })
 
   const transaction = new Transaction()
   transaction.add(instruction)
-  const signers = []
-  const functionName = 'SettleBorrow'
-  const sendingMessage = `sending ${functionName} instruction...`
-  const sentMessage = `${functionName} instruction sent`
-  const successMessage = `${functionName} instruction success`
-  return await sendTransaction({
-    transaction, wallet, signers, connection, sendingMessage, sentMessage, successMessage
-  })
+  return await packageAndSend(transaction, connection, wallet, [],'SettleBorrow')
 }
+
+export async function depositSrm(
+  connection: Connection,
+  programId: PublicKey,
+  mangoGroup: MangoGroup,
+  marginAccount: MarginAccount,
+  wallet: Wallet,
+  srmAccount: PublicKey,
+
+  quantity: number
+): Promise<TransactionSignature> {
+  const nativeQuantity = uiToNative(quantity, SRM_DECIMALS)
+
+  const keys = [
+    { isSigner: false, isWritable: true, pubkey: mangoGroup.publicKey },
+    { isSigner: false,  isWritable: true, pubkey: marginAccount.publicKey },
+    { isSigner: true, isWritable: false, pubkey: wallet.publicKey },
+    { isSigner: false, isWritable: true,  pubkey: srmAccount },
+    { isSigner: false, isWritable: true,  pubkey: mangoGroup.srmVault },
+    { isSigner: false, isWritable: false, pubkey: TOKEN_PROGRAM_ID },
+    { isSigner: false, isWritable: false, pubkey: SYSVAR_CLOCK_PUBKEY }
+  ]
+  const data = encodeMangoInstruction({DepositSrm: {quantity: nativeQuantity}})
+  const instruction = new TransactionInstruction({ keys, data, programId })
+
+  const transaction = new Transaction()
+  transaction.add(instruction)
+  return await packageAndSend(transaction, connection, wallet, [],'DepositSrm')
+}
+
+export async function withdrawSrm(
+  connection: Connection,
+  programId: PublicKey,
+  mangoGroup: MangoGroup,
+  marginAccount: MarginAccount,
+  wallet: Wallet,
+  srmAccount: PublicKey,
+
+  quantity: number
+): Promise<TransactionSignature> {
+  const nativeQuantity = uiToNative(quantity, SRM_DECIMALS)
+
+  const keys = [
+    { isSigner: false, isWritable: true, pubkey: mangoGroup.publicKey },
+    { isSigner: false,  isWritable: true, pubkey: marginAccount.publicKey },
+    { isSigner: true, isWritable: false, pubkey: wallet.publicKey },
+    { isSigner: false, isWritable: true,  pubkey: srmAccount },
+    { isSigner: false, isWritable: true,  pubkey: mangoGroup.srmVault },
+    { isSigner: false, isWritable: false,  pubkey: mangoGroup.signerKey },
+    { isSigner: false, isWritable: false, pubkey: TOKEN_PROGRAM_ID },
+    { isSigner: false, isWritable: false, pubkey: SYSVAR_CLOCK_PUBKEY }
+  ]
+  const data = encodeMangoInstruction({WithdrawSrm: {quantity: nativeQuantity}})
+  const instruction = new TransactionInstruction({ keys, data, programId })
+
+  const transaction = new Transaction()
+  transaction.add(instruction)
+  return await packageAndSend(transaction, connection, wallet, [], 'WithdrawSrm')
+}
+
 
 
 export async function placeOrder(
@@ -237,17 +286,19 @@ export async function placeOrder(
   clientId?: BN,
 
 ): Promise<TransactionSignature> {
-  // TODO allow wrapped SOL wallets
-  // TODO allow fee discounts
-
   orderType = orderType == undefined ? 'limit' : orderType
   // orderType = orderType ?? 'limit'
   const limitPrice = spotMarket.priceNumberToLots(price)
-  const maxQuantity = spotMarket.baseSizeNumberToLots(size)
-  if (maxQuantity.lte(new BN(0))) {
+  const maxBaseQuantity = spotMarket.baseSizeNumberToLots(size)
+
+  // TODO verify if multiplying by highest fee tier is appropriate
+  const maxQuoteQuantity = new BN(spotMarket['_decoded'].quoteLotSize.toNumber()).mul(
+    spotMarket.baseSizeNumberToLots(size * 1.0022).mul(spotMarket.priceNumberToLots(price)),
+  )
+
+  if (maxBaseQuantity.lte(new BN(0))) {
     throw new Error('size too small')
   }
-
   if (limitPrice.lte(new BN(0))) {
     throw new Error('invalid price')
   }
@@ -281,44 +332,40 @@ export async function placeOrder(
   }
 
   const keys = [
-    { isSigner: false, isWritable: true, pubkey: mangoGroup.publicKey },
-    { isSigner: true, isWritable: false, pubkey: wallet.publicKey },
+    { isSigner: false, isWritable: true, pubkey: mangoGroup.publicKey},
+    { isSigner: true,  isWritable: false,  pubkey: wallet.publicKey },
     { isSigner: false, isWritable: true, pubkey: marginAccount.publicKey },
     { isSigner: false, isWritable: false, pubkey: SYSVAR_CLOCK_PUBKEY },
     { isSigner: false, isWritable: false, pubkey: spotMarket.programId },
     { isSigner: false, isWritable: true, pubkey: spotMarket.publicKey },
     { isSigner: false, isWritable: true, pubkey: spotMarket['_decoded'].requestQueue },
+    { isSigner: false, isWritable: true, pubkey: spotMarket['_decoded'].eventQueue },
+    { isSigner: false, isWritable: true, pubkey: spotMarket['_decoded'].bids },
+    { isSigner: false, isWritable: true, pubkey: spotMarket['_decoded'].asks },
     { isSigner: false, isWritable: true, pubkey: mangoGroup.vaults[vaultIndex] },
     { isSigner: false, isWritable: false, pubkey: mangoGroup.signerKey },
     { isSigner: false, isWritable: true, pubkey: spotMarket['_decoded'].baseVault },
     { isSigner: false, isWritable: true, pubkey: spotMarket['_decoded'].quoteVault },
     { isSigner: false, isWritable: false, pubkey: TOKEN_PROGRAM_ID },
     { isSigner: false, isWritable: false, pubkey: SYSVAR_RENT_PUBKEY },
-    ...openOrdersKeys.map((pubkey) => ({ isSigner: false, isWritable: true, pubkey })),
-    ...mangoGroup.oracles.map((pubkey) => ({ isSigner: false, isWritable: false, pubkey })),
-    ...mangoGroup.tokens.map((pubkey) => ({ isSigner: false, isWritable: false, pubkey })),
+    { isSigner: false, isWritable: true, pubkey: mangoGroup.srmVault },
+    ...openOrdersKeys.map( (pubkey) => ( { isSigner: false, isWritable: true, pubkey })),
+    ...mangoGroup.oracles.map( (pubkey) => ( { isSigner: false, isWritable: false, pubkey })),
   ]
 
   const data = encodeMangoInstruction(
     {
       PlaceOrder:
         clientId
-          ? { side, limitPrice, maxQuantity, orderType, clientId, selfTradeBehavior }
-          : { side, limitPrice, maxQuantity, orderType, selfTradeBehavior }
+          ? { side, limitPrice, maxBaseQuantity, maxQuoteQuantity, selfTradeBehavior, orderType, clientId, limit: 65535}
+          : { side, limitPrice, maxBaseQuantity, maxQuoteQuantity, selfTradeBehavior, orderType, limit: 65535}
     }
   )
 
-  const placeOrderInstruction = new TransactionInstruction({ keys, data, programId })
+  const placeOrderInstruction = new TransactionInstruction( { keys, data, programId })
   transaction.add(placeOrderInstruction)
 
-  // sign, send and confirm transaction
-  const functionName = 'PlaceOrder'
-  const sendingMessage = `sending ${functionName} instruction...`
-  const sentMessage = `${functionName} instruction sent`
-  const successMessage = `${functionName} instruction success`
-  return await sendTransaction({
-    transaction, wallet, signers, connection, sendingMessage, sentMessage, successMessage
-  })
+  return await packageAndSend(transaction, connection, wallet, signers, 'PlaceOrder')
 }
 
 export async function settleFunds(
@@ -384,33 +431,45 @@ export async function cancelOrder(
   order: Order,
 ): Promise<TransactionSignature> {
   const keys = [
-    { isSigner: false, isWritable: true, pubkey: mangoGroup.publicKey },
-    { isSigner: true, isWritable: false, pubkey: wallet.publicKey },
-    { isSigner: false, isWritable: true, pubkey: marginAccount.publicKey },
+    { isSigner: false, isWritable: true, pubkey: mangoGroup.publicKey},
+    { isSigner: true, isWritable: false,  pubkey: wallet.publicKey },
+    { isSigner: false,  isWritable: true, pubkey: marginAccount.publicKey },
     { isSigner: false, isWritable: false, pubkey: SYSVAR_CLOCK_PUBKEY },
     { isSigner: false, isWritable: false, pubkey: mangoGroup.dexProgramId },
     { isSigner: false, isWritable: true, pubkey: spotMarket.publicKey },
+    { isSigner: false, isWritable: true, pubkey: spotMarket['_decoded'].bids },
+    { isSigner: false, isWritable: true, pubkey: spotMarket['_decoded'].asks },
     { isSigner: false, isWritable: true, pubkey: order.openOrdersAddress },
-    { isSigner: false, isWritable: true, pubkey: spotMarket['_decoded'].requestQueue },
     { isSigner: false, isWritable: false, pubkey: mangoGroup.signerKey },
+    { isSigner: false, isWritable: true, pubkey: spotMarket['_decoded'].eventQueue },
   ]
 
   const data = encodeMangoInstruction({
     CancelOrder: {
       side: order.side,
       orderId: order.orderId,
-      openOrders: order.openOrdersAddress,
-      openOrdersSlot: order.openOrdersSlot
     }
   })
 
 
-  const instruction = new TransactionInstruction({ keys, data, programId })
+  const instruction = new TransactionInstruction( { keys, data, programId })
 
   const transaction = new Transaction()
   transaction.add(instruction)
-  const signers = []
-  const functionName = 'CancelOrder'
+
+  return await packageAndSend(transaction, connection, wallet, [], 'CancelOrder')
+
+}
+
+async function packageAndSend(
+
+  transaction: Transaction,
+  connection: Connection,
+  wallet: Wallet,
+  signers: Account[],
+  functionName: string
+): Promise<TransactionSignature> {
+
   const sendingMessage = `sending ${functionName} instruction...`
   const sentMessage = `${functionName} instruction sent`
   const successMessage = `${functionName} instruction success`

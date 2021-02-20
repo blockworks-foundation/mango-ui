@@ -88,7 +88,7 @@ const useMarginAccountHelper = () => {
     // Carry on if we have mango group
     await initMarginAccount(connection, new PublicKey(mangoOptions.mango_program_id), mangoGroup, wallet).then(async (marginAccountPK) => {
       // Let's get the margin account object
-      let marginAccount = await mangoClient.getMarginAccount(connection, marginAccountPK);
+      let marginAccount = await mangoClient.getMarginAccount(connection, marginAccountPK, mangoGroup.dexProgramId);
       // Now get all margin accounts
       // Set the margin accounts PK
       setMarginAccount(marginAccount);
@@ -100,6 +100,7 @@ const useMarginAccountHelper = () => {
 
   /**
    * @summary get all margin accounts for a mango group
+   * @kehinde - this function is not necessary. mangoClient.getMarginAccountsForOwner already filters for mangoGroup
    */
   const getAllMarginAccountsForGroup = async () => {
     // Set pending transaction
@@ -131,7 +132,7 @@ const useMarginAccountHelper = () => {
       return null;
     }
     // Let's get the public keys for the margin accounts
-    mangoClient.getMarginAccount(connection, marginAccount.publicKey).then((account) => {
+    mangoClient.getMarginAccount(connection, marginAccount.publicKey, mangoGroup.dexProgramId).then((account) => {
       // Return the first account
       setMarginAccount(account);
     })
