@@ -34,7 +34,7 @@ export interface ChartContainerState {}
 export const TVChartContainer = () => {
   // @ts-ignore
   const defaultProps: ChartContainerProps = {
-    symbol: 'BTC/USDC',
+    symbol: 'BTC/USDT',
     interval: '60' as ResolutionString,
     theme: 'Dark',
     containerId: 'tv_chart_container',
@@ -46,13 +46,11 @@ export const TVChartContainer = () => {
   };
 
   const tvWidgetRef = React.useRef<IChartingLibraryWidget | null>(null);
-  const { market } = useMarket();
+  const { market, marketName } = useMarket();
 
   React.useEffect(() => {
     const widgetOptions: ChartingLibraryWidgetOptions = {
-      symbol: findTVMarketFromAddress(
-        market?.address.toBase58() || '',
-      ) as string,
+      symbol: marketName,
       // BEWARE: no trailing slash is expected in feed URL
       // tslint:disable-next-line:no-any
       datafeed: new (window as any).Datafeeds.UDFCompatibleDatafeed(
