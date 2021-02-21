@@ -4,7 +4,6 @@ import {
   MARKETS,
   OpenOrders,
   Orderbook,
-  TOKEN_MINTS,
   TokenInstructions,
 } from '@project-serum/serum';
 import { PublicKey } from '@solana/web3.js';
@@ -16,7 +15,12 @@ import {
   useLocalStorageState,
 } from './utils';
 import { refreshCache, useAsyncData } from './fetch-loop';
-import { useAccountData, useAccountInfo, useConnection, useConnectionConfig } from './connection';
+import {
+  useAccountData,
+  useAccountInfo,
+  useConnection,
+  useConnectionConfig,
+} from './connection';
 import { useWallet } from './wallet';
 import tuple from 'immutable-tuple';
 import { notify } from './notifications';
@@ -55,14 +59,14 @@ export function useMarketsList() {
   const { endpointInfo } = useConnectionConfig();
   const spotMarkets = IDS[endpointInfo!.name]?.spot_markets || {};
   // If no market for the endpoint, return
-  const dexProgram = IDS[endpointInfo!.name]?.dex_program_id || "";
+  const dexProgram = IDS[endpointInfo!.name]?.dex_program_id || '';
   const mangoMarkets = Object.entries(spotMarkets).map(([name, address]) => {
     return {
       address: new PublicKey(address as string),
       programId: new PublicKey(dexProgram as string),
       deprecated: false,
-      name
-    }
+      name,
+    };
   });
 
   return mangoMarkets;
@@ -202,13 +206,25 @@ export const DEFAULT_MARKET = USE_MARKETS.find(
   ({ name, deprecated }) => name === 'SRM/USDT' && !deprecated,
 );
 
+const formatTokenMints = (symbols: { [name: string]: string }) => {
+  return Object.entries(symbols).map(([name, address]) => {
+    return {
+      address: new PublicKey(address),
+      name: name,
+    };
+  });
+};
+
 export function getMarketDetails(
   market: Market | undefined | null,
   customMarkets: CustomMarketInfo[],
+  endpointInfo = { name: 'devnet' },
 ): FullMarketInfo {
   if (!market) {
     return {};
   }
+  const TOKEN_MINTS = formatTokenMints(IDS[endpointInfo!.name]?.symbols);
+
   const marketInfos = getMarketInfos(customMarkets);
   const marketInfo = marketInfos.find((otherMarket) =>
     otherMarket.address.equals(market.address),
@@ -244,12 +260,20 @@ export function useCustomMarkets() {
 
 export function MarketProvider({ marketAddress, setMarketAddress, children }) {
   const { customMarkets, setCustomMarkets } = useCustomMarkets();
-
   const address = marketAddress && new PublicKey(marketAddress);
   const connection = useConnection();
-  const marketInfos = getMarketInfos(customMarkets);
+  const { endpointInfo } = useConnectionConfig();
+  const marketInfos = useMarketsList();
   const marketInfo =
     address && marketInfos.find((market) => market.address.equals(address));
+  const [market, setMarket] = useState<Market | null>();
+
+  useEffect(() => {
+    if (marketInfos.length > 0) {
+      setMarketAddress(marketInfos[0].address.toBase58());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [endpointInfo]);
 
   // Replace existing market with a non-deprecated one on first load
   useEffect(() => {
@@ -262,7 +286,6 @@ export function MarketProvider({ marketAddress, setMarketAddress, children }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const [market, setMarket] = useState<Market | null>();
   useEffect(() => {
     if (
       market &&
@@ -296,8 +319,9 @@ export function MarketProvider({ marketAddress, setMarketAddress, children }) {
   return (
     <MarketContext.Provider
       value={{
+        address,
         market,
-        ...getMarketDetails(market, customMarkets),
+        ...getMarketDetails(market, customMarkets, endpointInfo),
         setMarketAddress,
         customMarkets,
         setCustomMarkets,
@@ -609,11 +633,11 @@ export function useLocallyStoredFeeDiscountKey(): {
 export function useFeeDiscountKeys(): [
   (
     | {
-      pubkey: PublicKey;
-      feeTier: number;
-      balance: number;
-      mint: PublicKey;
-    }[]
+        pubkey: PublicKey;
+        feeTier: number;
+        balance: number;
+        mint: PublicKey;
+      }[]
     | null
     | undefined
   ),
@@ -907,8 +931,8 @@ export function useBalances(): Balances[] {
       orders:
         baseExists && market && openOrders
           ? market.baseSplSizeToNumber(
-            openOrders.baseTokenTotal.sub(openOrders.baseTokenFree),
-          )
+              openOrders.baseTokenTotal.sub(openOrders.baseTokenFree),
+            )
           : null,
       openOrders,
       unsettled:
@@ -925,8 +949,8 @@ export function useBalances(): Balances[] {
       orders:
         quoteExists && market && openOrders
           ? market.quoteSplSizeToNumber(
-            openOrders.quoteTokenTotal.sub(openOrders.quoteTokenFree),
-          )
+              openOrders.quoteTokenTotal.sub(openOrders.quoteTokenFree),
+            )
           : null,
       unsettled:
         quoteExists && market && openOrders
@@ -1190,7 +1214,7 @@ export function getMarketInfos(
     deprecated: false,
   }));
 
-  return [...customMarketsInfo, ...USE_MARKETS];
+  return [...customMarketsInfo];
 }
 
 export function useMarketInfos() {
