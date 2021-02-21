@@ -3,7 +3,9 @@ import { Button, Col, Popover, Row, Select, Typography } from 'antd';
 import styled from 'styled-components';
 import Orderbook from '../components/Orderbook';
 import UserInfoTable from '../components/UserInfoTable';
-import BalancesDisplay, { CreateMarginAccountButton } from '../components/mango/Balances/BalancesDisplay';
+import BalancesDisplay, {
+  CreateMarginAccountButton,
+} from '../components/mango/Balances/BalancesDisplay';
 import MarginInfo from '../components/mango/MarginInfo';
 import FloatingElement from '../components/layout/FloatingElement';
 import {
@@ -38,7 +40,6 @@ const Wrapper = styled.div`
 `;
 
 export default function TradePage() {
-  console.log('Tradinggg')
   const { marketAddress } = useParams();
   useEffect(() => {
     if (marketAddress) {
@@ -76,6 +77,9 @@ function TradePageInner() {
     height: window.innerHeight,
     width: window.innerWidth,
   });
+
+  console.log('use markets list', markets);
+  console.log('use custom markets list', customMarkets);
 
   useEffect(() => {
     document.title = marketName ? `${marketName} — Serum` : 'Serum';
@@ -146,7 +150,6 @@ function TradePageInner() {
     setCustomMarkets(newCustomMarkets);
   };
 
-
   return (
     <>
       <CustomMarketDialog
@@ -203,7 +206,14 @@ function TradePageInner() {
             </React.Fragment>
           )}
           {/* Lets add the add margin account button */}
-          <Col span={4 + (!market ? 4 : 0) + ((!deprecatedMarkets || deprecatedMarkets.length <= 0) ? 8 : 0)} flex="end">
+          <Col
+            span={
+              4 +
+              (!market ? 4 : 0) +
+              (!deprecatedMarkets || deprecatedMarkets.length <= 0 ? 8 : 0)
+            }
+            flex="end"
+          >
             <CreateMarginAccountButton />
           </Col>
         </Row>
@@ -230,7 +240,7 @@ function MarketSelector({
   const extractBase = (a) => a.split('/')[0];
   const extractQuote = (a) => a.split('/')[1];
 
-  const selectedMarket = getMarketInfos(customMarkets)
+  const selectedMarket = markets
     .find(
       (proposedMarket) =>
         market?.address && proposedMarket.address.equals(market.address),
@@ -289,15 +299,15 @@ function MarketSelector({
               ? -1
               : extractQuote(a.name) !== 'USDT' &&
                 extractQuote(b.name) === 'USDT'
-                ? 1
-                : 0,
+              ? 1
+              : 0,
           )
           .sort((a, b) =>
             extractBase(a.name) < extractBase(b.name)
               ? -1
               : extractBase(a.name) > extractBase(b.name)
-                ? 1
-                : 0,
+              ? 1
+              : 0,
           )
           .map(({ address, name, deprecated }, i) => (
             <Option

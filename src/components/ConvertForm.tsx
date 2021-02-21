@@ -10,13 +10,18 @@ import {
   getSelectedTokenAccountForMint,
   MarketProvider,
   useBalances,
-  useCustomMarkets, useLocallyStoredFeeDiscountKey,
+  useCustomMarkets,
+  useLocallyStoredFeeDiscountKey,
   useMarket,
   useTokenAccounts,
 } from '../utils/markets';
 import { notify } from '../utils/notifications';
 import { useWallet } from '../utils/wallet';
-import { useConnection, useSendConnection } from '../utils/connection';
+import {
+  useConnection,
+  useSendConnection,
+  useConnectionConfig,
+} from '../utils/connection';
 import { placeOrder } from '../utils/send';
 import { floorToDecimal, getDecimalCount } from '../utils/utils';
 import FloatingElement from './layout/FloatingElement';
@@ -181,15 +186,22 @@ function ConvertFormSubmit({
   const balances = useBalances();
   const [fromAmount, setFromAmount] = useState<number | undefined>();
   const [toAmount, setToAmount] = useState<number | undefined>();
-  const { storedFeeDiscountKey: feeDiscountKey } = useLocallyStoredFeeDiscountKey();
+  const {
+    storedFeeDiscountKey: feeDiscountKey,
+  } = useLocallyStoredFeeDiscountKey();
 
   const connection = useConnection();
+  const { endpointInfo } = useConnectionConfig();
   const sendConnection = useSendConnection();
 
   const [isConverting, setIsConverting] = useState(false);
 
   const isFromTokenBaseOfMarket = (market) => {
-    const { marketName } = getMarketDetails(market, customMarkets);
+    const { marketName } = getMarketDetails(
+      market,
+      customMarkets,
+      endpointInfo,
+    );
     if (!marketName) {
       throw Error(
         'Cannot determine if coin is quote or base because marketName is missing',

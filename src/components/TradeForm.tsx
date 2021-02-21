@@ -1,6 +1,8 @@
 import { Button, Input, Radio, Switch, Slider } from 'antd';
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import { PublicKey } from '@solana/web3.js';
+import { IDS } from '@mango/client';
 import {
   useSelectedBaseCurrencyBalances,
   useSelectedQuoteCurrencyBalances,
@@ -19,13 +21,20 @@ import {
   roundToDecimal,
   floorToDecimal,
 } from '../utils/utils';
-import { useSendConnection } from '../utils/connection';
+import {
+  useSendConnection,
+  useConnection,
+  useConnectionConfig,
+} from '../utils/connection';
 import { useIpAddress } from '../utils/useIpAddress';
 import FloatingElement from './layout/FloatingElement';
-import { getUnixTs, placeOrder } from '../utils/send';
+import { getUnixTs } from '../utils/send';
+// import { placeOrder } from '../utils/send';
+import { placeOrder } from '../utils/mango';
 import { SwitchChangeEventHandler } from 'antd/es/switch';
 import { refreshCache } from '../utils/fetch-loop';
 import tuple from 'immutable-tuple';
+import { useMarginAccount } from '../utils/marginAccounts';
 
 const SellButton = styled(Button)`
   margin: 20px 0px 0px 0px;
@@ -57,7 +66,7 @@ export default function TradeForm({
   ) => void;
 }) {
   const [side, setSide] = useState<'buy' | 'sell'>('buy');
-  const { baseCurrency, quoteCurrency, market } = useMarket();
+  const { address, baseCurrency, quoteCurrency, market } = useMarket();
   const baseCurrencyBalances = useSelectedBaseCurrencyBalances();
   const quoteCurrencyBalances = useSelectedQuoteCurrencyBalances();
   const baseCurrencyAccount = useSelectedBaseCurrencyAccount();
@@ -65,6 +74,10 @@ export default function TradeForm({
   const openOrdersAccount = useSelectedOpenOrdersAccount(true);
   const { wallet, connected } = useWallet();
   const sendConnection = useSendConnection();
+
+  const connection = useConnection();
+  const { endpointInfo } = useConnectionConfig();
+  const { marginAccount, mangoGroup } = useMarginAccount();
   const markPrice = useMarkPrice();
   useFeeDiscountKeys();
   const {
@@ -245,21 +258,30 @@ export default function TradeForm({
       });
       return;
     }
+    console.log('checking if we can call place order', {
+      mangoGroup,
+      address,
+      marginAccount,
+      market,
+    });
 
+    if (!mangoGroup || !address || !marginAccount || !market) return;
     setSubmitting(true);
+
     try {
-      await placeOrder({
+      await placeOrder(
+        connection,
+        new PublicKey(IDS[endpointInfo!.name].mango_program_id),
+        mangoGroup,
+        marginAccount,
+        market,
+        wallet,
         side,
         price,
-        size: baseSize,
-        orderType: ioc ? 'ioc' : postOnly ? 'postOnly' : 'limit',
-        market,
-        connection: sendConnection,
-        wallet,
-        baseCurrencyAccount: baseCurrencyAccount?.pubkey,
-        quoteCurrencyAccount: quoteCurrencyAccount?.pubkey,
-        feeDiscountPubkey: feeDiscountKey,
-      });
+        baseSize,
+        ioc ? 'ioc' : postOnly ? 'postOnly' : 'limit',
+      );
+
       refreshCache(tuple('getTokenAccounts', wallet, connected));
       setPrice(undefined);
       onSetBaseSize(undefined);
