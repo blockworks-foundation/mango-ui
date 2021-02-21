@@ -1,7 +1,11 @@
 import { BonfidaTrade } from './types';
 
+
+const baseUrl = "http://85.214.116.56:5000";
+//const baseUrl = "http://localhost:5000";
+
 export default class BonfidaApi {
-  static URL: string = 'https://serum-api.bonfida.com/';
+  static URL: string = `${baseUrl}/`;
 
   static async get(path: string) {
     try {
@@ -23,4 +27,4 @@ export default class BonfidaApi {
   }
 }
 
-export const BONFIDA_DATA_FEED = 'https://serum-api.bonfida.com/tv';
+export const BONFIDA_DATA_FEED = `${baseUrl}/tv`;

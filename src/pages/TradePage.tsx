@@ -16,6 +16,7 @@ import {
 } from '../utils/markets';
 import TradeForm from '../components/TradeForm';
 import TradesTable from '../components/TradesTable';
+import { TVChartContainer } from '../components/TradingView';
 import LinkAddress from '../components/LinkAddress';
 import DeprecatedMarketsInstructions from '../components/DeprecatedMarketsInstructions';
 import {
@@ -342,7 +343,7 @@ const RenderNormal = ({ onChangeOrderRef, onPrice, onSize }) => {
     >
       <Col flex="auto" style={{ display: 'flex', flexDirection: 'column' }}>
         <FloatingElement style={{ flex: 1, minHeight: '300px' }}>
-          Here goes charts
+          <TVChartContainer />
         </FloatingElement>
         <UserInfoTable />
       </Col>

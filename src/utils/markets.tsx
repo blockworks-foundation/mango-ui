@@ -53,10 +53,6 @@ export const USE_MARKETS: MarketInfo[] = _IGNORE_DEPRECATED
 
 export function useMarketsList() {
   const { endpointInfo } = useConnectionConfig();
-  // For now localnet is not active
-  if (endpointInfo && endpointInfo.name === 'localnet') {
-    return [];
-  }
   const spotMarkets = IDS[endpointInfo!.name]?.spot_markets || {};
   // If no market for the endpoint, return
   const dexProgram = IDS[endpointInfo!.name]?.dex_program_id || "";
