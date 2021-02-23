@@ -12,7 +12,10 @@ import {
 import Wallet from '@project-serum/sol-wallet-adapter';
 import { MangoGroup, MarginAccount, MarginAccountLayout } from '@mango/client';
 import { encodeMangoInstruction, NUM_TOKENS } from '@mango/client/lib/layout';
-import { makeSettleBorrowInstruction, makeSettleFundsInstruction } from '@mango/client/lib/instruction';
+import {
+  makeSettleBorrowInstruction,
+  makeSettleFundsInstruction,
+} from '@mango/client/lib/instruction';
 import { sendTransaction } from './send';
 import { TOKEN_PROGRAM_ID } from './tokens';
 import BN from 'bn.js';
@@ -27,7 +30,12 @@ export async function initMarginAccount(
   wallet: Wallet,
 ): Promise<PublicKey> {
   // Create a Solana account for the MarginAccount and allocate space
-  const accInstr = await createAccountInstruction(connection, wallet.publicKey, MarginAccountLayout.span, programId);
+  const accInstr = await createAccountInstruction(
+    connection,
+    wallet.publicKey,
+    MarginAccountLayout.span,
+    programId,
+  );
 
   // Specify the accounts this instruction takes in (see program/src/instruction.rs)
   const keys = [
@@ -374,7 +382,10 @@ export async function placeOrderAndSettle(
     if (i === marketIndex && marginAccount.openOrders[marketIndex].equals(zeroKey)) {
       // open orders missing for this market; create a new one now
       const openOrdersSpace = OpenOrders.getLayout(mangoGroup.dexProgramId).span;
-      const openOrdersLamports = await connection.getMinimumBalanceForRentExemption(openOrdersSpace, 'singleGossip');
+      const openOrdersLamports = await connection.getMinimumBalanceForRentExemption(
+        openOrdersSpace,
+        'singleGossip',
+      );
       const accInstr = await createAccountInstruction(
         connection,
         wallet.publicKey,
@@ -472,7 +483,10 @@ export async function placeOrderAndSettle(
   transaction.add(placeOrderInstruction);
 
   const dexSigner = await PublicKey.createProgramAddress(
-    [spotMarket.publicKey.toBuffer(), spotMarket['_decoded'].vaultSignerNonce.toArrayLike(Buffer, 'le', 8)],
+    [
+      spotMarket.publicKey.toBuffer(),
+      spotMarket['_decoded'].vaultSignerNonce.toArrayLike(Buffer, 'le', 8),
+    ],
     spotMarket.programId,
   );
   const settleFundsIns = await makeSettleFundsInstruction(
@@ -522,7 +536,10 @@ export async function settleFunds(
 ): Promise<TransactionSignature> {
   const marketIndex = mangoGroup.getMarketIndex(spotMarket);
   const dexSigner = await PublicKey.createProgramAddress(
-    [spotMarket.publicKey.toBuffer(), spotMarket['_decoded'].vaultSignerNonce.toArrayLike(Buffer, 'le', 8)],
+    [
+      spotMarket.publicKey.toBuffer(),
+      spotMarket['_decoded'].vaultSignerNonce.toArrayLike(Buffer, 'le', 8),
+    ],
     spotMarket.programId,
   );
 
