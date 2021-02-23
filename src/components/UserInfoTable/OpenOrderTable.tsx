@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
-import DataTable from '../layout/DataTable';
-
 import styled from 'styled-components';
 import { Button, Col, Row, Tag } from 'antd';
-import { cancelOrder } from '../../utils/send';
+import { PublicKey } from '@solana/web3.js';
+import { IDS } from '@mango/client';
+
+import DataTable from '../layout/DataTable';
 import { useWallet } from '../../utils/wallet';
-import { useSendConnection } from '../../utils/connection';
+import { useSendConnection, useConnectionConfig } from '../../utils/connection';
 import { notify } from '../../utils/notifications';
 import { DeleteOutlined } from '@ant-design/icons';
 import { OrderWithMarketAndMarketName } from '../../utils/types';
+import { cancelOrderAndSettle } from '../../utils/mango';
+import { useMarginAccount } from '../../utils/marginAccounts';
 
 const CancelButton = styled(Button)`
   color: #f23b69;
@@ -29,19 +32,25 @@ export default function OpenOrderTable({
   marketFilter?: boolean;
 }) {
   let { wallet } = useWallet();
+  const { endpointInfo } = useConnectionConfig();
   let connection = useSendConnection();
+  const { marginAccount, mangoGroup } = useMarginAccount();
 
   const [cancelId, setCancelId] = useState(null);
 
   async function cancel(order) {
     setCancelId(order?.orderId);
     try {
-      await cancelOrder({
-        order,
-        market: order.market,
+      if (!mangoGroup || !marginAccount) return;
+      await cancelOrderAndSettle(
         connection,
+        new PublicKey(IDS[endpointInfo!.name].mango_program_id),
+        mangoGroup,
+        marginAccount,
         wallet,
-      });
+        order.market,
+        order,
+      );
     } catch (e) {
       notify({
         message: 'Error cancelling order',
@@ -74,10 +83,7 @@ export default function OpenOrderTable({
       dataIndex: 'side',
       key: 'side',
       render: (side) => (
-        <Tag
-          color={side === 'buy' ? '#41C77A' : '#F23B69'}
-          style={{ fontWeight: 700 }}
-        >
+        <Tag color={side === 'buy' ? '#41C77A' : '#F23B69'} style={{ fontWeight: 700 }}>
           {side.charAt(0).toUpperCase() + side.slice(1)}
         </Tag>
       ),
