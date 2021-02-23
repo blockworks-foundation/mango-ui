@@ -1114,9 +1114,9 @@
     regenerator-runtime "^0.13.4"
 
 "@babel/runtime@^7.11.2", "@babel/runtime@^7.3.1":
-  version "7.13.2"
-  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.13.2.tgz#9511c87d2808b2cf5fb9e9c5cf0d1ab789d75499"
-  integrity sha512-U9plpxyudmZNYe12YI6cXyeWTWYCTq2u1h+C0XVtC3+BoiuzTh1BHlMJgxMrbKTombYkf7wQGqoxYkptFehuZw==
+  version "7.13.6"
+  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.13.6.tgz#86e0fad6cbb46a680e21c1aa4748717a058d345a"
+  integrity sha512-Y/DEVhSQ91u27rxq7D0EH/sewS6+x06p/MgO1VppbDHMzYXLZrAR5cFjCom78e9RUw1BQAq6qJg6fXc/ep7glA==
   dependencies:
     regenerator-runtime "^0.13.4"
 
@@ -1153,7 +1153,7 @@
     lodash "^4.17.19"
     to-fast-properties "^2.0.0"
 
-"@blockworks-foundation/mango-client@git+ssh://git@github.com:blockworks-foundation/mango-client-ts.git", "@mango/client@git+ssh://git@github.com:blockworks-foundation/mango-client-ts.git":
+"@blockworks-foundation/mango-client@git+ssh://git@github.com:blockworks-foundation/mango-client-ts.git":
   version "0.1.0"
   resolved "git+ssh://git@github.com:blockworks-foundation/mango-client-ts.git#f7fb17168e19df27d5b2e40c47cd2e62d748ca01"
   dependencies:
@@ -1421,7 +1421,7 @@
 
 "@mango/client@git+ssh://git@github.com:blockworks-foundation/mango-client-ts.git":
   version "0.1.0"
-  resolved "git+ssh://git@github.com:blockworks-foundation/mango-client-ts.git#f7fb17168e19df27d5b2e40c47cd2e62d748ca01"
+  resolved "git+ssh://git@github.com:blockworks-foundation/mango-client-ts.git#1ce9fc7a6854af11f9c7cd03bc572321a71bad0a"
   dependencies:
     "@project-serum/serum" "^0.13.20"
     "@project-serum/sol-wallet-adapter" "^0.1.4"
