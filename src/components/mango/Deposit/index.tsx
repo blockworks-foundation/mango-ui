@@ -1,15 +1,9 @@
 // For the dialog box component
-import React, { useRef, useMemo, useState, useCallback, useEffect } from 'react';
-// Get our currency input component
-import { CurrencyInput } from '../CurrencyInput';
-// Components from antd
-import { Typography, Modal, Button, Col, Select } from 'antd';
-// Styled components
-import { RowBox } from '../componentStyles';
-// Mango group token account hook
-import useMangoTokenAccount from '../../../utils/mangoTokenAccounts';
+import React, { useRef, useMemo, useState, useCallback } from 'react';
 // Mango margin account hook
 import { useMarginAccount } from '../../../utils/marginAccounts';
+// Mango token accounts
+import useMangoTokenAccount from '../../../utils/mangoTokenAccounts'
 // TYpe annotation
 import { TokenAccount } from '../../../utils/types';
 // Notifications
@@ -17,13 +11,10 @@ import { notify } from '../../../utils/notifications'
 // Wallet and connection hooks
 import { useConnection } from '../../../utils/connection';
 import { useWallet } from '../../../utils/wallet';
-// Parse the token account info
-import { parseTokenAccountData } from '../../../utils/tokens';
 // And now mango client library functions
 import { deposit, withdraw } from '../../../utils/mango';
-
-const { Option } = Select;
-const { Text } = Typography;
+import DepositModal from './DepositModal';
+import { MarginAccount } from '@mango/client';
 
 const Deposit = (props: {
   mango_groups: Array<string>,
@@ -35,7 +26,9 @@ const Deposit = (props: {
   const connection = useConnection();
   const { wallet, connected } = useWallet();
   // Get the mango group and mango options
-  const { marginAccount, mangoGroup, mango_groups, mango_options } = useMarginAccount();
+  const { marginAccount, mangoGroup, mango_groups, mango_options, createMarginAccount } = useMarginAccount();
+  // Get the mangoGroup token account
+  const { tokenAccountsMapping } = useMangoTokenAccount();
   // The current mango group tokens
   const [currency, setCurrency] = useState<string>(mango_groups[0]);
   // Set the current token account upon currency change
@@ -45,17 +38,17 @@ const Deposit = (props: {
   const [working, setWorking] = useState(false);
   // Ref to get the underlying input box
   const inputRef = useRef(null);
+
   // How much does this token account have
   const userUiBalance = useCallback(() => {
-    if (tokenAccount && tokenAccount.account) {
-      // Get the decimal for the mint
-      // @ts-ignore
-      return (parseTokenAccountData(tokenAccount.account.data).amount / Math.pow(10, mangoGroup?.mintDecimals[mango_groups.indexOf(currency)])).toFixed(3);
+    if (tokenAccount && tokenAccountsMapping.current[tokenAccount.pubkey.toString()]) {
+      return tokenAccountsMapping.current[tokenAccount.pubkey.toString()].balance;
     }
     return '0';
-  }, [tokenAccount, currency, mangoGroup, mango_groups]);
+  }, [tokenAccount, tokenAccountsMapping]);
+  // TODO: Pack clinet library instruction into one
   // When the user hits deposit
-  const depositFunds = () => {
+  const depositFunds = async () => {
     if (!connected) {
       notify({
         message: 'Please Connect to wallet first',
@@ -64,7 +57,6 @@ const Deposit = (props: {
       });
       return;
     }
-    // TODO: First check if the user has any enough balance
     // @ts-ignore
     else if (!inputRef || !inputRef.current || !inputRef.current.state.value || Number(inputRef.current.state.value) <= 0) {
       notify({
@@ -81,29 +73,37 @@ const Deposit = (props: {
         type: 'error'
       });
       return;
-    } else if (!marginAccount || !mangoGroup) {
-      notify({
-        message: 'Please select a margin account',
-        description: 'Select a margin acount from the margin account info component below',
-        type: 'error'
-      });
-      return;
     } else if (!tokenAccount) {
-      // TODO: Create token account for user
       notify({
-        message: 'Please select a token Account',
-        description: 'Select a token acount above',
+        message: 'Please create a token Account',
+        description: 'Create a token acount for this currency',
         type: 'error'
       });
       return;
     }
     // We are working
     setWorking(true);
+    // If user has no margin account, let's create one
+    let newMarginAcc: MarginAccount | null;
+    if (!marginAccount) {
+      // Create a margin account for the user
+      newMarginAcc = await createMarginAccount();
+      if (!newMarginAcc) {
+        // COuld not create a margin account
+        notify({
+          message: 'Could not cereate a margin account',
+          description: 'Please make sure you approve your transaction from your wallet',
+          type: 'error'
+        });
+        setWorking(false);
+        return;
+      }
+    }
     // Call the deposit function of mangoCLIENT
-    // Check if er are depositing or withdrawing
+    // Check if we are depositing or withdrawing
     if (props.operation === 'Withdraw') {
       // @ts-ignore
-      withdraw(connection, mango_options.mango_program_id, mangoGroup, marginAccount, wallet, tokenAccount.effectiveMint, tokenAccount.pubkey, Number(inputRef.current.state.value)).then((transSig: string) => {
+      withdraw(connection, mango_options.mango_program_id, mangoGroup, marginAccount || newMarginAcc, wallet, tokenAccount.effectiveMint, tokenAccount.pubkey, Number(inputRef.current.state.value)).then((transSig: string) => {
         setWorking(false);
         notify({
           // @ts-ignore
@@ -111,6 +111,7 @@ const Deposit = (props: {
           description: `Hash of transaction is ${transSig}`,
           type: 'info'
         });
+        props.onCancel();
       })
         .catch((err) => {
           setWorking(false);
@@ -120,11 +121,12 @@ const Deposit = (props: {
             description: 'Approve transaction from your wallet',
             type: 'error',
           });
+          props.onCancel();
         })
       return;
-    }
+    };
     // @ts-ignore
-    deposit(connection, mango_options.mango_program_id, mangoGroup, marginAccount, wallet, tokenAccount.effectiveMint, tokenAccount.pubkey, Number(inputRef.current.state.value)).then((transSig: string) => {
+    deposit(connection, mango_options.mango_program_id, mangoGroup, marginAccount || newMarginAcc, wallet, tokenAccount.effectiveMint, tokenAccount.pubkey, Number(inputRef.current.state.value)).then((transSig: string) => {
       setWorking(false);
       notify({
         // @ts-ignore
@@ -132,6 +134,7 @@ const Deposit = (props: {
         description: `Hash of transaction is ${transSig}`,
         type: 'info'
       });
+      props.onCancel();
     })
       .catch((err) => {
         setWorking(false);
@@ -141,8 +144,9 @@ const Deposit = (props: {
           description: 'Approve transaction from your wallet',
           type: 'error',
         });
+        props.onCancel();
       })
-  }
+  };
 
   const DepoModal = useMemo(() => {
     return <DepositModal
@@ -167,105 +171,4 @@ const Deposit = (props: {
   )
 }
 
-// For the modal when a user wants to deposit
-const DepositModal = React.forwardRef((props: {
-  visible: boolean,
-  working: boolean,
-  operation: string, // Deposit or withdraw ?
-  onCancel: () => void,
-  setCurrency: (value: string) => void,
-  handleClick: () => void,
-  onSelectAccount: (value: TokenAccount) => void,
-  mango_groups: Array<string>,
-  currency: string,
-  userUiBalance: () => void
-  tokenAccount: TokenAccount | null
-}, ref: any) => {
-  return (
-    <Modal
-      centered
-      title={<AccountSelector
-        currency={props.currency}
-        setTokenAccount={props.onSelectAccount}
-        tokenAccount={props.tokenAccount}
-      />
-      }
-      visible={props.visible} onCancel={props.onCancel} footer={null}>
-      <CurrencyInput currencies={props.mango_groups} setCurrency={props.setCurrency} currency={props.currency} userUiBalance={props.userUiBalance} ref={ref} />
-      <RowBox
-        align="middle"
-        justify="space-around">
-        <Col style={{ width: '12vw' }}>
-          <Button
-            block
-            size="middle"
-            style={{ backgroundColor: '#1b3a24', color: 'white' }}
-            onClick={props.handleClick}
-            loading={props.working}
-          >
-            {props.operation}
-          </Button>
-        </Col>
-      </RowBox>
-    </Modal>
-  )
-});
-
-
-/**
- * 
- * @param accounts The list of margin accounts for this user
- */
-
-function AccountSelector({ currency, setTokenAccount, tokenAccount }) {
-  // Get the mangoGroup token account
-  const { mangoGroupTokenAccounts, tokenAccountsMapping } = useMangoTokenAccount();
-  const options = useMemo(() => {
-    // @ts-ignore
-    return mangoGroupTokenAccounts[currency] && mangoGroupTokenAccounts[currency].length > 0 ? (mangoGroupTokenAccounts[currency].map((account: TokenAccount, i: number) =>
-    (
-      <Option
-        key={i}
-        value={account.pubkey.toString()}
-      >
-        <Text code>{account.pubkey.toString().substr(0, 9) + '...' + account.pubkey.toString().substr(-9)}</Text>
-      </Option>
-    )))
-      :
-      <Option
-        value="No Token Account"
-        key=""
-        disabled={true}
-        style={{
-          // @ts-ignore
-          backgroundColor: 'rgb(39, 44, 61)'
-        }}
-      >
-        <Text keyboard type="warning">No Account</Text>
-      </Option>
-  }, [currency]);
-
-  useEffect(() => {
-    // Set the first account for the token
-    if (mangoGroupTokenAccounts[currency] && mangoGroupTokenAccounts[currency].length > 0) {
-      setTokenAccount(mangoGroupTokenAccounts[currency][0]);
-    } else {
-      setTokenAccount(null);
-    }
-  }, [currency])
-
-  return <div style={{ display: 'grid', justifyContent: 'center' }}>
-    <Select
-      size="large"
-      listHeight={150}
-      style={{ width: '250px' }}
-      placeholder={"Select an account"}
-      value={tokenAccount ? tokenAccount.pubkey.toString() : undefined}
-      // @ts-ignore
-      onChange={(e) => setTokenAccount(tokenAccountsMapping.current[e])}
-    >
-      {options}
-    </Select>
-  </div>
-}
 export default Deposit;

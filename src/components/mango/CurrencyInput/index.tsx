@@ -31,7 +31,9 @@ export const CurrencyInput = React.forwardRef((props: {
                 value={currency}
                 name={currency}
                 title={currency}
-              >{currency}</Option>
+              >
+                {currency}
+              </Option>
             );
           })
         }
