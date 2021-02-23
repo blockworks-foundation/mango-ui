@@ -64,9 +64,7 @@ const useMangoStats = () => {
 
   useEffect(() => {
     const fetchStats = async () => {
-      const response = await fetch(
-        `http://${process.env.REACT_APP_MANGO_STATS_API_URL}/`,
-      );
+      const response = await fetch(`https://mango-stats.herokuapp.com/`);
       const stats = await response.json();
 
       setStats(stats);
