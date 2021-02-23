@@ -8,6 +8,10 @@ import { RowBox, LeftCol, RightCol, BalanceCol } from '../componentStyles';
 import { useMarginAccount } from '../../../utils/marginAccounts';
 // Connection hook
 import { useConnection } from '../../../utils/connection'
+// Mango client library
+import { settleBorrow } from '../../../utils/mango';
+// Wallet hook
+import { useWallet } from '../../../utils/wallet';
 
 const { Text } = Typography;
 const antIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />;
@@ -15,10 +19,25 @@ const antIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />;
 export default function MarginInfo() {
   // Connection hook
   const connection = useConnection();
+  // Wallet hook
+  const { wallet } = useWallet();
   // Get our account info
-  const { marginAccount, mangoGroup, maPending } = useMarginAccount();
+  const { marginAccount, mango_options, mangoGroup, maPending } = useMarginAccount();
+  // Working state
+  const [working, setWorking] = useState(false);
   // Hold the margin account info
   const [mAccountInfo, setMAccountInfo] = useState<{ label: string, value: string, unit: string, desc: string, currency: string }[] | null>(null);
+  // Settle bororows
+  const settleBorrows = async () => {
+    // Set that we are working
+    if (mangoGroup && marginAccount) {
+      mangoGroup.tokens.forEach((token) => {
+        setWorking(true);
+        // Call settle on each token
+        settleBorrow(connection, mango_options.mango_program_id, mangoGroup, marginAccount, wallet, token, 1).then(() => setWorking(false)).catch((err) => console.error('Error settling borrows', err));
+      });
+    }
+  }
   useEffect(() => {
     if (marginAccount && mangoGroup) {
       mangoGroup.getPrices(connection).then((prices) => {
@@ -97,8 +116,8 @@ export default function MarginInfo() {
               block
               size="middle"
               disabled={marginAccount && mAccountInfo && mAccountInfo?.length > 0 ? false : true}
-            // onClick={props.handleClick}
-            // loading={props.working}
+              onClick={settleBorrows}
+              loading={working}
             >
               Settle Borrows
           </ActionButton>
