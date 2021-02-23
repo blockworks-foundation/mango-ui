@@ -107,7 +107,7 @@ const Deposit = (props: {
         setWorking(false);
         notify({
           // @ts-ignore
-          message: `Withdrew ${inputRef.current.state.value}${currency} into your account`,
+          message: `Withdrew ${inputRef.current.state.value} ${currency} into your account`,
           description: `Hash of transaction is ${transSig}`,
           type: 'info'
         });
@@ -130,7 +130,7 @@ const Deposit = (props: {
       setWorking(false);
       notify({
         // @ts-ignore
-        message: `Deposited ${inputRef.current.state.value}${currency} into your account`,
+        message: `Deposited ${inputRef.current.state.value} ${currency} into your account`,
         description: `Hash of transaction is ${transSig}`,
         type: 'info'
       });
