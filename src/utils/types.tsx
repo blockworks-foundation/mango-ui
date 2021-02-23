@@ -159,10 +159,10 @@ export interface MarginAccountContextValues {
   mangoGroup: MangoGroup | null, // The current mango group
   setMarginAccount: (marginAccount: null | MarginAccount) => void,
   setMarginAccounts: (marginAccounts: MarginAccount[]) => void,
-  createMarginAccount: () => Promise<void>, // For creating a margin account
+  createMarginAccount: () => Promise<MarginAccount | null>, // For creating a margin account
   maPending: any, // Is the context updating
   setMAPending: (any) => void, // Set the pending states on margin account transactions
-  getMarginAccount: () => void
+  getMarginAccount: () => Promise<MarginAccount | null>
 }
 
 // Type declaration for the margin accounts for the mango group

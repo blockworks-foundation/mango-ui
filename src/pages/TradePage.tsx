@@ -3,9 +3,7 @@ import { Button, Col, Popover, Row, Select, Typography } from 'antd';
 import styled from 'styled-components';
 import Orderbook from '../components/Orderbook';
 import UserInfoTable from '../components/UserInfoTable';
-import BalancesDisplay, {
-  CreateMarginAccountButton,
-} from '../components/mango/Balances/BalancesDisplay';
+import BalancesDisplay from '../components/mango/Balances/BalancesDisplay';
 import MarginInfo from '../components/mango/MarginInfo';
 import FloatingElement from '../components/layout/FloatingElement';
 import {
@@ -78,9 +76,6 @@ function TradePageInner() {
     height: window.innerHeight,
     width: window.innerWidth,
   });
-
-  console.log('use markets list', markets);
-  console.log('use custom markets list', customMarkets);
 
   useEffect(() => {
     document.title = marketName ? `${marketName} — Serum` : 'Serum';
@@ -164,7 +159,7 @@ function TradePageInner() {
           style={{ paddingLeft: 5, paddingRight: 5 }}
           gutter={16}
         >
-          <Col span={4}>
+          <Col>
             <MarketSelector
               markets={markets}
               setHandleDeprecated={setHandleDeprecated}
@@ -174,7 +169,7 @@ function TradePageInner() {
             />
           </Col>
           {market ? (
-            <Col span={4}>
+            <Col>
               <Popover
                 content={<LinkAddress address={market.publicKey.toBase58()} />}
                 placement="bottomRight"
@@ -185,7 +180,7 @@ function TradePageInner() {
               </Popover>
             </Col>
           ) : null}
-          <Col span={4}>
+          <Col>
             <PlusCircleOutlined
               style={{ color: '#2abdd2' }}
               onClick={() => setAddMarketVisible(true)}
@@ -193,30 +188,19 @@ function TradePageInner() {
           </Col>
           {deprecatedMarkets && deprecatedMarkets.length > 0 && (
             <React.Fragment>
-              <Col span={4}>
+              <Col>
                 <Typography>
                   You have unsettled funds on old markets! Please go through
                   them to claim your funds.
                 </Typography>
               </Col>
-              <Col span={4}>
+              <Col>
                 <Button onClick={() => setHandleDeprecated(!handleDeprecated)}>
                   {handleDeprecated ? 'View new markets' : 'Handle old markets'}
                 </Button>
               </Col>
             </React.Fragment>
           )}
-          {/* Lets add the add margin account button */}
-          <Col
-            span={
-              4 +
-              (!market ? 4 : 0) +
-              (!deprecatedMarkets || deprecatedMarkets.length <= 0 ? 8 : 0)
-            }
-            flex="end"
-          >
-            <CreateMarginAccountButton />
-          </Col>
         </Row>
         {component}
       </Wrapper>
@@ -300,15 +284,15 @@ function MarketSelector({
               ? -1
               : extractQuote(a.name) !== 'USDT' &&
                 extractQuote(b.name) === 'USDT'
-              ? 1
-              : 0,
+                ? 1
+                : 0,
           )
           .sort((a, b) =>
             extractBase(a.name) < extractBase(b.name)
               ? -1
               : extractBase(a.name) > extractBase(b.name)
-              ? 1
-              : 0,
+                ? 1
+                : 0,
           )
           .map(({ address, name, deprecated }, i) => (
             <Option
@@ -353,7 +337,7 @@ const RenderNormal = ({ onChangeOrderRef, onPrice, onSize }) => {
     >
       <Col flex="auto" style={{ display: 'flex', flexDirection: 'column' }}>
         <FloatingElement style={{ flex: 1, minHeight: '300px' }}>
-          <TVChartContainer />
+          {/* <TVChartContainer /> */}
         </FloatingElement>
         <UserInfoTable />
       </Col>
@@ -362,11 +346,11 @@ const RenderNormal = ({ onChangeOrderRef, onPrice, onSize }) => {
         <TradesTable smallScreen={false} />
       </Col>
       <Col
-        flex="400px"
+        flex="420px"
         style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
       >
-        <BalancesDisplay />
         <TradeForm setChangeOrderRef={onChangeOrderRef} />
+        <BalancesDisplay />
         <MarginInfo />
       </Col>
     </Row>
@@ -393,11 +377,11 @@ const RenderSmall = ({ onChangeOrderRef, onPrice, onSize }) => {
           <TradesTable smallScreen={true} />
         </Col>
         <Col
-          flex="350px"
+          flex="400px"
           style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
         >
-          <BalancesDisplay />
           <TradeForm setChangeOrderRef={onChangeOrderRef} />
+          <BalancesDisplay />
           <MarginInfo />
         </Col>
       </Row>
@@ -420,6 +404,9 @@ const RenderSmaller = ({ onChangeOrderRef, onPrice, onSize }) => {
         <Col xs={24} sm={12}>
           <BalancesDisplay />
         </Col>
+        <Col xs={24} sm={12}>
+          <MarginInfo />
+        </Col>
       </Row>
       <Row
         style={{
@@ -434,9 +421,6 @@ const RenderSmaller = ({ onChangeOrderRef, onPrice, onSize }) => {
         </Col>
       </Row>
       <Row>
-        <Col xs={24} sm={12}>
-          <MarginInfo />
-        </Col>
         <Col xs={24} sm={12} style={{ height: '100%', display: 'flex' }}>
           <UserInfoTable />
         </Col>

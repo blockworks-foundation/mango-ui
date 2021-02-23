@@ -1,9 +1,12 @@
 // Here we keep track of the token accounts for the current mango group
+import { useWallet } from './wallet';
 import { useEffect, useReducer, useRef } from "react";
 // Import function to create margin account from mango library
 import { mangoTokenAccounts, TokenAccount } from "../utils/types";
 import { useMarginAccount } from './marginAccounts';
 import { useTokenAccounts } from "./markets";
+// Get token account balane
+import { parseTokenAccountData } from './tokens';
 // Hook to keep track of the token accounts for the selected mango group
 const useMangoTokenAccount = () => {
   // Get our mango group context
@@ -15,6 +18,8 @@ const useMangoTokenAccount = () => {
   const [mangoGroupTokenAccounts, dispatch] = useReducer(mangoTokenAccReducer, {});
   // For creating a mapping from token account key to token account
   const tokenAccountsMapping = useRef({});
+  // Wallet connection
+  const { connected } = useWallet();
   /*
     Note care should be taken using this hook since it causes a state update at every tokenAccounts change (about 6 seconds)
   */
@@ -36,12 +41,15 @@ const useMangoTokenAccount = () => {
         Accounts[token] = accounts;
         // Add to the ref of token account to their publick key mapping
         accounts.forEach((account) => {
-          tokenAccountsMapping.current[account.pubkey.toString()] = account;
+          if (account && account.account) {
+            // How much does this token account have
+            let balance = (parseTokenAccountData(account.account.data).amount / Math.pow(10, mangoGroup?.mintDecimals[i])).toFixed(3);
+            tokenAccountsMapping.current[account.pubkey.toString()] = { account, balance };
+          }
         });
       });
       // Set the accounts
       dispatch({ type: 'Update', payload: Accounts });
-      return Accounts;
     }
     return;
   }
@@ -52,7 +60,15 @@ const useMangoTokenAccount = () => {
       return;
     }
     getTokenAccounts();
-  }, [mangoGroup, mango_groups, tokenAccounts[0]])
+  }, [mangoGroup, mango_groups, tokenAccounts[0]]);
+
+  // Clear token accounts when wallet is disconnected
+  useEffect(() => {
+    if (!connected) {
+      dispatch({ type: 'Reset' });
+      tokenAccountsMapping.current = {};
+    }
+  }, [connected]);
 
   // Export some needed state
   return { mangoGroupTokenAccounts, tokenAccountsMapping }
@@ -62,7 +78,9 @@ const useMangoTokenAccount = () => {
 function mangoTokenAccReducer(state: mangoTokenAccounts, action: any) {
   switch (action.type) {
     case 'Update':
-      return { ...state, ...action.payload }
+      return { ...state, ...action.payload };
+    case 'Reset':
+      return {};
 
     default:
       return { ...state }
