@@ -233,7 +233,7 @@ export default function StatsPage() {
                   <StatsChart
                     title="Deposit Interest"
                     xAxis="time"
-                    yAxis="totalDeposits"
+                    yAxis="depositInterest"
                     data={selectedStatsData}
                   />
                 </Col>
@@ -241,7 +241,7 @@ export default function StatsPage() {
                   <StatsChart
                     title="Borrow Interest"
                     xAxis="time"
-                    yAxis="totalDeposits"
+                    yAxis="borrowInterest"
                     data={selectedStatsData}
                   />
                 </Col>
