@@ -29,8 +29,7 @@ import {
 import { useIpAddress } from '../utils/useIpAddress';
 import FloatingElement from './layout/FloatingElement';
 import { getUnixTs } from '../utils/send';
-// import { placeOrder } from '../utils/send';
-import { placeOrder } from '../utils/mango';
+import { placeOrderAndSettle } from '../utils/mango';
 import { SwitchChangeEventHandler } from 'antd/es/switch';
 import { refreshCache } from '../utils/fetch-loop';
 import tuple from 'immutable-tuple';
@@ -269,7 +268,7 @@ export default function TradeForm({
     setSubmitting(true);
 
     try {
-      await placeOrder(
+      await placeOrderAndSettle(
         connection,
         new PublicKey(IDS[endpointInfo!.name].mango_program_id),
         mangoGroup,
