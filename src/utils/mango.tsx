@@ -603,7 +603,7 @@ export async function settleFunds(
   });
 }
 
-export async function cancelOrder(
+export async function cancelOrderAndSettle(
   connection: Connection,
   programId: PublicKey,
   mangoGroup: MangoGroup,
@@ -641,6 +641,68 @@ export async function cancelOrder(
 
   const transaction = new Transaction();
   transaction.add(instruction);
+
+  const marketIndex = mangoGroup.getMarketIndex(spotMarket);
+  const dexSigner = await PublicKey.createProgramAddress(
+    [
+      spotMarket.publicKey.toBuffer(),
+      spotMarket['_decoded'].vaultSignerNonce.toArrayLike(Buffer, 'le', 8),
+    ],
+    spotMarket.programId,
+  );
+  const settleFundsIns = await makeSettleFundsInstruction(
+    programId,
+    mangoGroup.publicKey,
+    wallet.publicKey,
+    marginAccount.publicKey,
+    spotMarket.programId,
+    spotMarket.publicKey,
+    marginAccount.openOrders[marketIndex],
+    mangoGroup.signerKey,
+    spotMarket['_decoded'].baseVault,
+    spotMarket['_decoded'].quoteVault,
+    mangoGroup.vaults[marketIndex],
+    mangoGroup.vaults[mangoGroup.vaults.length - 1],
+    dexSigner,
+  );
+  transaction.add(settleFundsIns);
+
+  const baseTokenIndex = marketIndex;
+  const quoteTokenIndex = NUM_TOKENS - 1;
+
+  const baseTokenQuantity = marginAccount.getUiBorrow(mangoGroup, baseTokenIndex);
+  const baseTokenNativeQuantity = uiToNative(
+    baseTokenQuantity,
+    mangoGroup.mintDecimals[baseTokenIndex],
+  );
+
+  const quoteTokenQuantity = marginAccount.getUiBorrow(mangoGroup, quoteTokenIndex);
+  const quoteTokenNativeQuantity = uiToNative(
+    quoteTokenQuantity,
+    mangoGroup.mintDecimals[quoteTokenIndex],
+  );
+
+  const settleBorrowBaseToken = await makeSettleBorrowInstruction(
+    programId,
+    mangoGroup.publicKey,
+    marginAccount.publicKey,
+    wallet.publicKey,
+    baseTokenIndex,
+    baseTokenNativeQuantity,
+  );
+
+  transaction.add(settleBorrowBaseToken);
+
+  const settleBorrowQuoteToken = await makeSettleBorrowInstruction(
+    programId,
+    mangoGroup.publicKey,
+    marginAccount.publicKey,
+    wallet.publicKey,
+    quoteTokenIndex,
+    quoteTokenNativeQuantity,
+  );
+
+  transaction.add(settleBorrowQuoteToken);
 
   return await packageAndSend(transaction, connection, wallet, [], 'CancelOrder');
 }

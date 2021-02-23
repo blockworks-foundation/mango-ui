@@ -77,8 +77,9 @@ export default function BalancesDisplay() {
             </RowBox>
             :
             (marginAccount && mangoGroup) ? mango_groups.map((token, i) => {
-              let depoR = mangoGroup.getDepositRate(i);
-              let borR = mangoGroup.getBorrowRate(i);
+              let depoR = mangoGroup.getDepositRate(i) * 100;
+              let borR = mangoGroup.getBorrowRate(i) * 100;
+
               return <Row key={i}>
                 <BalanceCol span={6}>
                   <Text type="secondary">
