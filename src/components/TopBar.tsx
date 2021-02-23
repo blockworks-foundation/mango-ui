@@ -1,22 +1,11 @@
-import {
-  InfoCircleOutlined,
-  PlusCircleOutlined,
-  SettingOutlined,
-} from '@ant-design/icons';
-import { Button, Col, Menu, Popover, Row, Select } from 'antd';
+import { Col, Menu, Row, Select } from 'antd';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import logo from '../assets/logo.svg';
 import styled from 'styled-components';
 import { useWallet, WALLET_PROVIDERS } from '../utils/wallet';
 import { ENDPOINTS, useConnectionConfig } from '../utils/connection';
-import Settings from './Settings';
-import CustomClusterEndpointDialog from './CustomClusterEndpointDialog';
-import { EndpointInfo } from '../utils/types';
-import { notify } from '../utils/notifications';
-import { Connection } from '@solana/web3.js';
 import WalletConnect from './WalletConnect';
-import AppSearch from './AppSearch';
 import { getTradePageUrl } from '../utils/markets';
 
 const Wrapper = styled.div`
@@ -51,19 +40,16 @@ const EXTERNAL_LINKS = {
 };
 
 export default function TopBar() {
-  const { connected, wallet, providerUrl, setProvider } = useWallet();
+  const { providerUrl, setProvider } = useWallet();
   const {
     endpoint,
     endpointInfo,
     setEndpoint,
     availableEndpoints,
-    setCustomEndpoints,
   } = useConnectionConfig();
-  const [addEndpointVisible, setAddEndpointVisible] = useState(false);
-  const [testingConnection, setTestingConnection] = useState(false);
   const location = useLocation();
   const history = useHistory();
-  const [searchFocussed, setSearchFocussed] = useState(false);
+  const [searchFocussed] = useState(false);
 
   const handleClick = useCallback(
     (e) => {
@@ -74,47 +60,6 @@ export default function TopBar() {
     [history],
   );
 
-  const onAddCustomEndpoint = (info: EndpointInfo) => {
-    const existingEndpoint = availableEndpoints.some(
-      (e) => e.endpoint === info.endpoint,
-    );
-    if (existingEndpoint) {
-      notify({
-        message: `An endpoint with the given url already exists`,
-        type: 'error',
-      });
-      return;
-    }
-
-    const handleError = (e) => {
-      console.log(`Connection to ${info.endpoint} failed: ${e}`);
-      notify({
-        message: `Failed to connect to ${info.endpoint}`,
-        type: 'error',
-      });
-    };
-
-    try {
-      const connection = new Connection(info.endpoint, 'recent');
-      connection
-        .getEpochInfo()
-        .then((result) => {
-          setTestingConnection(true);
-          console.log(`testing connection to ${info.endpoint}`);
-          const newCustomEndpoints = [
-            ...availableEndpoints.filter((e) => e.custom),
-            info,
-          ];
-          setEndpoint(info.endpoint);
-          setCustomEndpoints(newCustomEndpoints);
-        })
-        .catch(handleError);
-    } catch (e) {
-      handleError(e);
-    } finally {
-      setTestingConnection(false);
-    }
-  };
 
   const endpointInfoCustom = endpointInfo && endpointInfo.custom;
   useEffect(() => {
@@ -133,12 +78,12 @@ export default function TopBar() {
 
   return (
     <>
-      <CustomClusterEndpointDialog
+      {/* <CustomClusterEndpointDialog
         visible={addEndpointVisible}
         testingConnection={testingConnection}
         onAddCustomEndpoint={onAddCustomEndpoint}
         onClose={() => setAddEndpointVisible(false)}
-      />
+      /> */}
       <Wrapper>
         <LogoWrapper onClick={() => history.push(tradePageUrl)}>
           <img src={logo} alt="" />
@@ -159,37 +104,6 @@ export default function TopBar() {
           <Menu.Item key={tradePageUrl} style={{ margin: '0 10px 0 20px' }}>
             TRADE
           </Menu.Item>
-          {!searchFocussed && (
-            <Menu.Item key="/swap" style={{ margin: '0 10px' }}>
-              <a
-                href={EXTERNAL_LINKS['/swap']}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                SWAP
-              </a>
-            </Menu.Item>
-          )}
-          {connected && (!searchFocussed || location.pathname === '/balances') && (
-            <Menu.Item key="/balances" style={{ margin: '0 10px' }}>
-              BALANCES
-            </Menu.Item>
-          )}
-          {connected && (!searchFocussed || location.pathname === '/orders') && (
-            <Menu.Item key="/orders" style={{ margin: '0 10px' }}>
-              ORDERS
-            </Menu.Item>
-          )}
-          {connected && (!searchFocussed || location.pathname === '/convert') && (
-            <Menu.Item key="/convert" style={{ margin: '0 10px' }}>
-              CONVERT
-            </Menu.Item>
-          )}
-          {(!searchFocussed || location.pathname === '/list-new-market') && (
-            <Menu.Item key="/list-new-market" style={{ margin: '0 10px' }}>
-              ADD MARKET
-            </Menu.Item>
-          )}
           {(!searchFocussed || location.pathname === '/stats') && (
             <Menu.Item key="/stats" style={{ margin: '0 10px' }}>
               STATS
@@ -260,7 +174,7 @@ export default function TopBar() {
             </Menu.SubMenu>
           )}
         </Menu>
-        <div
+        {/* <div
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -273,20 +187,20 @@ export default function TopBar() {
             focussed={searchFocussed}
             width={searchFocussed ? '350px' : '35px'}
           />
-        </div>
+        </div> */}
         <div>
           <Row
             align="middle"
             style={{ paddingLeft: 5, paddingRight: 5 }}
             gutter={16}
           >
-            <Col>
+            {/* <Col>
               <PlusCircleOutlined
                 style={{ color: '#2abdd2' }}
                 onClick={() => setAddEndpointVisible(true)}
               />
-            </Col>
-            <Col>
+            </Col> */}
+            {/* <Col>
               <Popover
                 content={endpoint}
                 placement="bottomRight"
@@ -295,7 +209,7 @@ export default function TopBar() {
               >
                 <InfoCircleOutlined style={{ color: '#2abdd2' }} />
               </Popover>
-            </Col>
+            </Col> */}
             <Col>
               <Select
                 onSelect={setEndpoint}
@@ -309,34 +223,38 @@ export default function TopBar() {
                 ))}
               </Select>
             </Col>
-          </Row>
-        </div>
-        {connected && (
+            {/* {connected && (
           <div>
-            <Popover
-              content={<Settings autoApprove={wallet?.autoApprove} />}
-              placement="bottomRight"
-              title="Settings"
-              trigger="click"
-            >
-              <Button style={{ marginRight: 8 }}>
-                <SettingOutlined />
-                Settings
-              </Button>
-            </Popover>
+          <Popover
+          content={<Settings autoApprove={wallet?.autoApprove} />}
+          placement="bottomRight"
+          title="Settings"
+          trigger="click"
+          >
+          <Button style={{ marginRight: 8 }}>
+          <SettingOutlined />
+          Settings
+          </Button>
+          </Popover>
           </div>
-        )}
-        <div>
-          <Select onSelect={setProvider} value={providerUrl}>
-            {WALLET_PROVIDERS.map(({ name, url }) => (
-              <Select.Option value={url} key={url}>
-                {name}
-              </Select.Option>
-            ))}
-          </Select>
-        </div>
-        <div>
-          <WalletConnect />
+        )} */}
+            <Col>
+              <div>
+                <Select onSelect={setProvider} value={providerUrl}>
+                  {WALLET_PROVIDERS.map(({ name, url }) => (
+                    <Select.Option value={url} key={url}>
+                      {name}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </div>
+            </Col>
+            <Col>
+              <div>
+                <WalletConnect />
+              </div>
+            </Col>
+          </Row>
         </div>
       </Wrapper>
     </>

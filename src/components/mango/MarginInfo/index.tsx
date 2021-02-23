@@ -1,6 +1,6 @@
-import { Divider, Row, Col, Popover, Typography, Spin } from 'antd';
+import { Row, Col, Popover, Typography, Spin } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons'
-import { GreenButton } from '../componentStyles';
+import { ActionButton } from '../componentStyles';
 import React, { useEffect, useState } from 'react';
 import FloatingElement from '../../layout/FloatingElement';
 // Styled antd components
@@ -18,33 +18,37 @@ export default function MarginInfo() {
   // Get our account info
   const { marginAccount, mangoGroup, maPending } = useMarginAccount();
   // Hold the margin account info
-  const [mAccountInfo, setMAccountInfo] = useState<{ label: string, value: string, unit: string, desc: string }[] | null>(null);
+  const [mAccountInfo, setMAccountInfo] = useState<{ label: string, value: string, unit: string, desc: string, currency: string }[] | null>(null);
   useEffect(() => {
     if (marginAccount && mangoGroup) {
       mangoGroup.getPrices(connection).then((prices) => {
         setMAccountInfo([
           {
             label: 'Equity',
-            value: '$' + marginAccount.getAssetsVal(mangoGroup, prices).toFixed(1),
+            value: marginAccount.getAssetsVal(mangoGroup, prices).toFixed(1),
             unit: '',
+            currency: '$',
             desc: 'Your total equity'
           },
           {
             // TODO: Get collaterization ratio
             label: 'Collateral Ratio',
-            value: marginAccount.getCollateralRatio(mangoGroup, prices).toFixed(0),
+            value: '' + Number(marginAccount.getCollateralRatio(mangoGroup, prices)),
             unit: '%',
+            currency: '',
             desc: 'Changes with asset'
           },
           {
             label: 'Maintainance Collateral Ratio',
             value: (mangoGroup.maintCollRatio * 100).toFixed(0),
             unit: '%',
+            currency: '',
             desc: 'Make sure you have this'
           },
           {
             label: 'Initial Collateral Ratio',
             value: (mangoGroup.initCollRatio * 100).toFixed(0),
+            currency: '',
             unit: '%',
             desc: 'Get this liquidity value first'
           },
@@ -55,9 +59,6 @@ export default function MarginInfo() {
   return (
     <FloatingElement style={{ flex: 0.5, paddingTop: 10 }}>
       <React.Fragment>
-        <Divider style={{ borderColor: 'white' }}>
-          Margin Account Information
-        </Divider>
         {maPending.sma ?
           <RowBox justify="space-around" >
             <Spin indicator={antIcon} />
@@ -78,7 +79,7 @@ export default function MarginInfo() {
               </Popover>
               <RightCol span={8}>
                 <Text strong>
-                  {entry.value}{entry.unit}
+                  {entry.currency + (isNaN(Number(entry.value)) || Number(entry.value) >= Number.MAX_VALUE ? '>200' : entry.value)}{entry.unit}
                 </Text>
               </RightCol>
             </Row>
@@ -92,7 +93,7 @@ export default function MarginInfo() {
         }
         <Row align="middle" justify="center">
           <Col span={8}>
-            <GreenButton
+            <ActionButton
               block
               size="middle"
               disabled={marginAccount && mAccountInfo && mAccountInfo?.length > 0 ? false : true}
@@ -100,7 +101,7 @@ export default function MarginInfo() {
             // loading={props.working}
             >
               Settle Borrows
-          </GreenButton>
+          </ActionButton>
           </Col>
         </Row>
       </React.Fragment>

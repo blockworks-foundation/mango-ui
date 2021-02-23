@@ -1,6 +1,7 @@
 import React from 'react';
-import { Button, Popover } from 'antd';
-import { InfoCircleOutlined, UserOutlined } from '@ant-design/icons';
+import { Popover } from 'antd';
+import { InfoCircleOutlined } from '@ant-design/icons';
+import { ActionButton } from '../components/mango/componentStyles/';
 import { useWallet } from '../utils/wallet';
 import LinkAddress from './LinkAddress';
 
@@ -10,15 +11,14 @@ export default function WalletConnect() {
 
   return (
     <React.Fragment>
-      <Button
+      <ActionButton
         type="text"
         size="large"
         onClick={connected ? wallet.disconnect : wallet.connect}
         style={{ color: '#2abdd2' }}
       >
-        <UserOutlined />
         {!connected ? 'Connect wallet' : 'Disconnect'}
-      </Button>
+      </ActionButton>
       {connected && (
         <Popover
           content={<LinkAddress address={publicKey} />}

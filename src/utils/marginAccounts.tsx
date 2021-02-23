@@ -169,7 +169,7 @@ const useMarginAccountHelper = () => {
       // TODO: Allow to select a mango group
       let MangoGroup = mangoOptions.mango_groups.BTC_ETH_USDC;
       let mangoGroupPk = new PublicKey(MangoGroup.mango_group_pk);
-      console.log(mangoGroupPk.toBase58());
+      // console.log(mangoGroupPk.toBase58());
       mangoClient.getMangoGroup(connection, mangoGroupPk).then((mangoGroup) => {
         // Set the mango group
         setMangoGroup(mangoGroup);
