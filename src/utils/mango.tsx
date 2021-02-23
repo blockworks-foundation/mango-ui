@@ -496,7 +496,7 @@ export async function placeOrderAndSettle(
     marginAccount.publicKey,
     spotMarket.programId,
     spotMarket.publicKey,
-    marginAccount.openOrders[marketIndex],
+    openOrdersKeys[marketIndex],
     mangoGroup.signerKey,
     spotMarket['_decoded'].baseVault,
     spotMarket['_decoded'].quoteVault,
