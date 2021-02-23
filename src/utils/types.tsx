@@ -92,18 +92,13 @@ interface BalancesBase {
 
 export interface Balances extends BalancesBase {
   market?: Market | null | undefined;
+  marginDeposits?: number | null | undefined;
 }
 
 export interface OpenOrdersBalances extends BalancesBase {
   market?: string | null | undefined;
-  baseCurrencyAccount:
-  | { pubkey: PublicKey; account: AccountInfo<Buffer> }
-  | null
-  | undefined;
-  quoteCurrencyAccount:
-  | { pubkey: PublicKey; account: AccountInfo<Buffer> }
-  | null
-  | undefined;
+  baseCurrencyAccount: { pubkey: PublicKey; account: AccountInfo<Buffer> } | null | undefined;
+  quoteCurrencyAccount: { pubkey: PublicKey; account: AccountInfo<Buffer> } | null | undefined;
 }
 
 export interface DeprecatedOpenOrdersBalances extends BalancesBase {
@@ -151,19 +146,19 @@ export interface SwapContextValues {
 
 // Margin Account Type declaration
 export interface MarginAccountContextValues {
-  marginAccount: MarginAccount | null, // The current margin account trading with
-  marginAccounts: MarginAccount[] | [], // List of all margin account pk in a mango group 
-  mango_groups: Array<string>, // Identifier for the mango group
-  mangoOptions: any, //The different parameters for our mango program
-  mangoClient: MangoClient, // Instance of mango clinet
-  mangoGroup: MangoGroup | null, // The current mango group
-  setMarginAccount: (marginAccount: null | MarginAccount) => void,
-  setMarginAccounts: (marginAccounts: MarginAccount[]) => void,
-  createMarginAccount: () => Promise<MarginAccount | null>, // For creating a margin account
-  maPending: any, // Is the context updating
-  setMAPending: (any) => void, // Set the pending states on margin account transactions
-  getMarginAccount: () => Promise<MarginAccount | null>
+  marginAccount: MarginAccount | null; // The current margin account trading with
+  marginAccounts: MarginAccount[] | []; // List of all margin account pk in a mango group
+  mango_groups: Array<string>; // Identifier for the mango group
+  mangoOptions: any; //The different parameters for our mango program
+  mangoClient: MangoClient; // Instance of mango clinet
+  mangoGroup: MangoGroup | null; // The current mango group
+  setMarginAccount: (marginAccount: null | MarginAccount) => void;
+  setMarginAccounts: (marginAccounts: MarginAccount[]) => void;
+  createMarginAccount: () => Promise<MarginAccount | null>; // For creating a margin account
+  maPending: any; // Is the context updating
+  setMAPending: (any) => void; // Set the pending states on margin account transactions
+  getMarginAccount: () => Promise<MarginAccount | null>;
 }
 
 // Type declaration for the margin accounts for the mango group
-export type mangoTokenAccounts = { mango_group: string, accounts: TokenAccount[] }
+export type mangoTokenAccounts = { mango_group: string; accounts: TokenAccount[] };

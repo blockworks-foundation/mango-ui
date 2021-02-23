@@ -504,7 +504,7 @@ export async function placeOrderAndSettle(
     mangoGroup.vaults[mangoGroup.vaults.length - 1],
     dexSigner,
   );
-  transaction.add(settleFundsIns);
+  // transaction.add(settleFundsIns);
 
   const baseTokenIndex = marketIndex;
   const quoteTokenIndex = NUM_TOKENS - 1;
@@ -521,9 +521,61 @@ export async function placeOrderAndSettle(
     nativeQuantity,
   );
 
-  transaction.add(settleBorrowIns);
+  // transaction.add(settleBorrowIns);
 
   return await packageAndSend(transaction, connection, wallet, signers, 'PlaceOrder');
+}
+
+export async function settleFundsAndBorrows(
+  connection: Connection,
+  programId: PublicKey,
+  mangoGroup: MangoGroup,
+  marginAccount: MarginAccount,
+  wallet: Wallet,
+  spotMarket: Market,
+): Promise<TransactionSignature> {
+  const transaction = new Transaction();
+  const marketIndex = mangoGroup.getMarketIndex(spotMarket);
+  const dexSigner = await PublicKey.createProgramAddress(
+    [
+      spotMarket.publicKey.toBuffer(),
+      spotMarket['_decoded'].vaultSignerNonce.toArrayLike(Buffer, 'le', 8),
+    ],
+    spotMarket.programId,
+  );
+  const settleFundsIns = await makeSettleFundsInstruction(
+    programId,
+    mangoGroup.publicKey,
+    wallet.publicKey,
+    marginAccount.publicKey,
+    spotMarket.programId,
+    spotMarket.publicKey,
+    marginAccount.openOrders[marketIndex],
+    mangoGroup.signerKey,
+    spotMarket['_decoded'].baseVault,
+    spotMarket['_decoded'].quoteVault,
+    mangoGroup.vaults[marketIndex],
+    mangoGroup.vaults[mangoGroup.vaults.length - 1],
+    dexSigner,
+  );
+  transaction.add(settleFundsIns);
+
+  const tokenIndex = marketIndex;
+  const quantity = marginAccount.getUiBorrow(mangoGroup, tokenIndex);
+  const nativeQuantity = uiToNative(quantity, mangoGroup.mintDecimals[tokenIndex]);
+
+  const settleBorrowIns = await makeSettleBorrowInstruction(
+    programId,
+    mangoGroup.publicKey,
+    marginAccount.publicKey,
+    wallet.publicKey,
+    tokenIndex,
+    nativeQuantity,
+  );
+
+  transaction.add(settleBorrowIns);
+  const signers = [];
+  return await packageAndSend(transaction, connection, wallet, signers, 'Settle Fundsd');
 }
 
 export async function settleFunds(

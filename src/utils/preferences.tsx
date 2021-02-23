@@ -3,23 +3,14 @@ import { useLocalStorageState } from './utils';
 import { useInterval } from './useInterval';
 import { useConnection } from './connection';
 import { useWallet } from './wallet';
-import {
-  useAllMarkets,
-  useSelectedTokenAccounts,
-  useTokenAccounts,
-} from './markets';
+import { useAllMarkets, useSelectedTokenAccounts, useTokenAccounts } from './markets';
 import { settleAllFunds } from './send';
 import { PreferencesContextValues } from './types';
 
-const PreferencesContext = React.createContext<PreferencesContextValues | null>(
-  null,
-);
+const PreferencesContext = React.createContext<PreferencesContextValues | null>(null);
 
 export function PreferencesProvider({ children }) {
-  const [autoSettleEnabled, setAutoSettleEnabled] = useLocalStorageState(
-    'autoSettleEnabled',
-    true,
-  );
+  const [autoSettleEnabled, setAutoSettleEnabled] = useLocalStorageState('autoSettleEnabled', true);
 
   const [tokenAccounts] = useTokenAccounts();
   const { connected, wallet } = useWallet();
