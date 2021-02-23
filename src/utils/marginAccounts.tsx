@@ -1,5 +1,5 @@
 // Hooks and helper functions for handling user's margin accounts are here
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 // Import function to create margin account from mango library
 import { IDS, MangoGroup, MangoClient, MarginAccount } from "@mango/client";
 // Import some mango client functions
@@ -13,6 +13,13 @@ import { PublicKey } from "@solana/web3.js";
 import { MarginAccountContextValues } from "../utils/types";
 // Create a context to share account state across pages
 const MarginAccountContext = React.createContext<null | MarginAccountContextValues>(null);
+
+// Precision for our mango group token
+export const tokenPrecision = {
+  BTC: 3,
+  ETH: 3,
+  USDC: 3
+};
 
 // Create the margin account provider
 export function MarginAccountProvider({ children }) {
@@ -68,34 +75,34 @@ const useMarginAccountHelper = () => {
   // Now our mango client connection
   // Now our mango client instance
   const mangoClient = new MangoClient();
+  // id for our interval object
+  const intervalId = useRef<NodeJS.Timeout>();
+
   /**
    * @summary Create a margin account for a mango group
    */
-  const createMarginAccount = async (): Promise<void> => {
-    // Set pending transactions
-    setMAPending(prev => { prev['cma'] = true; return prev });
-    // // If a margin account already exist, do not create another
-    // if (marginAccount) {
-    //   // Margin account exists
-    //   setMAPending(prev => { prev['cma'] = false; return prev });
-    //   return;
-    // }
+  const createMarginAccount = async (): Promise<MarginAccount | null> => {
     if (!mangoGroup) {
       console.error('No mango group selected before creating a margin account');
       setMAPending(prev => { prev['cma'] = false; return prev });
-      return;
+      return null;
     }
     // Carry on if we have mango group
-    await initMarginAccount(connection, new PublicKey(mangoOptions.mango_program_id), mangoGroup, wallet).then(async (marginAccountPK) => {
+    return await initMarginAccount(connection, new PublicKey(mangoOptions.mango_program_id), mangoGroup, wallet).then(async (marginAccountPK) => {
       // Let's get the margin account object
-      let marginAccount = await mangoClient.getMarginAccount(connection, marginAccountPK, mangoGroup.dexProgramId);
+      let marginAccount = await mangoClient.getMarginAccount(connection, marginAccountPK, mangoOptions.dex_program_id);
       // Now get all margin accounts
       // Set the margin accounts PK
       setMarginAccount(marginAccount);
       getAllMarginAccountsForGroup();
-      setMAPending(prev => { prev['cma'] = false; return prev });
+      return marginAccount;
+      // setMAPending(prev => { prev['cma'] = false; return prev });
     })
-      .catch(err => { console.error(err); setMAPending(prev => { prev['cma'] = false; return prev }); });
+      .catch(err => {
+        console.error(err);
+        return null;
+        // setMAPending(prev => { prev['cma'] = false; return prev }); 
+      });
   }
 
   /**
@@ -104,7 +111,7 @@ const useMarginAccountHelper = () => {
    */
   const getAllMarginAccountsForGroup = async () => {
     // Set pending transaction
-    // setMAPending(prev => { prev['sma'] = true; return prev });;
+    setMAPending(prev => { prev['sma'] = true; return prev });;
     if (!mangoGroup) {
       // Did the user not make a selection or maybe our effects have not ran
       console.error('No mango group while getting all margin accounts for a group');
@@ -115,28 +122,31 @@ const useMarginAccountHelper = () => {
       .then((marginAccounts) => {
         setMarginAccounts(marginAccounts)
         // If margin account exist, set the first value
-        // setMAPending(prev => { prev['sma'] = false; return prev; });
+        setMAPending(prev => { prev['sma'] = false; return prev; });
         if (marginAccounts.length > 0 && !marginAccount) {
           setMarginAccount(marginAccounts[0]);
         }
       }).catch((err) => {
         console.error('Could not get margin accounts for user in effect ', err);
-        // setMAPending(prev => { prev['sma'] = false; return prev });
+        setMAPending(prev => { prev['sma'] = false; return prev });
       })
   }
 
-  const getMarginAccount = async () => {
+  const getMarginAccount = async (): Promise<MarginAccount | null> => {
     if (!mangoGroup || !marginAccount) {
       // Did the user not make a selection or maybe our effects have not ran
       console.error('No mango group while getting all margin accounts for a group');
-      return null;
+      return marginAccount;
     }
     // Let's get the public keys for the margin accounts
-    mangoClient.getMarginAccount(connection, marginAccount.publicKey, mangoGroup.dexProgramId).then((account) => {
+    return mangoClient.getMarginAccount(connection, marginAccount.publicKey, new PublicKey(mangoOptions.dex_program_id)).then((account: MarginAccount | null) => {
       // Return the first account
-      setMarginAccount(account);
+      return account;
     })
-      .catch(err => console.error(err));
+      .catch(err => {
+        console.error(err);
+        return marginAccount
+      });
   }
 
   // If we loose connection to wallet, clear the margin account state
@@ -149,15 +159,8 @@ const useMarginAccountHelper = () => {
       setMangoGroup(null);
       return;
     }
-    if (!marginAccounts || !marginAccount) {
-      // console.log('Here to get margin account')
-      // setMAPending(prev => { prev['sma'] = true; return prev; });
-      // No margin account for the user, get them
-      getAllMarginAccountsForGroup();
-    }
     // Set the default mango group
     if (!mangoGroup) {
-      // console.log('No mango group found. Get default')
       // No mango group yet, get the default
       // Did the user make any selection ??
       // Use default mango group of ETH_BTC_USDC
@@ -166,6 +169,7 @@ const useMarginAccountHelper = () => {
       // TODO: Allow to select a mango group
       let MangoGroup = mangoOptions.mango_groups.BTC_ETH_USDC;
       let mangoGroupPk = new PublicKey(MangoGroup.mango_group_pk);
+      console.log(mangoGroupPk.toBase58());
       mangoClient.getMangoGroup(connection, mangoGroupPk).then((mangoGroup) => {
         // Set the mango group
         setMangoGroup(mangoGroup);
@@ -173,7 +177,41 @@ const useMarginAccountHelper = () => {
         console.error('Could not get mango group');
       })
     }
-  }, [connected, connection, mangoOptions, mangoGroup])
+    if (!marginAccounts || !marginAccount) {
+      // setMAPending(prev => { prev['sma'] = true; return prev; });
+      // No margin account for the user, get them
+      getAllMarginAccountsForGroup();
+    }
+  }, [connected, connection, mangoGroup]);
+  // This effect would create a timer to get the user's balance and interest rate for the selected margin account.
+  // TODO: Find a beter impl like websocket
+  useEffect(() => {
+    // Get the balance and interest every 10s
+    const id = setTimeout(async () => {
+      // Check if margin account exist
+      if (!marginAccount) {
+        return;
+      }
+      // Get all margin accounts again
+      await getMarginAccount()
+        .then((account) => {
+          // If the margin account has changed by the time we are done, ignore the state update
+          if (account && account.publicKey.toString() === marginAccount.publicKey.toString()) {
+            setMarginAccount(account);
+          }
+        })
+        .catch((err) => {
+          // COuld not set margin account 
+          console.error(err);
+        })
+    }, 3000);
+    intervalId.current = id;
+    return () => {
+      if (intervalId.current) {
+        clearTimeout(intervalId.current);
+      }
+    }
+  }, [marginAccount]);
   // TODO: Should the mango group change, reset our margin accounts and account
   return { marginAccount, marginAccounts, mangoGroup, mangoOptions, mango_groups, mangoClient, createMarginAccount, setMarginAccount, setMarginAccounts, maPending, setMAPending, getMarginAccount };
 }
@@ -192,6 +230,8 @@ export function useMarginAccount() {
     marginAccountContext.marginAccounts.forEach(account => {
       mapping.set(account.publicKey.toBase58(), account);
     });
+    // Set a key to create a new account
+    mapping.set('new', null);
     return mapping;
   }
 
