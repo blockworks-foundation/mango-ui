@@ -37,8 +37,10 @@ import { WRAPPED_SOL_MINT } from '@project-serum/serum/lib/token-instructions';
 import { Order } from '@project-serum/serum/lib/market';
 import BonfidaApi from './bonfidaConnector';
 import { IDS } from '@mango/client';
+import { nativeToUi } from '@mango/client/lib/utils';
 import { sleep } from './utils';
 import { useMarginAccount } from './marginAccounts';
+import { NUM_TOKENS } from '@mango/client/lib/layout';
 
 // Used in debugging, should be false in production
 const _IGNORE_DEPRECATED = false;
@@ -547,7 +549,6 @@ export function useSelectedBaseCurrencyBalances() {
 export function useOpenOrders() {
   const { market } = useMarket();
   const { marginAccount, mangoGroup } = useMarginAccount();
-  console.log('useOpenOrders', market, mangoGroup, marginAccount);
   const { bidOrderbook, askOrderbook } = useOrderbookAccounts();
   const { endpointInfo } = useConnectionConfig();
 
@@ -860,10 +861,18 @@ export const useAllOpenOrders = (): {
 export function useBalances(): Balances[] {
   const baseCurrencyBalances = useSelectedBaseCurrencyBalances();
   const quoteCurrencyBalances = useSelectedQuoteCurrencyBalances();
-  const openOrders = useSelectedOpenOrdersAccount(true);
   const { baseCurrency, quoteCurrency, market } = useMarket();
-  const baseExists = openOrders && openOrders.baseTokenTotal && openOrders.baseTokenFree;
-  const quoteExists = openOrders && openOrders.quoteTokenTotal && openOrders.quoteTokenFree;
+  const { marginAccount, mangoGroup, mango_groups } = useMarginAccount();
+  if (!marginAccount || !mangoGroup || !market) {
+    return [];
+  }
+
+  let openOrders;
+  const marketIndex = mangoGroup.getMarketIndex(market);
+  openOrders = marginAccount.openOrdersAccounts[marketIndex];
+  const baseCurrencyIndex = mango_groups.findIndex((x) => x === baseCurrency);
+  const quoteCurrencyIndex = mango_groups.findIndex((x) => x === quoteCurrency);
+
   if (
     baseCurrency === 'UNKNOWN' ||
     quoteCurrency === 'UNKNOWN' ||
@@ -872,36 +881,43 @@ export function useBalances(): Balances[] {
   ) {
     return [];
   }
+
+  const nativeBaseFree = openOrders.baseTokenFree;
+  const nativeBaseLocked = openOrders.baseTokenTotal - nativeBaseFree;
+
+  const nativeQuoteFree = openOrders.quoteTokenFree;
+  const nativeQuoteLocked = openOrders.quoteTokenTotal - nativeQuoteFree;
+
+  const nativeBase = openOrders.baseTokenFree;
+  const nativeQuote = openOrders.quoteTokenFree;
+  const tokenIndex = marketIndex;
+
   return [
     {
       market,
       key: `${baseCurrency}${quoteCurrency}${baseCurrency}`,
       coin: baseCurrency,
       wallet: baseCurrencyBalances,
-      orders:
-        baseExists && market && openOrders
-          ? market.baseSplSizeToNumber(openOrders.baseTokenTotal.sub(openOrders.baseTokenFree))
+      marginDeposits:
+        mangoGroup && marginAccount
+          ? marginAccount.getUiDeposit(mangoGroup, baseCurrencyIndex)
           : null,
+      orders: nativeToUi(nativeBaseLocked, mangoGroup.mintDecimals[tokenIndex]),
       openOrders,
-      unsettled:
-        baseExists && market && openOrders
-          ? market.baseSplSizeToNumber(openOrders.baseTokenFree)
-          : null,
+      unsettled: nativeToUi(nativeBase, mangoGroup.mintDecimals[tokenIndex]),
     },
     {
       market,
       key: `${quoteCurrency}${baseCurrency}${quoteCurrency}`,
       coin: quoteCurrency,
       wallet: quoteCurrencyBalances,
+      marginDeposits:
+        mangoGroup && marginAccount
+          ? marginAccount.getUiDeposit(mangoGroup, quoteCurrencyIndex)
+          : null,
       openOrders,
-      orders:
-        quoteExists && market && openOrders
-          ? market.quoteSplSizeToNumber(openOrders.quoteTokenTotal.sub(openOrders.quoteTokenFree))
-          : null,
-      unsettled:
-        quoteExists && market && openOrders
-          ? market.quoteSplSizeToNumber(openOrders.quoteTokenFree)
-          : null,
+      orders: nativeToUi(nativeQuoteLocked, mangoGroup.mintDecimals[NUM_TOKENS - 1]),
+      unsettled: nativeToUi(nativeQuote, mangoGroup.mintDecimals[NUM_TOKENS - 1]),
     },
   ];
 }

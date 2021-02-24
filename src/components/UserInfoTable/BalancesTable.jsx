@@ -1,14 +1,12 @@
 import { Button } from 'antd';
 import React from 'react';
-import {
-  useTokenAccounts,
-  getSelectedTokenAccountForMint,
-} from '../../utils/markets';
+import { useMarket, useTokenAccounts, getSelectedTokenAccountForMint } from '../../utils/markets';
 import DataTable from '../layout/DataTable';
-import { useSendConnection } from '../../utils/connection';
+import { useSendConnection, useConnectionConfig } from '../../utils/connection';
 import { useWallet } from '../../utils/wallet';
-import { settleFunds } from '../../utils/send';
+import { settleFunds, settleFundsAndBorrows } from '../../utils/mango';
 import { notify } from '../../utils/notifications';
+import { useMarginAccount } from '../../utils/marginAccounts';
 
 export default function BalancesTable({
   balances,
@@ -16,26 +14,21 @@ export default function BalancesTable({
   hideWalletBalance,
   onSettleSuccess,
 }) {
-  const [accounts] = useTokenAccounts();
   const connection = useSendConnection();
   const { wallet } = useWallet();
+  const { mangoProgramId } = useConnectionConfig();
+  const { marginAccount, mangoGroup } = useMarginAccount();
 
   async function onSettleFunds(market, openOrders) {
     try {
-      await settleFunds({
-        market,
-        openOrders,
+      await settleFundsAndBorrows(
         connection,
+        mangoProgramId,
+        mangoGroup,
+        marginAccount,
         wallet,
-        baseCurrencyAccount: getSelectedTokenAccountForMint(
-          accounts,
-          market?.baseMintAddress,
-        ),
-        quoteCurrencyAccount: getSelectedTokenAccountForMint(
-          accounts,
-          market?.quoteMintAddress,
-        ),
-      });
+        market,
+      );
     } catch (e) {
       notify({
         message: 'Error settling funds',
@@ -68,7 +61,12 @@ export default function BalancesTable({
           key: 'wallet',
         },
     {
-      title: 'Orders',
+      title: 'Margin Deposits',
+      dataIndex: 'marginDeposits',
+      key: 'marginDeposits',
+    },
+    {
+      title: 'In Orders',
       dataIndex: 'orders',
       key: 'orders',
     },

@@ -4,6 +4,7 @@ import React, { useContext, useEffect, useMemo, useRef } from 'react';
 import { setCache, useAsyncData } from './fetch-loop';
 import tuple from 'immutable-tuple';
 import { ConnectionContextValues, EndpointInfo } from './types';
+import { IDS } from '@mango/client';
 
 export const ENDPOINTS: EndpointInfo[] = [
   {
@@ -34,17 +35,14 @@ export function ConnectionProvider({ children }) {
     'connectionEndpts',
     ENDPOINTS[0].endpoint,
   );
-  const [customEndpoints, setCustomEndpoints] = useLocalStorageState<
-    EndpointInfo[]
-  >('customConnectionEndpoints', []);
+  const [customEndpoints, setCustomEndpoints] = useLocalStorageState<EndpointInfo[]>(
+    'customConnectionEndpoints',
+    [],
+  );
   const availableEndpoints = ENDPOINTS.concat(customEndpoints);
 
-  const connection = useMemo(() => new Connection(endpoint, 'recent'), [
-    endpoint,
-  ]);
-  const sendConnection = useMemo(() => new Connection(endpoint, 'recent'), [
-    endpoint,
-  ]);
+  const connection = useMemo(() => new Connection(endpoint, 'recent'), [endpoint]);
+  const sendConnection = useMemo(() => new Connection(endpoint, 'recent'), [endpoint]);
 
   // The websocket library solana/web3.js uses closes its websocket connection when the subscription list
   // is empty after opening its first time, preventing subsequent subscriptions from receiving responses.
@@ -64,10 +62,7 @@ export function ConnectionProvider({ children }) {
   }, [connection]);
 
   useEffect(() => {
-    const id = sendConnection.onAccountChange(
-      new Account().publicKey,
-      () => {},
-    );
+    const id = sendConnection.onAccountChange(new Account().publicKey, () => {});
     return () => {
       sendConnection.removeAccountChangeListener(id);
     };
@@ -117,11 +112,14 @@ export function useConnectionConfig() {
   if (!context) {
     throw new Error('Missing connection context');
   }
+  const endpointInfo = context.availableEndpoints.find(
+    (info) => info.endpoint === context.endpoint,
+  );
+  const mangoProgramId = new PublicKey(IDS[endpointInfo!.name].mango_program_id);
   return {
     endpoint: context.endpoint,
-    endpointInfo: context.availableEndpoints.find(
-      (info) => info.endpoint === context.endpoint,
-    ),
+    endpointInfo,
+    mangoProgramId,
     setEndpoint: context.setEndpoint,
     availableEndpoints: context.availableEndpoints,
     setCustomEndpoints: context.setCustomEndpoints,
