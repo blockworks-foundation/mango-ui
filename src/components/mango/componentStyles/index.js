@@ -6,7 +6,7 @@ export const RowBox = styled(Row)`
   padding-bottom: 20px;
 `;
 export const SizeTitle = styled(Row)`
-  padding: 20px 0 14px 0;
+  padding: 20px 0 14px;
   color: #434a59;
 `;
 

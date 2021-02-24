@@ -1,34 +1,50 @@
-import React from 'react';
-import { Button, Popover } from 'antd';
-import { InfoCircleOutlined, UserOutlined } from '@ant-design/icons';
+import React, { useMemo } from 'react';
+import { Dropdown, Menu, Typography } from 'antd';
+import { WalletFilled, DisconnectOutlined } from '@ant-design/icons';
+import { ActionButton } from '../components/mango/componentStyles/';
 import { useWallet } from '../utils/wallet';
-import LinkAddress from './LinkAddress';
+
+const { Text } = Typography;
 
 export default function WalletConnect() {
   const { connected, wallet } = useWallet();
   const publicKey = wallet?.publicKey?.toBase58();
+  // Build menu items
+  const menu = useMemo(() =>
+    <Menu>
+      <Menu.Item onClick={wallet.disconnect}>
+        <DisconnectOutlined />
+        Disconnect
+      </Menu.Item>
+    </Menu>
+    , [wallet]);
 
   return (
     <React.Fragment>
-      <Button
-        type="text"
-        size="large"
-        onClick={connected ? wallet.disconnect : wallet.connect}
-        style={{ color: '#2abdd2' }}
-      >
-        <UserOutlined />
-        {!connected ? 'Connect wallet' : 'Disconnect'}
-      </Button>
-      {connected && (
-        <Popover
-          content={<LinkAddress address={publicKey} />}
-          placement="bottomRight"
-          title="Wallet public key"
-          trigger="click"
+      {!connected ?
+        <ActionButton
+          size="large"
+          onClick={wallet.connect}
+          style={{ color: '#2abdd2' }}
         >
-          <InfoCircleOutlined style={{ color: '#2abdd2' }} />
-        </Popover>
-      )}
+          {!connected ? 'Connect wallet' : 'Disconnect'}
+        </ActionButton>
+        :
+        <Dropdown
+          overlay={menu}
+          placement="topCenter"
+        >
+          <ActionButton
+            size="large"
+            style={{ borderColor: 'green' }}
+          >
+            <WalletFilled style={{ color: 'green' }} />
+            <Text code>
+              {publicKey.toString().substr(0, 4) + '...' + publicKey.toString().substr(-4)}
+            </Text>
+          </ActionButton>
+        </Dropdown>
+      }
     </React.Fragment>
   );
 }

@@ -5,7 +5,6 @@
   "homepage": "https://dex.projectserum.com/",
   "dependencies": {
     "@ant-design/icons": "^4.2.1",
-    "@blockworks-foundation/mango-client": "git+ssh://git@github.com:blockworks-foundation/mango-client-ts.git",
     "@craco/craco": "^5.6.4",
     "@mango/client": "git+ssh://git@github.com:blockworks-foundation/mango-client-ts.git",
     "@project-serum/associated-token": "0.1.0",

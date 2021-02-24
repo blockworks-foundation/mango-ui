@@ -1,8 +1,10 @@
 import React, { useMemo, useState, useRef, useCallback } from 'react';
 import { Col, Typography, Row, Select, Spin, Divider } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons'
-import { RowBox, SizeTitle, BalanceCol, RightCol, InterestCol, ActionButton } from '../componentStyles';
+import { LoadingOutlined } from '@ant-design/icons';
+import { RowBox, SizeTitle, BalanceCol, ActionButton } from '../componentStyles';
 import FloatingElement from '../../layout/FloatingElement';
+// Import token info
+import useTokenInfo from '../../../utils/tokenInfo';
 // Let's get our account context
 import { tokenPrecision, useMarginAccount } from '../../../utils/marginAccounts';
 // Type annotaions
@@ -10,6 +12,8 @@ import { MarginAccount } from '@mango/client';
 import { PublicKey } from '@solana/web3.js';
 // Let's import our Deposit component
 import Deposit from '../Deposit';
+// Connection hook
+import { useWallet } from '../../../utils/wallet';
 
 const antIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />;
 
@@ -17,7 +21,11 @@ const { Option } = Select;
 const { Text } = Typography;
 
 export default function BalancesDisplay() {
+  // Connection hook
+  const { connected } = useWallet();
   const { marginAccount, marginAccounts, keyMappings, mangoGroup, maPending, mango_groups, setMarginAccount } = useMarginAccount();
+  // Get token info
+  const { tokenMap } = useTokenInfo();
   // Show or hide the deposit component
   const [showDeposit, setShowDeposit] = useState<boolean>(false);
   // What opration user wants to perform (withdraw or deposit)
@@ -58,17 +66,17 @@ export default function BalancesDisplay() {
     , [marginAccounts, marginAccount, keyMappings, setMarginAccount]);
 
   return (
-    <FloatingElement style={{ flex: 0.5, paddingTop: 10, paddingLeft: 1, paddingRight: 1 }}>
+    <FloatingElement style={{ flex: 0.5, paddingTop: 10, paddingRight: 1 }}>
       <React.Fragment>
-        {MAccountSelector}
         <Divider>
-          Balances
+          Margin Account
         </Divider>
+        {marginAccounts.length > 1 && MAccountSelector}
         <SizeTitle>
           <BalanceCol span={6}>Assets</BalanceCol>
-          <BalanceCol span={4}>Deposits</BalanceCol>
-          <RightCol span={4}>Borrows</RightCol>
-          <BalanceCol span={10}>Interest</BalanceCol>
+          <BalanceCol span={5}>Deposits</BalanceCol>
+          <BalanceCol span={5}>Borrows</BalanceCol>
+          <BalanceCol span={8}>Interest</BalanceCol>
         </SizeTitle>
         {
           maPending.sma ?
@@ -76,38 +84,41 @@ export default function BalancesDisplay() {
               <Spin indicator={antIcon} />
             </RowBox>
             :
-            (marginAccount && mangoGroup) ? mango_groups.map((token, i) => {
-              let depoR = mangoGroup.getDepositRate(i) * 100;
-              let borR = mangoGroup.getBorrowRate(i) * 100;
-
-              return <Row key={i}>
-                <BalanceCol span={6}>
+            (marginAccount && mangoGroup) ? mango_groups.map((token, i) =>
+              <Row key={i}>
+                <Col span={6}>
+                  <img
+                    alt="Token icon"
+                    width="20"
+                    height="20"
+                    src={tokenMap.get(mangoGroup.tokens[i].toString())?.icon}
+                  />
                   <Text type="secondary">
                     {token}
                   </Text>
-                </BalanceCol>
-                <BalanceCol span={4}>
+                </Col>
+                <BalanceCol span={5}>
                   {marginAccount.getUiDeposit(mangoGroup, i).toFixed(tokenPrecision[token])}
 
                 </BalanceCol>
-                <BalanceCol span={4}>
+                <BalanceCol span={5}>
 
                   {marginAccount.getUiBorrow(mangoGroup, i).toFixed(tokenPrecision[token])}
 
                 </BalanceCol>
-                <InterestCol span={10}>
+                <BalanceCol span={8}>
                   <Text strong type="success">
-                    +{depoR.toFixed(2)}%
+                    +{mangoGroup.getDepositRate(i).toFixed(2)}%
                     </Text>
                   <Text>
                     {'  /  '}
                   </Text>
                   <Text strong type="danger">
-                    -{borR.toFixed(2)}%
+                    -{mangoGroup.getBorrowRate(i).toFixed(2)}%
                     </Text>
-                </InterestCol>
+                </BalanceCol>
               </Row>
-            }) :
+            ) :
               <Row align="middle" justify="center">
                 <BalanceCol>
                   <Text>No data For Current    Account<br />
@@ -120,6 +131,7 @@ export default function BalancesDisplay() {
           <Col style={{ width: 120 }}>
             <ActionButton block size="middle"
               onClick={showModalDeposit}
+              disabled={connected ? false : true}
             >
               Deposit
             </ActionButton>
