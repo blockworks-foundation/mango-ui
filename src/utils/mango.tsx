@@ -489,7 +489,7 @@ export async function placeOrderAndSettle(
     ],
     spotMarket.programId,
   );
-  const settleFundsIns = await makeSettleFundsInstruction(
+  const settleFundsIns = makeSettleFundsInstruction(
     programId,
     mangoGroup.publicKey,
     wallet.publicKey,
@@ -504,7 +504,7 @@ export async function placeOrderAndSettle(
     mangoGroup.vaults[mangoGroup.vaults.length - 1],
     dexSigner,
   );
-  // transaction.add(settleFundsIns);
+  transaction.add(settleFundsIns);
 
   const baseTokenIndex = marketIndex;
   const quoteTokenIndex = NUM_TOKENS - 1;
@@ -512,7 +512,7 @@ export async function placeOrderAndSettle(
   const quantity = marginAccount.getUiBorrow(mangoGroup, tokenIndex);
   const nativeQuantity = uiToNative(quantity, mangoGroup.mintDecimals[tokenIndex]);
 
-  const settleBorrowIns = await makeSettleBorrowInstruction(
+  const settleBorrowIns = makeSettleBorrowInstruction(
     programId,
     mangoGroup.publicKey,
     marginAccount.publicKey,
@@ -521,7 +521,7 @@ export async function placeOrderAndSettle(
     nativeQuantity,
   );
 
-  // transaction.add(settleBorrowIns);
+  transaction.add(settleBorrowIns);
 
   return await packageAndSend(transaction, connection, wallet, signers, 'PlaceOrder');
 }

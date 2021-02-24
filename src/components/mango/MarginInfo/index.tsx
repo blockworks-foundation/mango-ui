@@ -27,6 +27,7 @@ export default function MarginInfo() {
   const [working, setWorking] = useState(false);
   // Hold the margin account info
   const [mAccountInfo, setMAccountInfo] = useState<{ label: string, value: string, unit: string, desc: string, currency: string }[] | null>(null);
+
   // Settle bororows
   const settleBorrows = async () => {
     // Set that we are working
@@ -41,35 +42,38 @@ export default function MarginInfo() {
   useEffect(() => {
     if (marginAccount && mangoGroup) {
       mangoGroup.getPrices(connection).then((prices) => {
+
+        const collateralRatio = marginAccount.getCollateralRatio(mangoGroup, prices);
+
         setMAccountInfo([
           {
             label: 'Equity',
-            value: marginAccount.getAssetsVal(mangoGroup, prices).toFixed(0),
+            value: marginAccount.computeValue(mangoGroup, prices).toFixed(2),
             unit: '',
             currency: '$',
-            desc: 'Your total equity'
+            desc: 'The value of the account'
           },
           {
             // TODO: Get collaterization ratio
             label: 'Collateral Ratio',
-            value: marginAccount.getCollateralRatio(mangoGroup, prices).toFixed(2),
+            value: collateralRatio > 2 ? '>200' : (100 * collateralRatio).toFixed(0),
             unit: '%',
             currency: '',
-            desc: 'Changes with asset'
+            desc: 'The current collateral ratio'
           },
           {
-            label: 'Maintainance Collateral Ratio',
+            label: 'Maint. Collateral Ratio',
             value: (mangoGroup.maintCollRatio * 100).toFixed(0),
             unit: '%',
             currency: '',
-            desc: 'Make sure you have this'
+            desc: 'The collateral ratio you must maintain to not get liquidated'
           },
           {
             label: 'Initial Collateral Ratio',
             value: (mangoGroup.initCollRatio * 100).toFixed(0),
             currency: '',
             unit: '%',
-            desc: 'Get this liquidity value first'
+            desc: 'The collateral ratio required to open a new margin position'
           },
         ]);
       })

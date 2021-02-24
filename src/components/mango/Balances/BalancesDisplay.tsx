@@ -108,13 +108,13 @@ export default function BalancesDisplay() {
                 </BalanceCol>
                 <BalanceCol span={8}>
                   <Text strong type="success">
-                    +{mangoGroup.getDepositRate(i).toFixed(2)}%
+                    +{(mangoGroup.getDepositRate(i) * 100).toFixed(2)}%
                     </Text>
                   <Text>
                     {'  /  '}
                   </Text>
                   <Text strong type="danger">
-                    -{mangoGroup.getBorrowRate(i).toFixed(2)}%
+                    -{(mangoGroup.getBorrowRate(i) * 100).toFixed(2)}%
                     </Text>
                 </BalanceCol>
               </Row>
