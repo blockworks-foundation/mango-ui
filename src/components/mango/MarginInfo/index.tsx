@@ -1,4 +1,4 @@
-import { Row, Col, Popover, Typography, Spin } from 'antd';
+import { Row, Col, Popover, Typography, Spin, Tooltip } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons'
 import { ActionButton } from '../componentStyles';
 import React, { useEffect, useState } from 'react';
@@ -44,7 +44,7 @@ export default function MarginInfo() {
         setMAccountInfo([
           {
             label: 'Equity',
-            value: marginAccount.getAssetsVal(mangoGroup, prices).toFixed(1),
+            value: marginAccount.getAssetsVal(mangoGroup, prices).toFixed(0),
             unit: '',
             currency: '$',
             desc: 'Your total equity'
@@ -52,7 +52,7 @@ export default function MarginInfo() {
           {
             // TODO: Get collaterization ratio
             label: 'Collateral Ratio',
-            value: '' + Number(marginAccount.getCollateralRatio(mangoGroup, prices)),
+            value: marginAccount.getCollateralRatio(mangoGroup, prices).toFixed(2),
             unit: '%',
             currency: '',
             desc: 'Changes with asset'
@@ -110,7 +110,7 @@ export default function MarginInfo() {
               </BalanceCol>
             </RowBox>
         }
-        <Row align="middle" justify="center">
+        <RowBox align="middle" justify="space-around">
           <Col span={8}>
             <ActionButton
               block
@@ -122,7 +122,20 @@ export default function MarginInfo() {
               Settle Borrows
           </ActionButton>
           </Col>
-        </Row>
+          <Col span={8}>
+            <ActionButton
+              block
+              size="middle"
+              disabled={marginAccount && mAccountInfo && mAccountInfo?.length > 0 ? false : true}
+              onClick={settleBorrows}
+              loading={working}
+            >
+              <Tooltip title="Settle Profit and Loss">
+                <span>Settle PnL</span>
+              </Tooltip>
+            </ActionButton>
+          </Col>
+        </RowBox>
       </React.Fragment>
     </FloatingElement>
   );

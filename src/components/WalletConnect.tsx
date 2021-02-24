@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Dropdown, Menu, Typography } from 'antd';
-import { WalletFilled } from '@ant-design/icons';
+import { WalletFilled, DisconnectOutlined } from '@ant-design/icons';
 import { ActionButton } from '../components/mango/componentStyles/';
 import { useWallet } from '../utils/wallet';
 
@@ -13,6 +13,7 @@ export default function WalletConnect() {
   const menu = useMemo(() =>
     <Menu>
       <Menu.Item onClick={wallet.disconnect}>
+        <DisconnectOutlined />
         Disconnect
       </Menu.Item>
     </Menu>

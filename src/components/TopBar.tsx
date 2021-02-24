@@ -1,4 +1,4 @@
-import { Col, Menu, Row, Select } from 'antd';
+import { Col, Menu, Row, Select, Typography } from 'antd';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import logo from '../assets/logo.svg';
@@ -8,6 +8,7 @@ import { ENDPOINTS, useConnectionConfig } from '../utils/connection';
 import WalletConnect from './WalletConnect';
 import { getTradePageUrl } from '../utils/markets';
 
+const { Title } = Typography;
 const Wrapper = styled.div`
   background-color: #0d1017;
   display: flex;
@@ -102,11 +103,15 @@ export default function TopBar() {
           }}
         >
           <Menu.Item key={tradePageUrl} style={{ margin: '0 10px 0 20px' }}>
-            TRADE
+            <Title level={5} style={{ lineHeight: 3 }}>
+              TRADE
+              </Title>
           </Menu.Item>
           {(!searchFocussed || location.pathname === '/stats') && (
             <Menu.Item key="/stats" style={{ margin: '0 10px' }}>
-              STATS
+              <Title level={5} style={{ lineHeight: 3 }}>
+                STATS
+              </Title>
             </Menu.Item>
           )}
           <Menu.Item key="/learn" style={{ margin: '0 10px' }}>
@@ -115,7 +120,9 @@ export default function TopBar() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              LEARN
+              <Title level={5} style={{ lineHeight: 3 }}>
+                LEARN
+              </Title>
             </a>
           </Menu.Item>
         </Menu>

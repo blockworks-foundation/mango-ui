@@ -172,7 +172,6 @@ const useMarginAccountHelper = () => {
       // console.log(mangoGroupPk.toBase58());
       mangoClient.getMangoGroup(connection, mangoGroupPk).then((mangoGroup) => {
         // Set the mango group
-        console.log(mangoGroup.getUiTotalDeposit(2));
         setMangoGroup(mangoGroup);
       }).catch(err => {
         console.error('Could not get mango group');
