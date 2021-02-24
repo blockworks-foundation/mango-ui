@@ -161,4 +161,13 @@ export interface MarginAccountContextValues {
 }
 
 // Type declaration for the margin accounts for the mango group
+
 export type mangoTokenAccounts = { mango_group: string; accounts: TokenAccount[] };
+
+// Token infos
+export interface KnownToken {
+  tokenSymbol: string;
+  tokenName: string;
+  icon?: string;
+  mintAddress: string;
+}

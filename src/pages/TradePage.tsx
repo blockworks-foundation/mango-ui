@@ -7,7 +7,6 @@ import BalancesDisplay from '../components/mango/Balances/BalancesDisplay';
 import MarginInfo from '../components/mango/MarginInfo';
 import FloatingElement from '../components/layout/FloatingElement';
 import {
-  getMarketInfos,
   getTradePageUrl,
   MarketProvider,
   useMarket,
@@ -16,16 +15,12 @@ import {
 } from '../utils/markets';
 import TradeForm from '../components/TradeForm';
 import TradesTable from '../components/TradesTable';
-import { TVChartContainer } from '../components/TradingView';
 import LinkAddress from '../components/LinkAddress';
 import DeprecatedMarketsInstructions from '../components/DeprecatedMarketsInstructions';
 import {
   DeleteOutlined,
   InfoCircleOutlined,
-  PlusCircleOutlined,
 } from '@ant-design/icons';
-import CustomMarketDialog from '../components/CustomMarketDialog';
-import { notify } from '../utils/notifications';
 import { useHistory, useParams } from 'react-router-dom';
 
 const { Option, OptGroup } = Select;
@@ -66,11 +61,10 @@ function TradePageInner() {
     marketName,
     customMarkets,
     setCustomMarkets,
-    setMarketAddress,
   } = useMarket();
   const markets = useMarketsList();
   const [handleDeprecated, setHandleDeprecated] = useState(false);
-  const [addMarketVisible, setAddMarketVisible] = useState(false);
+  // const [addMarketVisible, setAddMarketVisible] = useState(false);
   const deprecatedMarkets = useUnmigratedDeprecatedMarkets();
   const [dimensions, setDimensions] = useState({
     height: window.innerHeight,
@@ -125,22 +119,6 @@ function TradePageInner() {
     }
   })();
 
-  const onAddCustomMarket = (customMarket) => {
-    const marketInfo = getMarketInfos(customMarkets).some(
-      (m) => m.address.toBase58() === customMarket.address,
-    );
-    if (marketInfo) {
-      notify({
-        message: `A market with the given ID already exists`,
-        type: 'error',
-      });
-      return;
-    }
-    const newCustomMarkets = [...customMarkets, customMarket];
-    setCustomMarkets(newCustomMarkets);
-    setMarketAddress(customMarket.address);
-  };
-
   const onDeleteCustomMarket = (address) => {
     const newCustomMarkets = customMarkets.filter((m) => m.address !== address);
     setCustomMarkets(newCustomMarkets);
@@ -148,11 +126,6 @@ function TradePageInner() {
 
   return (
     <>
-      <CustomMarketDialog
-        visible={addMarketVisible}
-        onClose={() => setAddMarketVisible(false)}
-        onAddCustomMarket={onAddCustomMarket}
-      />
       <Wrapper>
         <Row
           align="middle"
@@ -180,12 +153,6 @@ function TradePageInner() {
               </Popover>
             </Col>
           ) : null}
-          <Col>
-            <PlusCircleOutlined
-              style={{ color: '#2abdd2' }}
-              onClick={() => setAddMarketVisible(true)}
-            />
-          </Col>
           {deprecatedMarkets && deprecatedMarkets.length > 0 && (
             <React.Fragment>
               <Col>
