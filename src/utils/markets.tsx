@@ -303,6 +303,7 @@ export function MarketProvider({ marketAddress, setMarketAddress, children }) {
         address,
         market,
         ...getMarketDetails(market, customMarkets, endpointInfo),
+        marketName: marketInfo?.name,
         setMarketAddress,
         customMarkets,
         setCustomMarkets,
@@ -370,7 +371,9 @@ export function _useUnfilteredTrades(limit = 10000) {
     if (!market || !connection) {
       return null;
     }
-    return await market.loadFills(connection, limit);
+    const loadedFills = await market.loadFills(connection, limit);
+
+    return loadedFills;
   }
   const [trades] = useAsyncData(
     getUnfilteredTrades,
@@ -635,9 +638,21 @@ export function useFeeDiscountKeys(): [
 }
 
 export function useFills(limit = 100) {
-  const { marketName } = useMarket();
+  const { market, marketName } = useMarket();
+  const { marginAccount, mangoGroup } = useMarginAccount();
+
   const fills = _useUnfilteredTrades(limit);
-  const [openOrdersAccounts] = useOpenOrdersAccounts();
+  // const [openOrdersAccounts] = useOpenOrdersAccounts();
+
+  let openOrdersAccounts;
+  if (market && mangoGroup && marginAccount) {
+    const marketIndex = mangoGroup.getMarketIndex(market);
+    const openOrdersAccount = marginAccount.openOrdersAccounts[marketIndex];
+    openOrdersAccounts = openOrdersAccount ? [openOrdersAccount] : null;
+  } else {
+    openOrdersAccounts = [];
+  }
+
   if (!openOrdersAccounts || openOrdersAccounts.length === 0) {
     return null;
   }
@@ -882,14 +897,14 @@ export function useBalances(): Balances[] {
     return [];
   }
 
-  const nativeBaseFree = openOrders.baseTokenFree;
-  const nativeBaseLocked = openOrders.baseTokenTotal - nativeBaseFree;
+  const nativeBaseFree = openOrders?.baseTokenFree || 0;
+  const nativeQuoteFree = openOrders?.quoteTokenFree || 0;
 
-  const nativeQuoteFree = openOrders.quoteTokenFree;
-  const nativeQuoteLocked = openOrders.quoteTokenTotal - nativeQuoteFree;
+  const nativeBaseLocked = openOrders ? openOrders.baseTokenTotal - nativeBaseFree : 0;
+  const nativeQuoteLocked = openOrders ? openOrders?.quoteTokenTotal - nativeQuoteFree : 0;
 
-  const nativeBase = openOrders.baseTokenFree;
-  const nativeQuote = openOrders.quoteTokenFree;
+  const nativeBase = openOrders?.baseTokenFree || 0;
+  const nativeQuote = openOrders?.quoteTokenFree || 0;
   const tokenIndex = marketIndex;
 
   return [
