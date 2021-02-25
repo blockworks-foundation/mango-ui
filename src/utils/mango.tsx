@@ -11,7 +11,7 @@ import {
 } from '@solana/web3.js';
 import Wallet from '@project-serum/sol-wallet-adapter';
 import { MangoGroup, MarginAccount, MarginAccountLayout } from '@mango/client';
-import { encodeMangoInstruction, NUM_TOKENS } from '@mango/client/lib/layout';
+import { encodeMangoInstruction, NUM_MARKETS, NUM_TOKENS } from '@mango/client/lib/layout';
 import {
   makeSettleBorrowInstruction,
   makeSettleFundsInstruction,
@@ -256,7 +256,7 @@ export async function settleBorrow(
 ): Promise<TransactionSignature> {
   const tokenIndex = mangoGroup.getTokenIndex(token);
   const nativeQuantity = uiToNative(quantity, mangoGroup.mintDecimals[tokenIndex]);
-  console.log(tokenIndex, nativeQuantity.toNumber())
+  console.log(tokenIndex, nativeQuantity.toNumber());
   const keys = [
     { isSigner: false, isWritable: true, pubkey: mangoGroup.publicKey },
     { isSigner: false, isWritable: true, pubkey: marginAccount.publicKey },
@@ -513,7 +513,7 @@ export async function placeOrderAndSettle(
   const quantity = marginAccount.getUiBorrow(mangoGroup, tokenIndex);
   const nativeQuantity = uiToNative(quantity, mangoGroup.mintDecimals[tokenIndex]);
 
-  console.log(quantity, nativeQuantity.toNumber(), tokenIndex)
+  console.log(quantity, nativeQuantity.toNumber(), tokenIndex);
   const settleBorrowIns = makeSettleBorrowInstruction(
     programId,
     mangoGroup.publicKey,
@@ -759,6 +759,97 @@ export async function cancelOrderAndSettle(
   transaction.add(settleBorrowQuoteToken);
 
   return await packageAndSend(transaction, connection, wallet, [], 'CancelOrder');
+}
+
+export async function settleAll(
+  connection: Connection,
+  programId: PublicKey,
+  mangoGroup: MangoGroup,
+  marginAccount: MarginAccount,
+  markets: Market[],
+  wallet: Wallet,
+): Promise<TransactionSignature> {
+  const transaction = new Transaction();
+
+  const assetGains: number[] = new Array(NUM_TOKENS).fill(0);
+
+  for (let i = 0; i < NUM_MARKETS; i++) {
+    const openOrdersAccount = marginAccount.openOrdersAccounts[i];
+    if (openOrdersAccount === undefined) {
+      continue;
+    } else if (
+      openOrdersAccount.quoteTokenFree.toNumber() === 0 &&
+      openOrdersAccount.baseTokenFree.toNumber() === 0
+    ) {
+      continue;
+    }
+
+    assetGains[i] += openOrdersAccount.baseTokenFree.toNumber();
+    assetGains[NUM_TOKENS - 1] += openOrdersAccount.quoteTokenFree.toNumber();
+
+    const spotMarket = markets[i];
+    const dexSigner = await PublicKey.createProgramAddress(
+      [
+        spotMarket.publicKey.toBuffer(),
+        spotMarket['_decoded'].vaultSignerNonce.toArrayLike(Buffer, 'le', 8),
+      ],
+      spotMarket.programId,
+    );
+
+    const keys = [
+      { isSigner: false, isWritable: true, pubkey: mangoGroup.publicKey },
+      { isSigner: true, isWritable: false, pubkey: wallet.publicKey },
+      { isSigner: false, isWritable: true, pubkey: marginAccount.publicKey },
+      { isSigner: false, isWritable: false, pubkey: SYSVAR_CLOCK_PUBKEY },
+      { isSigner: false, isWritable: false, pubkey: spotMarket.programId },
+      { isSigner: false, isWritable: true, pubkey: spotMarket.publicKey },
+      { isSigner: false, isWritable: true, pubkey: marginAccount.openOrders[i] },
+      { isSigner: false, isWritable: false, pubkey: mangoGroup.signerKey },
+      { isSigner: false, isWritable: true, pubkey: spotMarket['_decoded'].baseVault },
+      { isSigner: false, isWritable: true, pubkey: spotMarket['_decoded'].quoteVault },
+      { isSigner: false, isWritable: true, pubkey: mangoGroup.vaults[i] },
+      {
+        isSigner: false,
+        isWritable: true,
+        pubkey: mangoGroup.vaults[mangoGroup.vaults.length - 1],
+      },
+      { isSigner: false, isWritable: false, pubkey: dexSigner },
+      { isSigner: false, isWritable: false, pubkey: TOKEN_PROGRAM_ID },
+    ];
+    const data = encodeMangoInstruction({ SettleFunds: {} });
+
+    const instruction = new TransactionInstruction({ keys, data, programId });
+    transaction.add(instruction);
+  }
+
+  const deposits = marginAccount.getDeposits(mangoGroup);
+  const liabs = marginAccount.getLiabs(mangoGroup);
+
+  for (let i = 0; i < NUM_TOKENS; i++) {
+    // TODO test this. maybe it hits transaction size limit
+
+    const deposit = deposits[i] + assetGains[i];
+    if (deposit === 0 || liabs[i] === 0) {
+      continue;
+    }
+    const keys = [
+      { isSigner: false, isWritable: true, pubkey: mangoGroup.publicKey },
+      { isSigner: false, isWritable: true, pubkey: marginAccount.publicKey },
+      { isSigner: true, isWritable: false, pubkey: wallet.publicKey },
+      { isSigner: false, isWritable: false, pubkey: SYSVAR_CLOCK_PUBKEY },
+    ];
+    const data = encodeMangoInstruction({
+      SettleBorrow: {
+        tokenIndex: new BN(i),
+        quantity: uiToNative(liabs[i] * 2, mangoGroup.mintDecimals[i]),
+      },
+    });
+
+    const instruction = new TransactionInstruction({ keys, data, programId });
+    transaction.add(instruction);
+  }
+
+  return await packageAndSend(transaction, connection, wallet, [], 'AutoSettle');
 }
 
 async function packageAndSend(

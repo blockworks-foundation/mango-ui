@@ -1,4 +1,4 @@
-import { Col, Menu, Row, Select, Typography } from 'antd';
+import { Col, Menu, Row, Select, Typography, Popover, Button } from 'antd';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import logo from '../assets/logo.svg';
@@ -7,6 +7,8 @@ import { useWallet, WALLET_PROVIDERS } from '../utils/wallet';
 import { ENDPOINTS, useConnectionConfig } from '../utils/connection';
 import WalletConnect from './WalletConnect';
 import { getTradePageUrl } from '../utils/markets';
+import Settings from './Settings';
+import { SettingOutlined } from '@ant-design/icons';
 
 const { Title } = Typography;
 const Wrapper = styled.div`
@@ -41,13 +43,8 @@ const EXTERNAL_LINKS = {
 };
 
 export default function TopBar() {
-  const { providerUrl, setProvider } = useWallet();
-  const {
-    endpoint,
-    endpointInfo,
-    setEndpoint,
-    availableEndpoints,
-  } = useConnectionConfig();
+  const { providerUrl, setProvider, wallet, connected } = useWallet();
+  const { endpoint, endpointInfo, setEndpoint, availableEndpoints } = useConnectionConfig();
   const location = useLocation();
   const history = useHistory();
   const [searchFocussed] = useState(false);
@@ -60,7 +57,6 @@ export default function TopBar() {
     },
     [history],
   );
-
 
   const endpointInfoCustom = endpointInfo && endpointInfo.custom;
   useEffect(() => {
@@ -105,7 +101,7 @@ export default function TopBar() {
           <Menu.Item key={tradePageUrl} style={{ margin: '0 10px 0 20px' }}>
             <Title level={5} style={{ lineHeight: 3 }}>
               TRADE
-              </Title>
+            </Title>
           </Menu.Item>
           {(!searchFocussed || location.pathname === '/stats') && (
             <Menu.Item key="/stats" style={{ margin: '0 10px' }}>
@@ -141,11 +137,7 @@ export default function TopBar() {
           />
         </div> */}
         <div>
-          <Row
-            align="middle"
-            style={{ paddingLeft: 5, paddingRight: 5 }}
-            gutter={16}
-          >
+          <Row align="middle" style={{ paddingLeft: 5, paddingRight: 5 }} gutter={16}>
             {/* <Col>
               <PlusCircleOutlined
                 style={{ color: '#2abdd2' }}
@@ -176,20 +168,20 @@ export default function TopBar() {
               </Select>
             </Col>
             {/* {connected && (
-          <div>
-          <Popover
-          content={<Settings autoApprove={wallet?.autoApprove} />}
-          placement="bottomRight"
-          title="Settings"
-          trigger="click"
-          >
-          <Button style={{ marginRight: 8 }}>
-          <SettingOutlined />
-          Settings
-          </Button>
-          </Popover>
-          </div>
-        )} */}
+              <div>
+                <Popover
+                  content={<Settings autoApprove={wallet?.autoApprove} />}
+                  placement="bottomRight"
+                  title="Settings"
+                  trigger="click"
+                >
+                  <Button style={{ marginRight: 8 }}>
+                    <SettingOutlined />
+                    Settings
+                  </Button>
+                </Popover>
+              </div>
+            )} */}
             <Col>
               <div>
                 <Select onSelect={setProvider} value={providerUrl}>

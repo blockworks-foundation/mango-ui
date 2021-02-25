@@ -4,32 +4,35 @@ import { useInterval } from './useInterval';
 import { useConnection } from './connection';
 import { useWallet } from './wallet';
 import { useAllMarkets, useSelectedTokenAccounts, useTokenAccounts } from './markets';
-import { settleAllFunds } from './send';
 import { PreferencesContextValues } from './types';
+import { useMarginAccount } from './marginAccounts';
+import { settleAll } from './mango';
 
 const PreferencesContext = React.createContext<PreferencesContextValues | null>(null);
 
 export function PreferencesProvider({ children }) {
   const [autoSettleEnabled, setAutoSettleEnabled] = useLocalStorageState('autoSettleEnabled', true);
 
-  const [tokenAccounts] = useTokenAccounts();
+  // const [tokenAccounts] = useTokenAccounts();
   const { connected, wallet } = useWallet();
+  const { mango_options, mangoGroup, marginAccount } = useMarginAccount();
   const [marketList] = useAllMarkets();
   const connection = useConnection();
-  const [selectedTokenAccounts] = useSelectedTokenAccounts();
+  // const [selectedTokenAccounts] = useSelectedTokenAccounts();
 
   useInterval(() => {
     const autoSettle = async () => {
       const markets = (marketList || []).map((m) => m.market);
       try {
-        console.log('Auto settling');
-        await settleAllFunds({
+        if (!mangoGroup || !marginAccount) return;
+        await settleAll(
           connection,
-          wallet,
-          tokenAccounts: tokenAccounts || [],
+          mango_options.mango_program_id,
+          mangoGroup,
+          marginAccount,
           markets,
-          selectedTokenAccounts,
-        });
+          wallet,
+        );
       } catch (e) {
         console.log('Error auto settling funds: ' + e.message);
       }

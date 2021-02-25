@@ -33,7 +33,6 @@ export function WalletProvider({ children }) {
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    console.log('trying to connect');
     wallet.on('connect', () => {
       console.log('connected');
       localStorage.removeItem('feeDiscountKey')

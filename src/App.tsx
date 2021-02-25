@@ -8,7 +8,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import { Routes } from './routes';
 import { PreferencesProvider } from './utils/preferences';
 // And our margin account provider
-import { MarginAccountProvider } from "./utils/marginAccounts";
+import { MarginAccountProvider } from './utils/marginAccounts';
 
 export default function App() {
   return (
@@ -17,13 +17,13 @@ export default function App() {
       <ErrorBoundary>
         <ConnectionProvider>
           <WalletProvider>
-            <PreferencesProvider>
-              <MarginAccountProvider>
+            <MarginAccountProvider>
+              <PreferencesProvider>
                 <Suspense fallback={() => <Spin size="large" />}>
                   <Routes />
                 </Suspense>
-              </MarginAccountProvider>
-            </PreferencesProvider>
+              </PreferencesProvider>
+            </MarginAccountProvider>
           </WalletProvider>
         </ConnectionProvider>
       </ErrorBoundary>
