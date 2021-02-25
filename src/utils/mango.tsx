@@ -1,4 +1,4 @@
-import { createAccountInstruction, uiToNative, zeroKey } from '@mango/client/lib/utils';
+import { createAccountInstruction, nativeToUi, uiToNative, zeroKey } from '@mango/client/lib/utils';
 import {
   Account,
   Connection,
@@ -19,7 +19,7 @@ import {
 import { sendTransaction } from './send';
 import { TOKEN_PROGRAM_ID } from './tokens';
 import BN from 'bn.js';
-import { Market, OpenOrders } from '@project-serum/serum';
+import { getFeeRates, getFeeTier, Market, OpenOrders } from '@project-serum/serum';
 import { Order } from '@project-serum/serum/lib/market';
 import { SRM_DECIMALS } from '@project-serum/serum/lib/token-instructions';
 
@@ -355,9 +355,10 @@ export async function placeOrderAndSettle(
   const limitPrice = spotMarket.priceNumberToLots(price);
   const maxBaseQuantity = spotMarket.baseSizeNumberToLots(size);
 
-  // TODO verify if multiplying by highest fee tier is appropriate
-  const maxQuoteQuantity = new BN(spotMarket['_decoded'].quoteLotSize.toNumber()).mul(
-    spotMarket.baseSizeNumberToLots(size * 1.0022).mul(spotMarket.priceNumberToLots(price)),
+  const feeTier = getFeeTier(0, nativeToUi(mangoGroup.nativeSrm || 0, SRM_DECIMALS));
+  const rates = getFeeRates(feeTier);
+  const maxQuoteQuantity = new BN(spotMarket['_decoded'].quoteLotSize.toNumber() * rates.taker).mul(
+    spotMarket.baseSizeNumberToLots(size).mul(spotMarket.priceNumberToLots(price)),
   );
 
   if (maxBaseQuantity.lte(new BN(0))) {
@@ -576,7 +577,7 @@ export async function settleFundsAndBorrows(
 
   transaction.add(settleBorrowIns);
   const signers = [];
-  return await packageAndSend(transaction, connection, wallet, signers, 'Settle Fundsd');
+  return await packageAndSend(transaction, connection, wallet, signers, 'Settle Funds');
 }
 
 export async function settleFunds(
