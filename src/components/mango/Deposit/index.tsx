@@ -12,14 +12,17 @@ import { notify } from '../../../utils/notifications'
 import { useConnection } from '../../../utils/connection';
 import { useWallet } from '../../../utils/wallet';
 // And now mango client library functions
-import { deposit, withdraw } from '../../../utils/mango';
+import { deposit, depositSrm, withdraw, withdrawSrm } from '../../../utils/mango';
 import DepositModal from './DepositModal';
 import { MarginAccount } from '@mango/client';
+import { parseTokenAccountData } from '../../../utils/tokens';
 
 const Deposit = (props: {
+  currency?: string,
   mango_groups: Array<string>,
   visible: boolean,
   operation: string,
+  tokenAccount?: TokenAccount,
   onCancel: () => void,
 }) => {
   // COnnection and wallet options
@@ -30,22 +33,30 @@ const Deposit = (props: {
   // Get the mangoGroup token account
   const { tokenAccountsMapping } = useMangoTokenAccount();
   // The current mango group tokens
-  const [currency, setCurrency] = useState<string>(mango_groups[0]);
+  const [currency, setCurrency] = useState<string>(props.currency || mango_groups[0]);
   // Set the current token account upon currency change
   // The current token account 
-  const [tokenAccount, setTokenAccount] = useState<TokenAccount | null>(null);
+  const [tokenAccount, setTokenAccount] = useState<TokenAccount | null>(props.tokenAccount || null);
   // WOrking state
   const [working, setWorking] = useState(false);
   // Ref to get the underlying input box
   const inputRef = useRef(null);
-
+  
   // How much does this token account have
   const userUiBalance = useCallback(() => {
+    if (currency === 'SRM') {
+      const srmAccount =
+        props.tokenAccount && props.tokenAccount.account
+          ? parseTokenAccountData(props.tokenAccount.account.data)
+          : null;
+          
+      return srmAccount?.amount
+    }
     if (tokenAccount && tokenAccountsMapping.current[tokenAccount.pubkey.toString()]) {
       return tokenAccountsMapping.current[tokenAccount.pubkey.toString()].balance;
     }
     return '0';
-  }, [tokenAccount, tokenAccountsMapping]);
+  }, [tokenAccount, tokenAccountsMapping, currency]);
   // TODO: Pack clinet library instruction into one
   // When the user hits deposit
   const depositFunds = async () => {
@@ -73,7 +84,7 @@ const Deposit = (props: {
         type: 'error'
       });
       return;
-    } else if (!tokenAccount) {
+    } else if (!tokenAccount && !props.tokenAccount) {
       notify({
         message: 'Please create a token Account',
         description: 'Create a token acount for this currency',
@@ -102,12 +113,62 @@ const Deposit = (props: {
     // Call the deposit function of mangoCLIENT
     // Check if we are depositing or withdrawing
     if (props.operation === 'Withdraw') {
+      if (currency === 'SRM') {
+        // @ts-ignore
+        withdrawSrm(connection, mango_options.mango_program_id, mangoGroup, marginAccount || newMarginAcc, wallet, props.tokenAccount.pubkey, Number(inputRef.current.state.value)).then((transSig: string) => {
+          setWorking(false);
+          notify({
+            // @ts-ignore
+            message: `Withdrew ${inputRef.current.state.value} ${currency} into your account`,
+            description: `Hash of transaction is ${transSig}`,
+            type: 'info'
+          });
+          props.onCancel();
+        })
+          .catch((err) => {
+            setWorking(false);
+            console.error(err);
+            notify({
+              message: 'Could not perform withdraw operation',
+              description: 'Approve transaction from your wallet',
+              type: 'error',
+            });
+            props.onCancel();
+          })
+        return;
+      } else {
+        // @ts-ignore
+        withdraw(connection, mango_options.mango_program_id, mangoGroup, marginAccount || newMarginAcc, wallet, tokenAccount.effectiveMint, tokenAccount.pubkey, Number(inputRef.current.state.value)).then((transSig: string) => {
+          setWorking(false);
+          notify({
+            // @ts-ignore
+            message: `Withdrew ${inputRef.current.state.value} ${currency} into your account`,
+            description: `Hash of transaction is ${transSig}`,
+            type: 'info'
+          });
+          props.onCancel();
+        })
+          .catch((err) => {
+            setWorking(false);
+            console.error(err);
+            notify({
+              message: 'Could not perform withdraw operation',
+              description: 'Approve transaction from your wallet',
+              type: 'error',
+            });
+            props.onCancel();
+          })
+        return;
+      }
+    };
+
+    if (currency === 'SRM') {
       // @ts-ignore
-      withdraw(connection, mango_options.mango_program_id, mangoGroup, marginAccount || newMarginAcc, wallet, tokenAccount.effectiveMint, tokenAccount.pubkey, Number(inputRef.current.state.value)).then((transSig: string) => {
+      depositSrm(connection, mango_options.mango_program_id, mangoGroup, marginAccount || newMarginAcc, wallet, props.tokenAccount.pubkey, Number(inputRef.current.state.value)).then((transSig: string) => {
         setWorking(false);
         notify({
           // @ts-ignore
-          message: `Withdrew ${inputRef.current.state.value} ${currency} into your account`,
+          message: `Deposited ${inputRef.current.state.value} ${currency} into your account`,
           description: `Hash of transaction is ${transSig}`,
           type: 'info'
         });
@@ -117,14 +178,13 @@ const Deposit = (props: {
           setWorking(false);
           console.error(err);
           notify({
-            message: 'Could not perform withdraw operation',
+            message: 'Could not perform deposit operation',
             description: 'Approve transaction from your wallet',
             type: 'error',
           });
           props.onCancel();
         })
-      return;
-    };
+    } else {
     // @ts-ignore
     deposit(connection, mango_options.mango_program_id, mangoGroup, marginAccount || newMarginAcc, wallet, tokenAccount.effectiveMint, tokenAccount.pubkey, Number(inputRef.current.state.value)).then((transSig: string) => {
       setWorking(false);
@@ -146,6 +206,7 @@ const Deposit = (props: {
         });
         props.onCancel();
       })
+    }
   };
 
   const DepoModal = useMemo(() => {

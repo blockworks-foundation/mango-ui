@@ -30,15 +30,13 @@ export default function FeesTable() {
       title: 'Taker',
       dataIndex: 'taker',
       key: 'taker',
-      render: (feeTier, row) =>
-        percentFormat.format(getFeeRates(row.feeTier).taker),
+      render: (feeTier, row) => percentFormat.format(getFeeRates(row.feeTier).taker),
     },
     {
       title: 'Maker',
       dataIndex: 'maker',
       key: 'maker',
-      render: (feeTier, row) =>
-        percentFormat.format(getFeeRates(row.feeTier).maker),
+      render: (feeTier, row) => percentFormat.format(getFeeRates(row.feeTier).maker),
     },
     {
       title: `Public Key`,
@@ -85,9 +83,7 @@ export default function FeesTable() {
       </Row>
       <Row style={{ marginTop: 8 }}>
         <Col>
-          <Typography>
-            Holding SRM or MSRM makes you eligible for fee discounts:
-          </Typography>
+          <Typography>Holding SRM or MSRM makes you eligible for fee discounts:</Typography>
           <FeeScheduleTable />
         </Col>
       </Row>
@@ -128,24 +124,20 @@ function FeeScheduleTable() {
       title: 'Taker',
       dataIndex: 'taker',
       key: 'taker',
-      render: (feeTier, row) =>
-        percentFormat.format(getFeeRates(row.feeTier).taker),
+      render: (feeTier, row) => percentFormat.format(getFeeRates(row.feeTier).taker),
     },
     {
       title: 'Maker',
       dataIndex: 'maker',
       key: 'maker',
-      render: (feeTier, row) =>
-        percentFormat.format(getFeeRates(row.feeTier).maker),
+      render: (feeTier, row) => percentFormat.format(getFeeRates(row.feeTier).maker),
     },
     {
       title: 'Requirements',
       dataIndex: 'requirements',
       key: 'requirements',
       render: (_, row) => (
-        <Typography>
-          {!row.balance ? 'None' : `≥ ${row.balance} ${row.token}`}
-        </Typography>
+        <Typography>{!row.balance ? 'None' : `≥ ${row.balance} ${row.token}`}</Typography>
       ),
     },
   ];

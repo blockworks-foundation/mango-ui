@@ -4,8 +4,8 @@ import React from 'react';
 import { Tabs, Typography } from 'antd';
 import FillsTable from './FillsTable';
 import FloatingElement from '../layout/FloatingElement';
-import FeesTable from './FeesTable';
 import { useOpenOrders, useBalances, useMarket } from '../../utils/markets';
+import MangoFees from './MangoFees';
 
 const { Paragraph } = Typography;
 const { TabPane } = Tabs;
@@ -35,7 +35,7 @@ export default function Index() {
         </TabPane>
         {market && market.supportsSrmFeeDiscounts ? (
           <TabPane tab="Fee discounts" key="fees">
-            <FeesTable />
+            <MangoFees />
           </TabPane>
         ) : null}
       </Tabs>
