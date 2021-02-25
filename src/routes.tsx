@@ -14,9 +14,7 @@ import { useDefaultMarket } from './utils/markets';
 
 export function Routes() {
   const defaultMarket = useDefaultMarket();
-  const defaultMarketUrl = `/market/${
-    defaultMarket?.address?.toBase58() || ''
-  }`;
+  const defaultMarketUrl = `/market/${defaultMarket?.address?.toBase58() || ''}`;
 
   return (
     <>
@@ -31,13 +29,8 @@ export function Routes() {
             </Route>
             <Route exact path="/orders" component={OpenOrdersPage} />
             <Route exact path="/balances" component={BalancesPage} />
-            <Route exact path="/convert" component={ConvertPage} />
             <Route exact path="/stats" component={StatsPage} />
-            <Route
-              exact
-              path="/list-new-market"
-              component={ListNewMarketPage}
-            />
+            <Route exact path="/list-new-market" component={ListNewMarketPage} />
             <Route exact path="/pools">
               <PoolListPage />
             </Route>
