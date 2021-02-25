@@ -32,10 +32,10 @@ export default function MarginInfo() {
   const settleBorrows = async () => {
     // Set that we are working
     if (mangoGroup && marginAccount) {
-      mangoGroup.tokens.forEach((token) => {
+      mangoGroup.tokens.forEach((token, i) => {
         setWorking(true);
         // Call settle on each token
-        settleBorrow(connection, mango_options.mango_program_id, mangoGroup, marginAccount, wallet, token, 1).then(() => setWorking(false)).catch((err) => console.error('Error settling borrows', err));
+        settleBorrow(connection, mango_options.mango_program_id, mangoGroup, marginAccount, wallet, token, marginAccount.getUiBorrow(mangoGroup, i) * 2).then(() => setWorking(false)).catch((err) => console.error('Error settling borrows', err));
       });
     }
   }

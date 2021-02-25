@@ -256,7 +256,7 @@ export async function settleBorrow(
 ): Promise<TransactionSignature> {
   const tokenIndex = mangoGroup.getTokenIndex(token);
   const nativeQuantity = uiToNative(quantity, mangoGroup.mintDecimals[tokenIndex]);
-
+  console.log(tokenIndex, nativeQuantity.toNumber())
   const keys = [
     { isSigner: false, isWritable: true, pubkey: mangoGroup.publicKey },
     { isSigner: false, isWritable: true, pubkey: marginAccount.publicKey },
@@ -512,6 +512,7 @@ export async function placeOrderAndSettle(
   const quantity = marginAccount.getUiBorrow(mangoGroup, tokenIndex);
   const nativeQuantity = uiToNative(quantity, mangoGroup.mintDecimals[tokenIndex]);
 
+  console.log(quantity, nativeQuantity.toNumber(), tokenIndex)
   const settleBorrowIns = makeSettleBorrowInstruction(
     programId,
     mangoGroup.publicKey,
