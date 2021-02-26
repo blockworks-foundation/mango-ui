@@ -220,7 +220,7 @@ const useMarginAccountHelper = () => {
       // Set up default mango group
       // Get the Mango group. For now we use our default BTC_ETH_USDC
       // TODO: Allow to select a mango group
-      let MangoGroup = mangoOptions.mango_groups.BTC_ETH_USDC;
+      let MangoGroup = mangoOptions.mango_groups.BTC_ETH_USDT;
       let mangoGroupPk = new PublicKey(MangoGroup.mango_group_pk);
       let srmVaultPk = new PublicKey(MangoGroup.srm_vault_pk);
       mangoClient
