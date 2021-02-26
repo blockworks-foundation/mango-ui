@@ -47,7 +47,7 @@ const ChartWrapper = styled.div`
 const icons = {
   BTC: btcIcon,
   ETH: ethIcon,
-  USDC: usdcIcon,
+  USDC: usdcIcon
 };
 
 const useMangoStats = () => {

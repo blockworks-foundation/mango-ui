@@ -10,6 +10,7 @@ import { useWallet } from '../utils/wallet';
 import { MangoClient, IDS, MangoGroup, MarginAccount } from '@mango/client';
 import { PublicKey } from '@solana/web3.js';
 import { zeroKey } from '@mango/client/lib/utils';
+import { DEFAULT_MANGO_GROUP } from '../utils/mango';
 
 function MarginAccountList() {
   const connection = useConnection();
@@ -21,7 +22,7 @@ function MarginAccountList() {
     undefined,
   );
 
-  const mangoGroupIds = IDS[endpointInfo!.name].mango_groups.BTC_ETH_USDC; // TODO allow selection of mango group with drop down
+  const mangoGroupIds = IDS[endpointInfo!.name].mango_groups[DEFAULT_MANGO_GROUP]; // TODO allow selection of mango group with drop down
   const mangoGroupPk = new PublicKey(mangoGroupIds.mango_group_pk);
 
   async function fetchMangoGroup() {

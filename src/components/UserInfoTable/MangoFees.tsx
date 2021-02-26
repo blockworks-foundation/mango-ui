@@ -17,6 +17,7 @@ import { nativeToUi } from '@mango/client/lib/utils';
 import { SRM_DECIMALS } from '@project-serum/serum/lib/token-instructions';
 import { useWallet } from '../../utils/wallet';
 import { TokenAccount } from '../../utils/types';
+import { DEFAULT_MANGO_GROUP } from '../../utils/mango';
 
 type FeeRates = {
   taker: number;
@@ -38,7 +39,7 @@ const useMangoGroup = () => {
   const connection = useConnection();
   const { endpointInfo } = useConnectionConfig();
   const mangoGroupPk = new PublicKey(
-    IDS[endpointInfo!.name].mango_groups.BTC_ETH_USDC.mango_group_pk,
+    IDS[endpointInfo!.name].mango_groups[DEFAULT_MANGO_GROUP].mango_group_pk,
   );
 
   useEffect(() => {

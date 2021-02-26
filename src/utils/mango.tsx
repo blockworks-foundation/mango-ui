@@ -23,6 +23,8 @@ import { getFeeRates, getFeeTier, Market, OpenOrders } from '@project-serum/seru
 import { Order } from '@project-serum/serum/lib/market';
 import { SRM_DECIMALS } from '@project-serum/serum/lib/token-instructions';
 
+export const DEFAULT_MANGO_GROUP="BTC_ETH_USDT"
+
 export async function initMarginAccount(
   connection: Connection,
   programId: PublicKey,

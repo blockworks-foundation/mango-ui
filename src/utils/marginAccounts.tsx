@@ -3,7 +3,7 @@ import React, { useState, useEffect, useContext, useRef } from 'react';
 // Import function to create margin account from mango library
 import { IDS, MangoGroup, MangoClient, MarginAccount } from '@mango/client';
 // Import some mango client functions
-import { initMarginAccount } from './mango';
+import { DEFAULT_MANGO_GROUP, initMarginAccount } from './mango';
 // Connection context
 import { useConnection, useConnectionConfig } from '../utils/connection';
 // Wallet context
@@ -19,6 +19,7 @@ export const tokenPrecision = {
   BTC: 4,
   ETH: 3,
   USDC: 2,
+  USDT: 2
 };
 
 // Create the margin account provider
@@ -72,7 +73,8 @@ const useMarginAccountHelper = () => {
   const [mangoGroup, setMangoGroup] = useState<MangoGroup | null>(null);
   // Save the current mango group identifier
   // TODO: Allow for changing
-  const [mango_groups, setMango_Groups] = useState(['BTC', 'ETH', 'USDC']);
+
+  const [mango_groups, setMango_Groups] = useState(DEFAULT_MANGO_GROUP.split('_'));
   // Let's know when any transaction is pending
   const [maPending, setMAPending] = useState<any>(() => {
     return {
