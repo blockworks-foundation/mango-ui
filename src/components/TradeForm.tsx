@@ -331,12 +331,12 @@ export default function TradeForm({
             onChange={(e) => onSetQuoteSize(parseFloat(e.target.value))}
           />
         </Input.Group>
-        <Slider
+        {/* <Slider
           value={sizeFraction}
           tipFormatter={(value) => `${value}%`}
           marks={sliderMarks}
           onChange={onSliderChange}
-        />
+        /> */}
         <div style={{ paddingTop: 18 }}>
           {'POST '}
           <Switch checked={postOnly} onChange={postOnChange} style={{ marginRight: 40 }} />

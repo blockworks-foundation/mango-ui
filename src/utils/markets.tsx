@@ -41,6 +41,7 @@ import { nativeToUi } from '@mango/client/lib/utils';
 import { sleep } from './utils';
 import { useMarginAccount } from './marginAccounts';
 import { NUM_TOKENS } from '@mango/client/lib/layout';
+import { DEFAULT_MANGO_GROUP } from './mango';
 
 // Used in debugging, should be false in production
 const _IGNORE_DEPRECATED = false;
@@ -51,7 +52,9 @@ export const USE_MARKETS: MarketInfo[] = _IGNORE_DEPRECATED
 
 export function useMarketsList() {
   const { endpointInfo } = useConnectionConfig();
-  const spotMarkets = IDS[endpointInfo!.name]?.spot_markets || {};
+  const spotMarkets =
+    IDS[endpointInfo!.name]?.mango_groups[DEFAULT_MANGO_GROUP].spot_market_symbols || {};
+
   // If no market for the endpoint, return
   const dexProgram = IDS[endpointInfo!.name]?.dex_program_id || '';
   const mangoMarkets = Object.entries(spotMarkets).map(([name, address]) => {

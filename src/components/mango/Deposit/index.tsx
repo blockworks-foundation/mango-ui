@@ -46,7 +46,7 @@ const Deposit = (props: {
   // WOrking state
   const [working, setWorking] = useState(false);
   // Ref to get the underlying input box
-  const inputRef = useRef(null);
+  const inputRef = useRef<any>(null);
 
   // How much does this token account have
   const userUiBalance = useCallback(() => {
@@ -70,27 +70,22 @@ const Deposit = (props: {
   const depositFunds = async () => {
     if (!connected) {
       notify({
-        message: 'Please Connect to wallet first',
+        message: 'Please connect to wallet first',
         description: 'Wallet not connected. Hit the connect wallet button',
         type: 'info',
       });
       return;
-    } else if (
-      !inputRef ||
-      !inputRef?.current ||
-      // @ts-ignore
-      !inputRef.current.state.value ||
-      // @ts-ignore
-      Number(inputRef.current.state.value) <= 0
-    ) {
+    }
+    if (!inputRef?.current?.state?.value || Number(inputRef?.current?.state?.value) <= 0) {
       notify({
-        message: 'Please Input Amount',
+        message: 'Please input amount',
         description: 'No amount to deposit inputed',
         type: 'error',
       });
       return;
-      // @ts-ignore
-    } else if (Number(inputRef.current.state.value) > Number(userUiBalance())) {
+    }
+    // @ts-ignore
+    if (Number(inputRef.current.state.value) > Number(userUiBalance())) {
       notify({
         message: 'Not enough funds',
         description: 'Please Input Amount less than your balance',
