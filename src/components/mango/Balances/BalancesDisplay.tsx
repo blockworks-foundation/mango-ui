@@ -121,11 +121,11 @@ export default function BalancesDisplay() {
                   : 0}
               </BalanceCol>
               <BalanceCol span={8}>
-                <Text strong type="success">
+                <Text strong style={{ color: '#AFD803' }}>
                   +{(mangoGroup.getDepositRate(i) * 100).toFixed(2)}%
                 </Text>
                 <Text>{'  /  '}</Text>
-                <Text strong type="danger">
+                <Text strong style={{ color: '#E54033' }}>
                   -{(mangoGroup.getBorrowRate(i) * 100).toFixed(2)}%
                 </Text>
               </BalanceCol>

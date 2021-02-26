@@ -1,4 +1,5 @@
 import React, { Suspense } from 'react';
+import { Helmet } from 'react-helmet';
 import './App.less';
 import { ConnectionProvider } from './utils/connection';
 import { WalletProvider } from './utils/wallet';

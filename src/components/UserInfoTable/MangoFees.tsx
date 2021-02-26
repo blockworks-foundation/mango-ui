@@ -25,13 +25,13 @@ type FeeRates = {
 };
 
 const FeeWrapper = styled.div`
-  background: #212734;
+  background: #262337;
 `;
 
 const DepositWrapper = styled.div`
   margin: 32px 0px;
   padding: 10px 20px;
-  background-color: #1a2029;
+  background-color: #141026;
 `;
 
 const useMangoGroup = () => {

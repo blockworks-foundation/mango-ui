@@ -18,11 +18,9 @@ import TradeForm from '../components/TradeForm';
 import TradesTable from '../components/TradesTable';
 import LinkAddress from '../components/LinkAddress';
 import DeprecatedMarketsInstructions from '../components/DeprecatedMarketsInstructions';
-import {
-  DeleteOutlined,
-  InfoCircleOutlined,
-} from '@ant-design/icons';
+import { DeleteOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { useHistory, useParams } from 'react-router-dom';
+import AppTitle from '../components/AppTitle';
 
 const { Option, OptGroup } = Select;
 
@@ -47,22 +45,15 @@ export default function TradePage() {
   }
 
   return (
-    <MarketProvider
-      marketAddress={marketAddress}
-      setMarketAddress={setMarketAddress}
-    >
+    <MarketProvider marketAddress={marketAddress} setMarketAddress={setMarketAddress}>
+      <AppTitle />
       <TradePageInner />
     </MarketProvider>
   );
 }
 
 function TradePageInner() {
-  const {
-    market,
-    marketName,
-    customMarkets,
-    setCustomMarkets,
-  } = useMarket();
+  const { market, marketName, customMarkets, setCustomMarkets } = useMarket();
   const markets = useMarketsList();
   const [handleDeprecated, setHandleDeprecated] = useState(false);
   // const [addMarketVisible, setAddMarketVisible] = useState(false);
@@ -76,9 +67,7 @@ function TradePageInner() {
     document.title = marketName ? `${marketName} — Serum` : 'Serum';
   }, [marketName]);
 
-  const changeOrderRef = useRef<
-    ({ size, price }: { size?: number; price?: number }) => void
-  >();
+  const changeOrderRef = useRef<({ size, price }: { size?: number; price?: number }) => void>();
 
   useEffect(() => {
     const handleResize = () => {
@@ -99,18 +88,11 @@ function TradePageInner() {
       (price) => changeOrderRef.current && changeOrderRef.current({ price }),
       [],
     ),
-    onSize: useCallback(
-      (size) => changeOrderRef.current && changeOrderRef.current({ size }),
-      [],
-    ),
+    onSize: useCallback((size) => changeOrderRef.current && changeOrderRef.current({ size }), []),
   };
   const component = (() => {
     if (handleDeprecated) {
-      return (
-        <DeprecatedMarketsPage
-          switchToLiveMarkets={() => setHandleDeprecated(false)}
-        />
-      );
+      return <DeprecatedMarketsPage switchToLiveMarkets={() => setHandleDeprecated(false)} />;
     } else if (width < 1000) {
       return <RenderSmaller {...componentProps} />;
     } else if (width < 1450) {
@@ -128,11 +110,7 @@ function TradePageInner() {
   return (
     <>
       <Wrapper>
-        <Row
-          align="middle"
-          style={{ paddingLeft: 5, paddingRight: 5 }}
-          gutter={16}
-        >
+        <Row align="middle" style={{ paddingLeft: 5, paddingRight: 5 }} gutter={16}>
           <Col>
             <MarketSelector
               markets={markets}
@@ -150,7 +128,7 @@ function TradePageInner() {
                 title="Market address"
                 trigger="click"
               >
-                <InfoCircleOutlined style={{ color: '#2abdd2' }} />
+                <InfoCircleOutlined style={{ color: '#f2c94c' }} />
               </Popover>
             </Col>
           ) : null}
@@ -158,8 +136,8 @@ function TradePageInner() {
             <React.Fragment>
               <Col>
                 <Typography>
-                  You have unsettled funds on old markets! Please go through
-                  them to claim your funds.
+                  You have unsettled funds on old markets! Please go through them to claim your
+                  funds.
                 </Typography>
               </Col>
               <Col>
@@ -194,10 +172,7 @@ function MarketSelector({
   const extractQuote = (a) => a.split('/')[1];
 
   const selectedMarket = markets
-    .find(
-      (proposedMarket) =>
-        market?.address && proposedMarket.address.equals(market.address),
-    )
+    .find((proposedMarket) => market?.address && proposedMarket.address.equals(market.address))
     ?.address?.toBase58();
 
   return (
@@ -250,17 +225,16 @@ function MarketSelector({
           .sort((a, b) =>
             extractQuote(a.name) === 'USDT' && extractQuote(b.name) !== 'USDT'
               ? -1
-              : extractQuote(a.name) !== 'USDT' &&
-                extractQuote(b.name) === 'USDT'
-                ? 1
-                : 0,
+              : extractQuote(a.name) !== 'USDT' && extractQuote(b.name) === 'USDT'
+              ? 1
+              : 0,
           )
           .sort((a, b) =>
             extractBase(a.name) < extractBase(b.name)
               ? -1
               : extractBase(a.name) > extractBase(b.name)
-                ? 1
-                : 0,
+              ? 1
+              : 0,
           )
           .map(({ address, name, deprecated }, i) => (
             <Option
@@ -286,9 +260,7 @@ const DeprecatedMarketsPage = ({ switchToLiveMarkets }) => {
     <>
       <Row>
         <Col flex="auto">
-          <DeprecatedMarketsInstructions
-            switchToLiveMarkets={switchToLiveMarkets}
-          />
+          <DeprecatedMarketsInstructions switchToLiveMarkets={switchToLiveMarkets} />
         </Col>
       </Row>
     </>
@@ -304,7 +276,7 @@ const RenderNormal = ({ onChangeOrderRef, onPrice, onSize }) => {
       }}
     >
       <Col flex="auto" style={{ display: 'flex', flexDirection: 'column' }}>
-        <FloatingElement style={{ flex: 1, minHeight: '300px' }}>
+        <FloatingElement style={{ flex: 1, minHeight: '300px', padding: 0 }}>
           <TVChartContainer />
         </FloatingElement>
         <UserInfoTable />
@@ -313,10 +285,7 @@ const RenderNormal = ({ onChangeOrderRef, onPrice, onSize }) => {
         <Orderbook smallScreen={false} onPrice={onPrice} onSize={onSize} />
         <TradesTable smallScreen={false} />
       </Col>
-      <Col
-        flex="420px"
-        style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
-      >
+      <Col flex="420px" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
         <TradeForm setChangeOrderRef={onChangeOrderRef} />
         <BalancesDisplay />
         <MarginInfo />
@@ -334,20 +303,12 @@ const RenderSmall = ({ onChangeOrderRef, onPrice, onSize }) => {
         }}
       >
         <Col flex="auto" style={{ height: '100%', display: 'flex' }}>
-          <Orderbook
-            smallScreen={true}
-            depth={13}
-            onPrice={onPrice}
-            onSize={onSize}
-          />
+          <Orderbook smallScreen={true} depth={13} onPrice={onPrice} onSize={onSize} />
         </Col>
         <Col flex="auto" style={{ height: '100%', display: 'flex' }}>
           <TradesTable smallScreen={true} />
         </Col>
-        <Col
-          flex="400px"
-          style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
-        >
+        <Col flex="400px" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
           <TradeForm setChangeOrderRef={onChangeOrderRef} />
           <BalancesDisplay />
           <MarginInfo />

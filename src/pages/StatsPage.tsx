@@ -1,14 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { Col, Row, Button, Divider } from 'antd';
-import {
-  LineChart,
-  Line,
-  ReferenceLine,
-  XAxis,
-  YAxis,
-  Tooltip,
-} from 'recharts';
+import { LineChart, Line, ReferenceLine, XAxis, YAxis, Tooltip } from 'recharts';
 import useDimensions from 'react-cool-dimensions';
 import btcIcon from '../assets/btc.svg';
 import ethIcon from '../assets/eth.svg';
@@ -105,9 +98,7 @@ const StatsChart = ({ title, xAxis, yAxis, data }) => {
           <div>
             <strong>
               Date
-              {mouseData
-                ? `: ${new Date(mouseData[xAxis]).toDateString()}`
-                : null}
+              {mouseData ? `: ${new Date(mouseData[xAxis]).toDateString()}` : null}
             </strong>
           </div>
         ) : null}
@@ -135,7 +126,7 @@ const StatsChart = ({ title, xAxis, yAxis, data }) => {
             type="linear"
             dot={false}
             dataKey={yAxis}
-            stroke="#2abdd2"
+            stroke="#f2c94c"
             strokeWidth={2}
           />
           {mouseData ? (
@@ -158,9 +149,7 @@ export default function StatsPage() {
   const [selectedAsset, setSelectedAsset] = useState<string | null>(null);
   const { latestStats, stats } = useMangoStats();
 
-  const selectedStatsData = stats.filter(
-    (stat) => stat.symbol === selectedAsset,
-  );
+  const selectedStatsData = stats.filter((stat) => stat.symbol === selectedAsset);
 
   return (
     <Wrapper style={{ paddingTop: 10 }}>
@@ -185,10 +174,7 @@ export default function StatsPage() {
                       <img src={icons[stat.symbol]} alt={icons[stat.symbol]} />
                     </Col>
                     <Col span={3}>
-                      <Button
-                        type="link"
-                        onClick={() => setSelectedAsset(stat.symbol)}
-                      >
+                      <Button type="link" onClick={() => setSelectedAsset(stat.symbol)}>
                         <div style={{ width: '100%' }}>{stat.symbol}</div>
                       </Button>
                     </Col>
@@ -196,9 +182,7 @@ export default function StatsPage() {
                     <Col span={4}>{stat.totalBorrows}</Col>
                     <Col span={4}>{stat.depositInterest}%</Col>
                     <Col span={4}>{stat.borrowInterest}%</Col>
-                    <Col span={4}>
-                      {(parseFloat(stat.utilization) * 100).toFixed(2)}%
-                    </Col>
+                    <Col span={4}>{(parseFloat(stat.utilization) * 100).toFixed(2)}%</Col>
                   </Row>
                 </div>
               ))}
@@ -206,9 +190,7 @@ export default function StatsPage() {
           </FloatingElement>
           {selectedAsset ? (
             <FloatingElement>
-              <Divider style={{ borderColor: 'white' }}>
-                Historical {selectedAsset} Stats
-              </Divider>
+              <Divider style={{ borderColor: 'white' }}>Historical {selectedAsset} Stats</Divider>
 
               <Row>
                 <Col span={12} style={{ height: '300px' }}>
