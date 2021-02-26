@@ -12,7 +12,7 @@ import { SettingOutlined } from '@ant-design/icons';
 
 const { Title } = Typography;
 const Wrapper = styled.div`
-  background-color: #0d1017;
+  background-color: #141026;
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
@@ -22,7 +22,7 @@ const Wrapper = styled.div`
 const LogoWrapper = styled.div`
   display: flex;
   align-items: center;
-  color: #2abdd2;
+  color: #ffffff;
   font-weight: bold;
   cursor: pointer;
   img {
@@ -82,9 +82,14 @@ export default function TopBar() {
         onClose={() => setAddEndpointVisible(false)}
       /> */}
       <Wrapper>
-        <LogoWrapper onClick={() => history.push(tradePageUrl)}>
+        <LogoWrapper onClick={() => history.push(tradePageUrl)} style={{ marginBottom: '2px' }}>
           <img src={logo} alt="" />
-          {'SERUM'}
+          <h4
+            className="ant-typography"
+            style={{ fontFamily: 'Lato', fontWeight: 600, marginBottom: '2px' }}
+          >
+            Mango Markets
+          </h4>
         </LogoWrapper>
         <Menu
           mode="horizontal"
@@ -94,19 +99,19 @@ export default function TopBar() {
             borderBottom: 'none',
             backgroundColor: 'transparent',
             display: 'flex',
-            alignItems: 'flex-end',
+            alignItems: 'center',
             flex: 1,
           }}
         >
           <Menu.Item key={tradePageUrl} style={{ margin: '0 10px 0 20px' }}>
-            <Title level={5} style={{ lineHeight: 3 }}>
-              TRADE
+            <Title level={5} style={{ fontWeight: 300, lineHeight: 3, marginBottom: 0 }}>
+              Trade
             </Title>
           </Menu.Item>
           {(!searchFocussed || location.pathname === '/stats') && (
             <Menu.Item key="/stats" style={{ margin: '0 10px' }}>
-              <Title level={5} style={{ lineHeight: 3 }}>
-                STATS
+              <Title level={5} style={{ fontWeight: 300, lineHeight: 3, marginBottom: 0 }}>
+                Stats
               </Title>
             </Menu.Item>
           )}
@@ -116,8 +121,8 @@ export default function TopBar() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <Title level={5} style={{ lineHeight: 3 }}>
-                LEARN
+              <Title level={5} style={{ fontWeight: 300, lineHeight: 3, marginBottom: 0 }}>
+                Learn
               </Title>
             </a>
           </Menu.Item>

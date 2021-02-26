@@ -4,14 +4,11 @@ import styled from 'styled-components';
 const Wrapper = styled.div`
   margin: 5px;
   padding: 20px;
-  background-color: #1a2029;
+  background-color: #141026;
+  border: 1px solid #584f81;
 `;
 
-export default function FloatingElement({
-  style = undefined,
-  children,
-  stretchVertical = false,
-}) {
+export default function FloatingElement({ style = undefined, children, stretchVertical = false }) {
   return (
     <Wrapper
       style={{

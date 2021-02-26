@@ -9,9 +9,29 @@ const { useBreakpoint } = Grid;
 
 // TODO: Put all links in tokenMap
 const footerElements = [
-  { description: 'Discord', link: helpUrls.discord, icon: <img alt="Discord" src="https://bonfida.com/social/discord.svg" style={{ width: '25px', height: '20px' }}></img> },
+  {
+    description: 'Discord',
+    link: helpUrls.discord,
+    icon: (
+      <img
+        alt="Discord"
+        src="https://bonfida.com/social/discord.svg"
+        style={{ width: '25px', height: '20px' }}
+      ></img>
+    ),
+  },
   { description: 'GitHub', link: helpUrls.github, icon: <GithubOutlined /> },
-  { description: 'Solana', link: helpUrls.solana, icon: <img alt="Solana" src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/solana/info/logo.png" style={{ width: '35px', height: '30px' }} ></img> }
+  {
+    description: 'Solana',
+    link: helpUrls.solana,
+    icon: (
+      <img
+        alt="Solana"
+        src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/solana/info/logo.png"
+        style={{ width: '35px', height: '30px' }}
+      ></img>
+    ),
+  },
 ];
 
 export const CustomFooter = () => {
@@ -23,6 +43,7 @@ export const CustomFooter = () => {
         height: '45px',
         paddingBottom: 10,
         paddingTop: 10,
+        background: '#141026',
       }}
     >
       <Row align="middle" gutter={[25, 4]} justify="center">

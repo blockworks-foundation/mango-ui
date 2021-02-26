@@ -20,7 +20,7 @@ export const BalanceCol = styled(Col)`
 `;
 
 export const InterestCol = styled(BalanceCol)`
-  color: rgb(2, 191, 118);
+  color: #afd803;
 `;
 export const LeftCol = styled(Col)`
   text-align: left;
@@ -31,8 +31,8 @@ export const RightCol = styled(Col)`
 `;
 
 export const ActionButton = styled(Button)`
-  color: #2abdd2;
-  background-color: #212734;
+  color: #f2c94c;
+  background-color: #262337;
   border-width: 0px;
 `;
 

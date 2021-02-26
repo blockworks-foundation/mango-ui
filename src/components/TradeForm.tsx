@@ -16,16 +16,8 @@ import {
 } from '../utils/markets';
 import { useWallet } from '../utils/wallet';
 import { notify } from '../utils/notifications';
-import {
-  getDecimalCount,
-  roundToDecimal,
-  floorToDecimal,
-} from '../utils/utils';
-import {
-  useSendConnection,
-  useConnection,
-  useConnectionConfig,
-} from '../utils/connection';
+import { getDecimalCount, roundToDecimal, floorToDecimal } from '../utils/utils';
+import { useSendConnection, useConnection, useConnectionConfig } from '../utils/connection';
 import { useIpAddress } from '../utils/useIpAddress';
 import FloatingElement from './layout/FloatingElement';
 import { getUnixTs } from '../utils/send';
@@ -43,8 +35,8 @@ const SellButton = styled(Button)`
 
 const BuyButton = styled(Button)`
   margin: 20px 0px 0px 0px;
-  background: #02bf76;
-  border-color: #02bf76;
+  background: #678c00;
+  border-color: #678c00;
 `;
 
 const sliderMarks = {
@@ -60,9 +52,7 @@ export default function TradeForm({
   setChangeOrderRef,
 }: {
   style?: any;
-  setChangeOrderRef?: (
-    ref: ({ size, price }: { size?: number; price?: number }) => void,
-  ) => void;
+  setChangeOrderRef?: (ref: ({ size, price }: { size?: number; price?: number }) => void) => void;
 }) {
   const [side, setSide] = useState<'buy' | 'sell'>('buy');
   const { address, baseCurrency, quoteCurrency, market } = useMarket();
@@ -79,9 +69,7 @@ export default function TradeForm({
   const { marginAccount, mangoGroup } = useMarginAccount();
   const markPrice = useMarkPrice();
   useFeeDiscountKeys();
-  const {
-    storedFeeDiscountKey: feeDiscountKey,
-  } = useLocallyStoredFeeDiscountKey();
+  const { storedFeeDiscountKey: feeDiscountKey } = useLocallyStoredFeeDiscountKey();
   const { ipAllowed } = useIpAddress();
 
   const [postOnly, setPostOnly] = useState(false);
@@ -93,14 +81,11 @@ export default function TradeForm({
   const [sizeFraction, setSizeFraction] = useState(0);
 
   const availableQuote =
-    openOrdersAccount && market
-      ? market.quoteSplSizeToNumber(openOrdersAccount.quoteTokenFree)
-      : 0;
+    openOrdersAccount && market ? market.quoteSplSizeToNumber(openOrdersAccount.quoteTokenFree) : 0;
 
   let quoteBalance = (quoteCurrencyBalances || 0) + (availableQuote || 0);
   let baseBalance = baseCurrencyBalances || 0;
-  let sizeDecimalCount =
-    market?.minOrderSize && getDecimalCount(market.minOrderSize);
+  let sizeDecimalCount = market?.minOrderSize && getDecimalCount(market.minOrderSize);
   let priceDecimalCount = market?.tickSize && getDecimalCount(market.tickSize);
 
   useEffect(() => {
@@ -127,16 +112,11 @@ export default function TradeForm({
         }
         const startTime = getUnixTs();
         console.log(`Refreshing accounts for ${market.address}`);
-        await market?.findOpenOrdersAccountsForOwner(
-          sendConnection,
-          wallet.publicKey,
-        );
+        await market?.findOpenOrdersAccountsForOwner(sendConnection, wallet.publicKey);
         await market?.findBestFeeDiscountKey(sendConnection, wallet.publicKey);
         const endTime = getUnixTs();
         console.log(
-          `Finished refreshing accounts for ${market.address} after ${
-            endTime - startTime
-          }`,
+          `Finished refreshing accounts for ${market.address} after ${endTime - startTime}`,
         );
       } catch (e) {
         console.log(`Encountered error when refreshing trading accounts: ${e}`);
@@ -159,8 +139,7 @@ export default function TradeForm({
       return;
     }
     const rawQuoteSize = baseSize * usePrice;
-    const quoteSize =
-      baseSize && roundToDecimal(rawQuoteSize, sizeDecimalCount);
+    const quoteSize = baseSize && roundToDecimal(rawQuoteSize, sizeDecimalCount);
     setQuoteSize(quoteSize);
   };
 
@@ -180,13 +159,7 @@ export default function TradeForm({
     setBaseSize(baseSize);
   };
 
-  const doChangeOrder = ({
-    size,
-    price,
-  }: {
-    size?: number;
-    price?: number;
-  }) => {
+  const doChangeOrder = ({ size, price }: { size?: number; price?: number }) => {
     const formattedSize = size && roundToDecimal(size, sizeDecimalCount);
     const formattedPrice = price && roundToDecimal(price, priceDecimalCount);
     formattedSize && onSetBaseSize(formattedSize);
@@ -194,8 +167,7 @@ export default function TradeForm({
   };
 
   const updateSizeFraction = () => {
-    const rawMaxSize =
-      side === 'buy' ? quoteBalance / (price || markPrice || 1) : baseBalance;
+    const rawMaxSize = side === 'buy' ? quoteBalance / (price || markPrice || 1) : baseBalance;
     const maxSize = floorToDecimal(rawMaxSize, sizeDecimalCount);
     const sizeFraction = Math.min(((baseSize || 0) / maxSize) * 100, 100);
     setSizeFraction(sizeFraction);
@@ -297,9 +269,7 @@ export default function TradeForm({
   }
 
   return (
-    <FloatingElement
-      style={{ display: 'flex', flexDirection: 'column', ...style }}
-    >
+    <FloatingElement style={{ display: 'flex', flexDirection: 'column', ...style }}>
       <div style={{ flex: 1 }}>
         <Radio.Group
           onChange={(e) => setSide(e.target.value)}
@@ -315,8 +285,8 @@ export default function TradeForm({
             style={{
               width: '50%',
               textAlign: 'center',
-              background: side === 'buy' ? '#02bf76' : '',
-              borderColor: side === 'buy' ? '#02bf76' : '',
+              background: side === 'buy' ? '#678c00' : '',
+              borderColor: side === 'buy' ? '#678c00' : '',
             }}
           >
             BUY
@@ -326,8 +296,8 @@ export default function TradeForm({
             style={{
               width: '50%',
               textAlign: 'center',
-              background: side === 'sell' ? '#F23B69' : '',
-              borderColor: side === 'sell' ? '#F23B69' : '',
+              background: side === 'sell' ? '#E54033' : '',
+              borderColor: side === 'sell' ? '#E54033' : '',
             }}
           >
             SELL
@@ -336,9 +306,7 @@ export default function TradeForm({
         <Input
           style={{ textAlign: 'right', paddingBottom: 8 }}
           addonBefore={<div style={{ width: '30px' }}>Price</div>}
-          suffix={
-            <span style={{ fontSize: 10, opacity: 0.5 }}>{quoteCurrency}</span>
-          }
+          suffix={<span style={{ fontSize: 10, opacity: 0.5 }}>{quoteCurrency}</span>}
           value={price}
           type="number"
           step={market?.tickSize || 1}
@@ -348,9 +316,7 @@ export default function TradeForm({
           <Input
             style={{ width: 'calc(50% + 30px)', textAlign: 'right' }}
             addonBefore={<div style={{ width: '30px' }}>Size</div>}
-            suffix={
-              <span style={{ fontSize: 10, opacity: 0.5 }}>{baseCurrency}</span>
-            }
+            suffix={<span style={{ fontSize: 10, opacity: 0.5 }}>{baseCurrency}</span>}
             value={baseSize}
             type="number"
             step={market?.minOrderSize || 1}
@@ -358,11 +324,7 @@ export default function TradeForm({
           />
           <Input
             style={{ width: 'calc(50% - 30px)', textAlign: 'right' }}
-            suffix={
-              <span style={{ fontSize: 10, opacity: 0.5 }}>
-                {quoteCurrency}
-              </span>
-            }
+            suffix={<span style={{ fontSize: 10, opacity: 0.5 }}>{quoteCurrency}</span>}
             value={quoteSize}
             type="number"
             step={market?.minOrderSize || 1}
@@ -377,11 +339,7 @@ export default function TradeForm({
         />
         <div style={{ paddingTop: 18 }}>
           {'POST '}
-          <Switch
-            checked={postOnly}
-            onChange={postOnChange}
-            style={{ marginRight: 40 }}
-          />
+          <Switch checked={postOnly} onChange={postOnChange} style={{ marginRight: 40 }} />
           {'IOC '}
           <Switch checked={ioc} onChange={iocOnChange} />
         </div>

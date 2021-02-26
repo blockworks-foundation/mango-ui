@@ -10,41 +10,34 @@ export default function WalletConnect() {
   const { connected, wallet } = useWallet();
   const publicKey = wallet?.publicKey?.toBase58();
   // Build menu items
-  const menu = useMemo(() =>
-    <Menu>
-      <Menu.Item onClick={wallet.disconnect}>
-        <DisconnectOutlined />
-        Disconnect
-      </Menu.Item>
-    </Menu>
-    , [wallet]);
+  const menu = useMemo(
+    () => (
+      <Menu>
+        <Menu.Item onClick={wallet.disconnect}>
+          <DisconnectOutlined />
+          Disconnect
+        </Menu.Item>
+      </Menu>
+    ),
+    [wallet],
+  );
 
   return (
     <React.Fragment>
-      {!connected ?
-        <ActionButton
-          size="large"
-          onClick={wallet.connect}
-          style={{ color: '#2abdd2' }}
-        >
+      {!connected ? (
+        <ActionButton size="large" onClick={wallet.connect} style={{ color: '#f2c94c' }}>
           {!connected ? 'Connect wallet' : 'Disconnect'}
         </ActionButton>
-        :
-        <Dropdown
-          overlay={menu}
-          placement="topCenter"
-        >
-          <ActionButton
-            size="large"
-            style={{ borderColor: 'green' }}
-          >
+      ) : (
+        <Dropdown overlay={menu} placement="topCenter">
+          <ActionButton size="large" style={{ borderColor: 'green' }}>
             <WalletFilled style={{ color: 'green' }} />
             <Text code>
               {publicKey.toString().substr(0, 4) + '...' + publicKey.toString().substr(-4)}
             </Text>
           </ActionButton>
         </Dropdown>
-      }
+      )}
     </React.Fragment>
   );
 }
