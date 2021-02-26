@@ -6,7 +6,6 @@ import tokenmap from './tokenMap';
 import { KnownToken } from './types';
 
 const useTokenInfo = () => {
-
   const [tokenMap, setTokenMap] = useState<Map<string, KnownToken>>(new Map());
   useEffect(() => {
     // fetch token files
@@ -18,6 +17,6 @@ const useTokenInfo = () => {
   }, []);
 
   return { tokenMap };
-}
+};
 
 export default useTokenInfo;

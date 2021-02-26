@@ -1,16 +1,16 @@
 // Here we keep track of the token accounts for the current mango group
 import { useWallet } from './wallet';
-import { useEffect, useReducer, useRef } from "react";
+import { useEffect, useReducer, useRef } from 'react';
 // Import function to create margin account from mango library
-import { mangoTokenAccounts, TokenAccount } from "../utils/types";
+import { mangoTokenAccounts, TokenAccount } from '../utils/types';
 import { useMarginAccount } from './marginAccounts';
-import { useTokenAccounts } from "./markets";
+import { useTokenAccounts } from './markets';
 // Get token account balane
 import { parseTokenAccountData } from './tokens';
 // Hook to keep track of the token accounts for the selected mango group
 const useMangoTokenAccount = () => {
   // Get our mango group context
-  const { mangoGroup, mango_groups } = useMarginAccount()
+  const { mangoGroup, mango_groups } = useMarginAccount();
   // Get the cached token accounts
   const tokenAccounts = useTokenAccounts();
   // The token account for all mango group is stored in this state variable
@@ -36,14 +36,19 @@ const useMangoTokenAccount = () => {
         // Get the mint address of this token
         let mintAddress = tokens[i].toBase58();
         // Get all accounts with the effective mint address
-        let accounts: TokenAccount[] | [] = tokenAccounts[0] ? tokenAccounts[0].filter((account) => account.effectiveMint.toBase58() === mintAddress) : [];
+        let accounts: TokenAccount[] | [] = tokenAccounts[0]
+          ? tokenAccounts[0].filter((account) => account.effectiveMint.toBase58() === mintAddress)
+          : [];
         // Set the token accounts for this token
         Accounts[token] = accounts;
         // Add to the ref of token account to their publick key mapping
         accounts.forEach((account) => {
           if (account && account.account) {
             // How much does this token account have
-            let balance = (parseTokenAccountData(account.account.data).amount / Math.pow(10, mangoGroup?.mintDecimals[i])).toFixed(3);
+            let balance = (
+              parseTokenAccountData(account.account.data).amount /
+              Math.pow(10, mangoGroup?.mintDecimals[i])
+            ).toFixed(3);
             tokenAccountsMapping.current[account.pubkey.toString()] = { account, balance };
           }
         });
@@ -52,7 +57,7 @@ const useMangoTokenAccount = () => {
       dispatch({ type: 'Update', payload: Accounts });
     }
     return;
-  }
+  };
 
   useEffect(() => {
     if (!mango_groups || !mangoGroup || !tokenAccounts[0]) {
@@ -71,8 +76,8 @@ const useMangoTokenAccount = () => {
   }, [connected]);
 
   // Export some needed state
-  return { mangoGroupTokenAccounts, tokenAccountsMapping }
-}
+  return { mangoGroupTokenAccounts, tokenAccountsMapping };
+};
 
 // Reducer function for the state update
 function mangoTokenAccReducer(state: mangoTokenAccounts, action: any) {
@@ -83,7 +88,7 @@ function mangoTokenAccReducer(state: mangoTokenAccounts, action: any) {
       return {};
 
     default:
-      return { ...state }
+      return { ...state };
   }
 }
 

@@ -1,9 +1,6 @@
 import React from 'react';
 import { Tabs } from 'antd';
-import {
-  useAllOpenOrdersBalances,
-  useWalletBalancesForAllMarkets,
-} from '../utils/markets';
+import { useAllOpenOrdersBalances, useWalletBalancesForAllMarkets } from '../utils/markets';
 import FloatingElement from '../components/layout/FloatingElement';
 import WalletBalancesTable from '../components/UserInfoTable/WalletBalancesTable';
 import { useMintToTickers } from '../utils/tokens';

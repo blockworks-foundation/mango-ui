@@ -23,54 +23,66 @@ const { Text } = Typography;
 export default function BalancesDisplay() {
   // Connection hook
   const { connected } = useWallet();
-  const { marginAccount, marginAccounts, keyMappings, mangoGroup, maPending, mango_groups, setMarginAccount } = useMarginAccount();
+  const {
+    marginAccount,
+    marginAccounts,
+    keyMappings,
+    mangoGroup,
+    maPending,
+    mango_groups,
+    setMarginAccount,
+  } = useMarginAccount();
   // Get token info
   const { tokenMap } = useTokenInfo();
   // Show or hide the deposit component
   const [showDeposit, setShowDeposit] = useState<boolean>(false);
   // What opration user wants to perform (withdraw or deposit)
-  const operation = useRef("deposit");
+  const operation = useRef('deposit');
   // Show the deposit modal
   const showModalDeposit = useCallback(() => {
     // Set the operation
-    operation.current = "Deposit"
-    setShowDeposit(showDeposit => true);
-  }, [])
+    operation.current = 'Deposit';
+    setShowDeposit((showDeposit) => true);
+  }, []);
   const showModalWithdraw = useCallback(() => {
     // Set the operation
-    operation.current = "Withdraw"
-    setShowDeposit(showDeposit => true);
-  }, [])
+    operation.current = 'Withdraw';
+    setShowDeposit((showDeposit) => true);
+  }, []);
   // Hide the modal
   const hideModal = useCallback(() => {
-    setShowDeposit(showDeposit => false);
-  }, [])
+    setShowDeposit((showDeposit) => false);
+  }, []);
   // Just some little optimization to disallow deposiModal re-render
-  const DepositModal = useMemo(() =>
-    <Deposit
-      mango_groups={mango_groups}
-      visible={showDeposit}
-      operation={operation.current}
-      onCancel={hideModal}
-    />
-    , [mango_groups, showDeposit, hideModal])
+  const DepositModal = useMemo(
+    () => (
+      <Deposit
+        mango_groups={mango_groups}
+        visible={showDeposit}
+        operation={operation.current}
+        onCancel={hideModal}
+      />
+    ),
+    [mango_groups, showDeposit, hideModal],
+  );
 
-  // For the account selector. Don't re-render every time 
-  const MAccountSelector = useMemo(() =>
-    <AccountSelector
-      marginAccount={marginAccount}
-      marginAccounts={marginAccounts}
-      setMarginAccount={setMarginAccount}
-      keyMappings={keyMappings}
-    />
-    , [marginAccounts, marginAccount, keyMappings, setMarginAccount]);
+  // For the account selector. Don't re-render every time
+  const MAccountSelector = useMemo(
+    () => (
+      <AccountSelector
+        marginAccount={marginAccount}
+        marginAccounts={marginAccounts}
+        setMarginAccount={setMarginAccount}
+        keyMappings={keyMappings}
+      />
+    ),
+    [marginAccounts, marginAccount, keyMappings, setMarginAccount],
+  );
 
   return (
     <FloatingElement style={{ flex: 0.5, paddingTop: 10, paddingRight: 1 }}>
       <React.Fragment>
-        <Divider>
-          Margin Account
-        </Divider>
+        <Divider>Margin Account</Divider>
         {marginAccounts.length > 1 && MAccountSelector}
         <SizeTitle>
           <BalanceCol span={6}>Assets</BalanceCol>
@@ -78,58 +90,63 @@ export default function BalancesDisplay() {
           <BalanceCol span={5}>Borrows</BalanceCol>
           <BalanceCol span={8}>Interest</BalanceCol>
         </SizeTitle>
-        {
-          maPending.sma ?
-            <RowBox justify="space-around" >
-              <Spin indicator={antIcon} />
-            </RowBox>
-            :
-            (marginAccount && mangoGroup) ? mango_groups.map((token, i) =>
-              <Row key={i}>
-                <Col span={6}>
-                  <img
-                    alt="Token icon"
-                    width="20"
-                    height="20"
-                    src={tokenMap.get(mangoGroup.tokens[i].toString())?.icon}
-                  />
-                  <Text type="secondary">
-                    {token}
-                  </Text>
-                </Col>
-                <BalanceCol span={5}>
-                  {marginAccount.getUiDeposit(mangoGroup, i).toFixed(tokenPrecision[token])}
-
-                </BalanceCol>
-                <BalanceCol span={5}>
-
-                  {marginAccount.getUiBorrow(mangoGroup, i).toFixed(tokenPrecision[token])}
-
-                </BalanceCol>
-                <BalanceCol span={8}>
-                  <Text strong type="success">
-                    +{(mangoGroup.getDepositRate(i) * 100).toFixed(2)}%
-                    </Text>
-                  <Text>
-                    {'  /  '}
-                  </Text>
-                  <Text strong type="danger">
-                    -{(mangoGroup.getBorrowRate(i) * 100).toFixed(2)}%
-                    </Text>
-                </BalanceCol>
-              </Row>
-            ) :
-              <Row align="middle" justify="center">
-                <BalanceCol>
-                  <Text>No data For Current    Account<br />
-                  (select a margin account)
-                  </Text>
-                </BalanceCol>
-              </Row>
-        }
+        {maPending.sma ? (
+          <RowBox justify="space-around">
+            <Spin indicator={antIcon} />
+          </RowBox>
+        ) : mangoGroup ? (
+          mango_groups.map((token, i) => (
+            <Row key={i}>
+              <Col span={6}>
+                <img
+                  alt="Token icon"
+                  width="20"
+                  height="20"
+                  src={tokenMap.get(mangoGroup.tokens[i].toString())?.icon}
+                  style={{
+                    marginBlock: 5,
+                    marginRight: 5,
+                  }}
+                />
+                <Text type="secondary">{token}</Text>
+              </Col>
+              <BalanceCol span={5}>
+                {marginAccount
+                  ? marginAccount.getUiDeposit(mangoGroup, i).toFixed(tokenPrecision[token])
+                  : 0}
+              </BalanceCol>
+              <BalanceCol span={5}>
+                {marginAccount
+                  ? marginAccount.getUiBorrow(mangoGroup, i).toFixed(tokenPrecision[token])
+                  : 0}
+              </BalanceCol>
+              <BalanceCol span={8}>
+                <Text strong type="success">
+                  +{(mangoGroup.getDepositRate(i) * 100).toFixed(2)}%
+                </Text>
+                <Text>{'  /  '}</Text>
+                <Text strong type="danger">
+                  -{(mangoGroup.getBorrowRate(i) * 100).toFixed(2)}%
+                </Text>
+              </BalanceCol>
+            </Row>
+          ))
+        ) : (
+          <Row align="middle" justify="center">
+            <BalanceCol>
+              <Text>
+                No data For Current Account
+                <br />
+                (select a margin account)
+              </Text>
+            </BalanceCol>
+          </Row>
+        )}
         <RowBox align="middle" justify="space-around">
           <Col style={{ width: 120 }}>
-            <ActionButton block size="middle"
+            <ActionButton
+              block
+              size="middle"
               onClick={showModalDeposit}
               disabled={connected ? false : true}
             >
@@ -137,23 +154,24 @@ export default function BalancesDisplay() {
             </ActionButton>
           </Col>
           <Col style={{ width: 120 }}>
-            <ActionButton block size="middle"
+            <ActionButton
+              block
+              size="middle"
               disabled={marginAccount ? false : true}
-              onClick={showModalWithdraw}>
+              onClick={showModalWithdraw}
+            >
               Withdraw
             </ActionButton>
           </Col>
         </RowBox>
-        {DepositModal}
+        {showDeposit && DepositModal}
       </React.Fragment>
     </FloatingElement>
   );
 }
 
-
-
 /**
- * 
+ *
  * @param accounts The list of margin accounts for this user
  */
 // TODO: Get account object structure
@@ -162,44 +180,45 @@ function AccountSelector({ keyMappings, marginAccounts, marginAccount, setMargin
   // Build a map of pubkeys to margin accounts
   const mapping: Map<PublicKey, MarginAccount> = keyMappings();
   const options = useMemo(() => {
-    return marginAccounts.length > 0 ?
-      // @ts-ignore
-      (marginAccounts.map((marginAccount: MarginAccount, i: number) =>
-      (
-        <Option
-          key={i}
-          value={marginAccount.publicKey.toString()}
-        >
-          <Text code>
-            {marginAccount.publicKey.toString().substr(0, 9) + '...' + marginAccount.publicKey.toString().substr(-9)}
-          </Text>
-        </Option>
-      )))
-      :
-      null
+    return marginAccounts.length > 0
+      ? // @ts-ignore
+        marginAccounts.map((marginAccount: MarginAccount, i: number) => (
+          <Option key={i} value={marginAccount.publicKey.toString()}>
+            <Text code>
+              {marginAccount.publicKey.toString().substr(0, 9) +
+                '...' +
+                marginAccount.publicKey.toString().substr(-9)}
+            </Text>
+          </Option>
+        ))
+      : null;
   }, [marginAccounts]);
 
-  return <div style={{ display: 'grid', justifyContent: 'center' }}>
-    <Select
-      size="middle"
-      placeholder={"Deposit to create an account"}
-      value={marginAccount ? marginAccount.publicKey.toString() : undefined}
-      listHeight={200}
-      style={{ width: '230px' }}
-      // @ts-ignore
-      onChange={(e) => setMarginAccount(mapping.get(e))}
-    >
-      {options}
-      <Option
-        value={""}
-        key=""
-        style={{
-          // @ts-ignore
-          backgroundColor: 'rgb(39, 44, 61)'
-        }}
+  return (
+    <div style={{ display: 'grid', justifyContent: 'center' }}>
+      <Select
+        size="middle"
+        placeholder={'Deposit to create an account'}
+        value={marginAccount ? marginAccount.publicKey.toString() : undefined}
+        listHeight={200}
+        style={{ width: '230px' }}
+        // @ts-ignore
+        onChange={(e) => setMarginAccount(mapping.get(e))}
       >
-        <Text keyboard type="warning">Use New Margin Account</Text>
-      </Option>
-    </Select>
-  </div>
+        {options}
+        <Option
+          value={''}
+          key=""
+          style={{
+            // @ts-ignore
+            backgroundColor: 'rgb(39, 44, 61)',
+          }}
+        >
+          <Text keyboard type="warning">
+            Use New Margin Account
+          </Text>
+        </Option>
+      </Select>
+    </div>
+  );
 }

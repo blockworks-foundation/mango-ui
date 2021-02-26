@@ -91,7 +91,7 @@ function TradePageInner() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const width = dimensions?.width;
+  const width = dimensions.width;
   const componentProps = {
     onChangeOrderRef: (ref) => (changeOrderRef.current = ref),
     onPrice: useCallback(
