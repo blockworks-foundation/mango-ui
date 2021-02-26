@@ -166,7 +166,16 @@ const useMarginAccountHelper = () => {
           return prev;
         });
         if (marginAccounts.length > 0 && !marginAccount) {
-          setMarginAccount(marginAccounts[0]);
+          // Get the margin account with the largest amount
+          let highestMAcc: MarginAccount = marginAccounts[0];
+          let lastEquity = 0;
+          mangoGroup.getPrices(connection).then((prices) => {
+            marginAccounts.forEach((marginAcc: MarginAccount) => {
+              highestMAcc =
+                marginAcc.computeValue(mangoGroup, prices) > lastEquity ? marginAcc : highestMAcc;
+            });
+            setMarginAccount(highestMAcc);
+          });
         }
       })
       .catch((err) => {
