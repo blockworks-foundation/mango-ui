@@ -1,5 +1,5 @@
 import { Row, Col, Popover, Typography, Spin, Tooltip } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons'
+import { LoadingOutlined } from '@ant-design/icons';
 import { ActionButton } from '../componentStyles';
 import React, { useEffect, useState } from 'react';
 import FloatingElement from '../../layout/FloatingElement';
@@ -7,7 +7,7 @@ import FloatingElement from '../../layout/FloatingElement';
 import { RowBox, LeftCol, RightCol, BalanceCol } from '../componentStyles';
 import { useMarginAccount } from '../../../utils/marginAccounts';
 // Connection hook
-import { useConnection } from '../../../utils/connection'
+import { useConnection } from '../../../utils/connection';
 // Mango client library
 import { settleBorrow } from '../../../utils/mango';
 // Wallet hook
@@ -26,7 +26,9 @@ export default function MarginInfo() {
   // Working state
   const [working, setWorking] = useState(false);
   // Hold the margin account info
-  const [mAccountInfo, setMAccountInfo] = useState<{ label: string, value: string, unit: string, desc: string, currency: string }[] | null>(null);
+  const [mAccountInfo, setMAccountInfo] = useState<
+    { label: string; value: string; unit: string; desc: string; currency: string }[] | null
+  >(null);
 
   // Settle bororows
   const settleBorrows = async () => {
@@ -35,23 +37,34 @@ export default function MarginInfo() {
       mangoGroup.tokens.forEach((token, i) => {
         setWorking(true);
         // Call settle on each token
-        settleBorrow(connection, mango_options.mango_program_id, mangoGroup, marginAccount, wallet, token, marginAccount.getUiBorrow(mangoGroup, i) * 2).then(() => setWorking(false)).catch((err) => console.error('Error settling borrows', err));
+        settleBorrow(
+          connection,
+          mango_options.mango_program_id,
+          mangoGroup,
+          marginAccount,
+          wallet,
+          token,
+          marginAccount.getUiBorrow(mangoGroup, i) * 2,
+        )
+          .then(() => setWorking(false))
+          .catch((err) => console.error('Error settling borrows', err));
       });
     }
-  }
+  };
   useEffect(() => {
-    if (marginAccount && mangoGroup) {
+    if (mangoGroup) {
       mangoGroup.getPrices(connection).then((prices) => {
-
-        const collateralRatio = marginAccount.getCollateralRatio(mangoGroup, prices);
+        const collateralRatio = marginAccount
+          ? marginAccount.getCollateralRatio(mangoGroup, prices)
+          : 200;
 
         setMAccountInfo([
           {
             label: 'Equity',
-            value: marginAccount.computeValue(mangoGroup, prices).toFixed(2),
+            value: marginAccount ? marginAccount.computeValue(mangoGroup, prices).toFixed(2) : '0',
             unit: '',
             currency: '$',
-            desc: 'The value of the account'
+            desc: 'The value of the account',
           },
           {
             // TODO: Get collaterization ratio
@@ -59,41 +72,37 @@ export default function MarginInfo() {
             value: collateralRatio > 2 ? '>200' : (100 * collateralRatio).toFixed(0),
             unit: '%',
             currency: '',
-            desc: 'The current collateral ratio'
+            desc: 'The current collateral ratio',
           },
           {
             label: 'Maint. Collateral Ratio',
             value: (mangoGroup.maintCollRatio * 100).toFixed(0),
             unit: '%',
             currency: '',
-            desc: 'The collateral ratio you must maintain to not get liquidated'
+            desc: 'The collateral ratio you must maintain to not get liquidated',
           },
           {
             label: 'Initial Collateral Ratio',
             value: (mangoGroup.initCollRatio * 100).toFixed(0),
             currency: '',
             unit: '%',
-            desc: 'The collateral ratio required to open a new margin position'
+            desc: 'The collateral ratio required to open a new margin position',
           },
         ]);
-      })
+      });
     }
-  }, [marginAccount, mangoGroup])
+  }, [marginAccount, mangoGroup]);
   return (
     <FloatingElement style={{ flex: 0.5, paddingTop: 10 }}>
       <React.Fragment>
-        {maPending.sma ?
-          <RowBox justify="space-around" >
+        {maPending.sma ? (
+          <RowBox justify="space-around">
             <Spin indicator={antIcon} />
           </RowBox>
-          :
-          marginAccount && mAccountInfo ? mAccountInfo.map((entry, i) => (
+        ) : mAccountInfo ? (
+          mAccountInfo.map((entry, i) => (
             <Row key={i} justify="space-around" style={{ padding: '10px' }}>
-              <Popover
-                content={entry.desc}
-                placement="topLeft"
-                trigger="hover"
-              >
+              <Popover content={entry.desc} placement="topLeft" trigger="hover">
                 <LeftCol span={14}>
                   <Text disabled code ellipsis={true}>
                     {entry.label}
@@ -102,18 +111,20 @@ export default function MarginInfo() {
               </Popover>
               <RightCol span={8}>
                 <Text strong>
-                  {entry.currency + (isNaN(Number(entry.value)) || Number(entry.value) >= Number.MAX_VALUE ? '>200' : entry.value)}{entry.unit}
+                  {entry.currency +
+                    (isNaN(Number(entry.value)) || Number(entry.value) >= Number.MAX_VALUE
+                      ? '>200'
+                      : entry.value)}
+                  {entry.unit}
                 </Text>
               </RightCol>
             </Row>
           ))
-            :
-            <RowBox justify="center">
-              <BalanceCol>
-                No Margin Account info available
-              </BalanceCol>
-            </RowBox>
-        }
+        ) : (
+          <RowBox justify="center">
+            <BalanceCol>No Margin Account info available</BalanceCol>
+          </RowBox>
+        )}
         <RowBox align="middle" justify="space-around">
           <Col span={8}>
             <ActionButton
@@ -124,19 +135,6 @@ export default function MarginInfo() {
               loading={working}
             >
               Settle Borrows
-          </ActionButton>
-          </Col>
-          <Col span={8}>
-            <ActionButton
-              block
-              size="middle"
-              disabled={marginAccount && mAccountInfo && mAccountInfo?.length > 0 ? false : true}
-              onClick={settleBorrows}
-              loading={working}
-            >
-              <Tooltip title="Settle Profit and Loss">
-                <span>Settle PnL</span>
-              </Tooltip>
             </ActionButton>
           </Col>
         </RowBox>
