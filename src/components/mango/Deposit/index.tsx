@@ -3,7 +3,7 @@ import React, { useRef, useMemo, useState, useCallback } from 'react';
 // Mango margin account hook
 import { useMarginAccount } from '../../../utils/marginAccounts';
 // Mango token accounts
-import useMangoTokenAccount from '../../../utils/mangoTokenAccounts';
+import { useMangoTokenAccount } from '../../../utils/mangoTokenAccounts';
 // TYpe annotation
 import { TokenAccount } from '../../../utils/types';
 // Notifications
@@ -20,7 +20,6 @@ import {
   withdrawSrm,
 } from '../../../utils/mango';
 import DepositModal from './DepositModal';
-import { MarginAccount } from '@mango/client';
 import { parseTokenAccountData } from '../../../utils/tokens';
 import { PublicKey } from '@solana/web3.js';
 
@@ -36,13 +35,7 @@ const Deposit = (props: {
   const connection = useConnection();
   const { wallet, connected } = useWallet();
   // Get the mango group and mango options
-  const {
-    marginAccount,
-    mangoGroup,
-    mango_groups,
-    mango_options,
-    createMarginAccount,
-  } = useMarginAccount();
+  const { marginAccount, mangoGroup, mango_groups, mango_options } = useMarginAccount();
   // Get the mangoGroup token account
   const { tokenAccountsMapping } = useMangoTokenAccount();
   // The current mango group tokens
@@ -65,10 +58,14 @@ const Deposit = (props: {
 
       return srmAccount?.amount;
     }
-    if (tokenAccount && tokenAccountsMapping.current[tokenAccount.pubkey.toString()]) {
+    if (
+      props.operation === 'Deposit' &&
+      tokenAccount &&
+      tokenAccountsMapping.current[tokenAccount.pubkey.toString()]
+    ) {
       return tokenAccountsMapping.current[tokenAccount.pubkey.toString()].balance;
     } else if (props.operation === 'Withdraw' && marginAccount && mangoGroup) {
-      return marginAccount.getUiDeposit(mangoGroup, mango_groups.indexOf(currency));
+      return Math.floor(marginAccount.getUiDeposit(mangoGroup, mango_groups.indexOf(currency)));
     }
     return '0';
   }, [tokenAccount, tokenAccountsMapping, currency]);

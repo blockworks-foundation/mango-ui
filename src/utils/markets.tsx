@@ -57,26 +57,58 @@ export function useMarketsList() {
 
   // If no market for the endpoint, return
   const dexProgram = IDS[endpointInfo!.name]?.dex_program_id || '';
-  const mangoMarkets = Object.entries(spotMarkets).map(([name, address]) => {
-    return {
-      address: new PublicKey(address as string),
-      programId: new PublicKey(dexProgram as string),
-      deprecated: false,
-      name,
-    };
+  // THe state of current market
+  const [markets, setMarkets] = useState(() => {
+    return Object.entries(spotMarkets).map(([name, address]) => {
+      return {
+        address: new PublicKey(address as string),
+        programId: new PublicKey(dexProgram as string),
+        deprecated: false,
+        name,
+      };
+    });
   });
-
-  return mangoMarkets;
+  const setAllMarkets = () => {
+    setMarkets(
+      Object.entries(spotMarkets).map(([name, address]) => {
+        return {
+          address: new PublicKey(address as string),
+          programId: new PublicKey(dexProgram as string),
+          deprecated: false,
+          name,
+        };
+      }),
+    );
+  };
+  // Set only some markets
+  const setMangoMarkets = (mangoTokens: Array<string>) => {
+    setMarkets(
+      Object.entries(spotMarkets)
+        .filter((market) => mangoTokens.includes(market[0]))
+        .map(([name, address]) => {
+          return {
+            address: new PublicKey(address as string),
+            programId: new PublicKey(dexProgram as string),
+            deprecated: false,
+            name,
+          };
+        }),
+    );
+  };
+  // useEffect(() => {
+  //   console.log('From market ', markets);
+  // }, [markets]);
+  return { markets, setAllMarkets, setMangoMarkets };
 }
 
 export function useDefaultMarket() {
-  const marketsList = useMarketsList();
+  const { markets: marketsList } = useMarketsList();
   return marketsList[0];
 }
 
 export function useAllMarkets() {
   const connection = useConnection();
-  const marketsList = useMarketsList();
+  const { markets: marketsList } = useMarketsList();
   const { customMarkets } = useCustomMarkets();
 
   const getAllMarkets = async () => {
@@ -248,7 +280,7 @@ export function MarketProvider({ marketAddress, setMarketAddress, children }) {
   const address = marketAddress && new PublicKey(marketAddress);
   const connection = useConnection();
   const { endpointInfo } = useConnectionConfig();
-  const marketInfos = useMarketsList();
+  const { markets: marketInfos, setMangoMarkets, setAllMarkets } = useMarketsList();
   const marketInfo = address && marketInfos.find((market) => market.address.equals(address));
   const [market, setMarket] = useState<Market | null>();
 
@@ -307,6 +339,9 @@ export function MarketProvider({ marketAddress, setMarketAddress, children }) {
         market,
         ...getMarketDetails(market, customMarkets, endpointInfo),
         marketName: marketInfo?.name,
+        markets: marketInfos,
+        setMangoMarkets,
+        setAllMarkets,
         setMarketAddress,
         customMarkets,
         setCustomMarkets,

@@ -3,8 +3,6 @@ import { Col, Typography, Row, Select, Spin, Divider } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 import { RowBox, SizeTitle, BalanceCol, ActionButton } from '../componentStyles';
 import FloatingElement from '../../layout/FloatingElement';
-// Import token info
-import useTokenInfo from '../../../utils/tokenInfo';
 // Let's get our account context
 import { tokenPrecision, useMarginAccount } from '../../../utils/marginAccounts';
 // Type annotaions
@@ -14,7 +12,6 @@ import { PublicKey } from '@solana/web3.js';
 import Deposit from '../Deposit';
 // Connection hook
 import { useWallet } from '../../../utils/wallet';
-
 const antIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />;
 
 const { Option } = Select;
@@ -31,9 +28,8 @@ export default function BalancesDisplay() {
     maPending,
     mango_groups,
     setMarginAccount,
+    setSize,
   } = useMarginAccount();
-  // Get token info
-  const { tokenMap } = useTokenInfo();
   // Show or hide the deposit component
   const [showDeposit, setShowDeposit] = useState<boolean>(false);
   // What opration user wants to perform (withdraw or deposit)
@@ -80,7 +76,7 @@ export default function BalancesDisplay() {
   );
 
   return (
-    <FloatingElement style={{ flex: 0.5, paddingTop: 10, paddingRight: 1 }}>
+    <FloatingElement style={{ flex: 0.5 }}>
       <React.Fragment>
         <Divider>Margin Account</Divider>
         {marginAccounts.length > 1 && MAccountSelector}
@@ -95,42 +91,49 @@ export default function BalancesDisplay() {
             <Spin indicator={antIcon} />
           </RowBox>
         ) : mangoGroup ? (
-          mango_groups.map((token, i) => (
-            <Row key={i}>
-              <Col span={6}>
-                <img
-                  alt="Token icon"
-                  width="20"
-                  height="20"
-                  src={tokenMap.get(mangoGroup.tokens[i].toString())?.icon}
-                  style={{
-                    marginBlock: 5,
-                    marginRight: 5,
-                  }}
-                />
-                <Text type="secondary">{token}</Text>
-              </Col>
-              <BalanceCol span={5}>
-                {marginAccount
-                  ? marginAccount.getUiDeposit(mangoGroup, i).toFixed(tokenPrecision[token])
-                  : 0}
-              </BalanceCol>
-              <BalanceCol span={5}>
-                {marginAccount
-                  ? marginAccount.getUiBorrow(mangoGroup, i).toFixed(tokenPrecision[token])
-                  : 0}
-              </BalanceCol>
-              <BalanceCol span={8}>
-                <Text strong style={{ color: '#AFD803' }}>
-                  +{(mangoGroup.getDepositRate(i) * 100).toFixed(2)}%
-                </Text>
-                <Text>{'  /  '}</Text>
-                <Text strong style={{ color: '#E54033' }}>
-                  -{(mangoGroup.getBorrowRate(i) * 100).toFixed(2)}%
-                </Text>
-              </BalanceCol>
-            </Row>
-          ))
+          mango_groups.map((token, i) => {
+            let depo = marginAccount ? marginAccount.getUiDeposit(mangoGroup, i) : 0;
+            let borr = marginAccount ? marginAccount.getUiBorrow(mangoGroup, i) : 0;
+            return (
+              <Row key={i} style={{ marginBottom: 4 }}>
+                <Col span={6}>
+                  <img
+                    alt=""
+                    width="20"
+                    height="20"
+                    src={require(`../../../assets/icons/${token.toLowerCase()}.svg`)}
+                    style={{
+                      marginRight: 5,
+                    }}
+                  />
+                  <Text type="secondary" ellipsis={true}>
+                    {token}
+                  </Text>
+                </Col>
+                <BalanceCol
+                  span={5}
+                  onClick={() =>
+                    setSize(
+                      depo === 0 ? { currency: '', size: 0 } : { currency: token, size: depo },
+                    )
+                  }
+                  style={{ cursor: 'pointer' }}
+                >
+                  {depo.toFixed(tokenPrecision[token])}
+                </BalanceCol>
+                <BalanceCol span={5}>{borr.toFixed(tokenPrecision[token])}</BalanceCol>
+                <BalanceCol span={8}>
+                  <Text strong style={{ color: '#AFD803' }}>
+                    +{(mangoGroup.getDepositRate(i) * 100).toFixed(2)}%
+                  </Text>
+                  <Text>{'  /  '}</Text>
+                  <Text strong style={{ color: '#E54033' }}>
+                    -{(mangoGroup.getBorrowRate(i) * 100).toFixed(2)}%
+                  </Text>
+                </BalanceCol>
+              </Row>
+            );
+          })
         ) : (
           <Row align="middle" justify="center">
             <BalanceCol>
