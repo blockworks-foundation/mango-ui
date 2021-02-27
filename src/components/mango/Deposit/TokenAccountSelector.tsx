@@ -17,16 +17,13 @@ const { Text } = Typography;
 const AccountSelector = ({ currency, customTokenAccounts, setTokenAccount, tokenAccount }) => {
   // Get the mangoGroup token account
   const { mangoGroupTokenAccounts, tokenAccountsMapping } = useMangoTokenAccount();
-  console.log('TOKEN ACCOUNT IN STATE', tokenAccount.pubkey.toString());
 
   const tokenAccounts = useMemo(() => {
-    return customTokenAccounts ? customTokenAccounts : mangoGroupTokenAccounts;
-  }, [customTokenAccounts]);
+    return customTokenAccounts.SRM ? customTokenAccounts : mangoGroupTokenAccounts;
+  }, [customTokenAccounts, mangoGroupTokenAccounts]);
 
   const options = useMemo(() => {
     // @ts-ignore
-    console.log('tokenAccounts in options', tokenAccounts);
-
     return tokenAccounts[currency] && tokenAccounts[currency].length > 0 ? (
       tokenAccounts[currency].map((account: TokenAccount, i: number) => (
         <Option key={i} value={account.pubkey.toString()}>
@@ -73,15 +70,10 @@ const AccountSelector = ({ currency, customTokenAccounts, setTokenAccount, token
     } else {
       setTokenAccount(null);
     }
-  }, []);
+  });
 
   const handleChange = (e) => {
     if (currency === 'SRM') {
-      console.log(
-        'handleChange====',
-        tokenAccounts[currency].find((acct) => acct.pubkey.toString() === e).pubkey.toString(),
-      );
-
       setTokenAccount(tokenAccounts[currency].find((acct) => acct.pubkey.toString() === e));
     } else {
       setTokenAccount(tokenAccountsMapping.current[e].account);

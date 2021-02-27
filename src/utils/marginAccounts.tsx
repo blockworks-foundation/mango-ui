@@ -303,7 +303,6 @@ const useMarginAccountHelper = () => {
 
   useEffect(() => {
     if (!mangoGroup) return;
-    console.log('fetching total srm---------------------');
 
     const getSrmFeeInfo = async () => {
       const srmAccountInfo = await connection.getAccountInfo(mangoGroup.srmVault);
