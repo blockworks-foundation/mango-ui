@@ -23,7 +23,7 @@ import { getFeeRates, getFeeTier, Market, OpenOrders } from '@project-serum/seru
 import { Order } from '@project-serum/serum/lib/market';
 import { SRM_DECIMALS } from '@project-serum/serum/lib/token-instructions';
 
-export const DEFAULT_MANGO_GROUP="BTC_ETH_USDT"
+export const DEFAULT_MANGO_GROUP = 'BTC_ETH_USDT';
 
 export async function initMarginAccount(
   connection: Connection,
@@ -122,6 +122,91 @@ export async function deposit(
   const sendingMessage = `sending ${functionName} instruction...`;
   const sentMessage = `${functionName} instruction sent`;
   const successMessage = `${functionName} instruction success`;
+  return await sendTransaction({
+    transaction,
+    wallet,
+    signers,
+    connection,
+    sendingMessage,
+    sentMessage,
+    successMessage,
+  });
+}
+
+export async function initMarginAccountAndDeposit(
+  connection: Connection,
+  programId: PublicKey,
+  mangoGroup: MangoGroup,
+  wallet: Wallet,
+  token: PublicKey,
+  tokenAcc: PublicKey,
+  quantity: number,
+): Promise<TransactionSignature> {
+  // Create a Solana account for the MarginAccount and allocate spac
+
+  const accInstr = await createAccountInstruction(
+    connection,
+    wallet.publicKey,
+    MarginAccountLayout.span,
+    programId,
+  );
+
+  // Specify the accounts this instruction takes in (see program/src/instruction.rs)
+  const keys = [
+    { isSigner: false, isWritable: false, pubkey: mangoGroup.publicKey },
+    { isSigner: false, isWritable: true, pubkey: accInstr.account.publicKey },
+    { isSigner: true, isWritable: false, pubkey: wallet.publicKey },
+    { isSigner: false, isWritable: false, pubkey: SYSVAR_RENT_PUBKEY },
+  ];
+
+  // Encode and create instruction for actual initMarginAccount instruction
+  const data = encodeMangoInstruction({ InitMarginAccount: {} });
+  const initMarginAccountInstruction = new TransactionInstruction({
+    keys,
+    data,
+    programId,
+  });
+
+  // Add all instructions to one atomic transaction
+  const transaction = new Transaction();
+  transaction.add(accInstr.instruction);
+  transaction.add(initMarginAccountInstruction);
+
+  const tokenIndex = mangoGroup.getTokenIndex(token);
+  const nativeQuantity = uiToNative(quantity, mangoGroup.mintDecimals[tokenIndex]);
+
+  const depositKeys = [
+    { isSigner: false, isWritable: true, pubkey: mangoGroup.publicKey },
+    { isSigner: false, isWritable: true, pubkey: accInstr.account.publicKey },
+    { isSigner: true, isWritable: false, pubkey: wallet.publicKey },
+    { isSigner: false, isWritable: true, pubkey: tokenAcc },
+    {
+      isSigner: false,
+      isWritable: true,
+      pubkey: mangoGroup.vaults[tokenIndex],
+    },
+    { isSigner: false, isWritable: false, pubkey: TOKEN_PROGRAM_ID },
+    { isSigner: false, isWritable: false, pubkey: SYSVAR_CLOCK_PUBKEY },
+  ];
+  const depositData = encodeMangoInstruction({
+    Deposit: { quantity: nativeQuantity },
+  });
+
+  const instruction = new TransactionInstruction({
+    keys: depositKeys,
+    data: depositData,
+    programId,
+  });
+  transaction.add(instruction);
+
+  // Specify signers in addition to the wallet
+  const signers = [accInstr.account];
+
+  const functionName = 'InitMarginAccount';
+  const sendingMessage = `sending ${functionName} instruction...`;
+  const sentMessage = `${functionName} instruction sent`;
+  const successMessage = `${functionName} instruction success`;
+
   return await sendTransaction({
     transaction,
     wallet,
@@ -359,9 +444,9 @@ export async function placeOrderAndSettle(
 
   const feeTier = getFeeTier(0, nativeToUi(mangoGroup.nativeSrm || 0, SRM_DECIMALS));
   const rates = getFeeRates(feeTier);
-  const maxQuoteQuantity = new BN(spotMarket['_decoded'].quoteLotSize.toNumber() * (1 + rates.taker)).mul(
-    spotMarket.baseSizeNumberToLots(size).mul(spotMarket.priceNumberToLots(price)),
-  );
+  const maxQuoteQuantity = new BN(
+    spotMarket['_decoded'].quoteLotSize.toNumber() * (1 + rates.taker),
+  ).mul(spotMarket.baseSizeNumberToLots(size).mul(spotMarket.priceNumberToLots(price)));
 
   if (maxBaseQuantity.lte(new BN(0))) {
     throw new Error('size too small');

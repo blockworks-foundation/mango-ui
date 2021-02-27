@@ -12,10 +12,17 @@ import { notify } from '../../../utils/notifications';
 import { useConnection } from '../../../utils/connection';
 import { useWallet } from '../../../utils/wallet';
 // And now mango client library functions
-import { deposit, depositSrm, withdraw, withdrawSrm } from '../../../utils/mango';
+import {
+  deposit,
+  depositSrm,
+  initMarginAccountAndDeposit,
+  withdraw,
+  withdrawSrm,
+} from '../../../utils/mango';
 import DepositModal from './DepositModal';
 import { MarginAccount } from '@mango/client';
 import { parseTokenAccountData } from '../../../utils/tokens';
+import { PublicKey } from '@solana/web3.js';
 
 const Deposit = (props: {
   currency?: string;
@@ -102,22 +109,6 @@ const Deposit = (props: {
     }
     // We are working
     setWorking(true);
-    // If user has no margin account, let's create one
-    let newMarginAcc: MarginAccount | null = null;
-    if (!marginAccount) {
-      // Create a margin account for the user
-      newMarginAcc = await createMarginAccount();
-      if (!newMarginAcc) {
-        // COuld not create a margin account
-        notify({
-          message: 'Could not cereate a margin account',
-          description: 'Please make sure you approve your transaction from your wallet',
-          type: 'error',
-        });
-        setWorking(false);
-        return;
-      }
-    }
     // Call the deposit function of mangoCLIENT
     // Check if we are depositing or withdrawing
     if (props.operation === 'Withdraw') {
@@ -127,7 +118,7 @@ const Deposit = (props: {
           mango_options.mango_program_id,
           // @ts-ignore
           mangoGroup,
-          marginAccount || newMarginAcc,
+          marginAccount,
           wallet,
           // @ts-ignore
           props.tokenAccount.pubkey,
@@ -161,7 +152,7 @@ const Deposit = (props: {
           mango_options.mango_program_id,
           // @ts-ignore
           mangoGroup,
-          marginAccount || newMarginAcc,
+          marginAccount,
           wallet,
           // @ts-ignore
           tokenAccount.effectiveMint,
@@ -200,7 +191,7 @@ const Deposit = (props: {
         mango_options.mango_program_id,
         // @ts-ignore
         mangoGroup,
-        marginAccount || newMarginAcc,
+        marginAccount,
         wallet,
         // @ts-ignore
         props.tokenAccount.pubkey,
@@ -228,40 +219,73 @@ const Deposit = (props: {
           props.onCancel();
         });
     } else {
-      deposit(
-        connection,
-        mango_options.mango_program_id,
-        // @ts-ignore
-        mangoGroup,
-        marginAccount || newMarginAcc,
-        wallet,
-        // @ts-ignore
-        tokenAccount.effectiveMint,
-        // @ts-ignore
-        tokenAccount.pubkey,
-        // @ts-ignore
-        Number(inputRef.current.state.value),
-      )
-        .then((transSig: string) => {
-          setWorking(false);
-          notify({
-            // @ts-ignore
-            message: `Deposited ${inputRef.current.state.value} ${currency} into your account`,
-            description: `Hash of transaction is ${transSig}`,
-            type: 'info',
+      if (!marginAccount && mangoGroup) {
+        initMarginAccountAndDeposit(
+          connection,
+          new PublicKey(mango_options.mango_program_id),
+          mangoGroup,
+          wallet,
+          // @ts-ignore
+          tokenAccount.effectiveMint,
+          // @ts-ignore
+          tokenAccount.pubkey,
+          // @ts-ignore
+          Number(inputRef.current.state.value),
+        )
+          .then((transSig: string) => {
+            setWorking(false);
+            notify({
+              // @ts-ignore
+              message: `Deposited ${inputRef.current.state.value} ${currency} into your account`,
+              description: `Hash of transaction is ${transSig}`,
+              type: 'info',
+            });
+            props.onCancel();
+          })
+          .catch((err) => {
+            setWorking(false);
+            console.error(err);
+            notify({
+              message: 'Could not perform init margin account and deposit operation',
+              type: 'error',
+            });
+            props.onCancel();
           });
-          props.onCancel();
-        })
-        .catch((err) => {
-          setWorking(false);
-          console.error(err);
-          notify({
-            message: 'Could not perform deposit operation',
-            description: 'Approve transaction from your wallet',
-            type: 'error',
+      } else {
+        deposit(
+          connection,
+          mango_options.mango_program_id,
+          // @ts-ignore
+          mangoGroup,
+          marginAccount,
+          wallet,
+          // @ts-ignore
+          tokenAccount.effectiveMint,
+          // @ts-ignore
+          tokenAccount.pubkey,
+          // @ts-ignore
+          Number(inputRef.current.state.value),
+        )
+          .then((transSig: string) => {
+            setWorking(false);
+            notify({
+              // @ts-ignore
+              message: `Deposited ${inputRef.current.state.value} ${currency} into your account`,
+              description: `Hash of transaction is ${transSig}`,
+              type: 'info',
+            });
+            props.onCancel();
+          })
+          .catch((err) => {
+            setWorking(false);
+            console.error(err);
+            notify({
+              message: 'Could not perform deposit operation',
+              type: 'error',
+            });
+            props.onCancel();
           });
-          props.onCancel();
-        });
+      }
     }
   };
 
