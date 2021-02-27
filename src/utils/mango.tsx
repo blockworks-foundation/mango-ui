@@ -141,7 +141,7 @@ export async function initMarginAccountAndDeposit(
   token: PublicKey,
   tokenAcc: PublicKey,
   quantity: number,
-): Promise<TransactionSignature> {
+): Promise<Array<any>> {
   // Create a Solana account for the MarginAccount and allocate spac
 
   const accInstr = await createAccountInstruction(
@@ -150,6 +150,7 @@ export async function initMarginAccountAndDeposit(
     MarginAccountLayout.span,
     programId,
   );
+  console.log('Account is ', accInstr);
 
   // Specify the accounts this instruction takes in (see program/src/instruction.rs)
   const keys = [
@@ -206,7 +207,7 @@ export async function initMarginAccountAndDeposit(
   const sentMessage = `${functionName} instruction sent`;
   const successMessage = `${functionName} instruction success`;
 
-  return await sendTransaction({
+  let trxHash = await sendTransaction({
     transaction,
     wallet,
     signers,
@@ -215,6 +216,7 @@ export async function initMarginAccountAndDeposit(
     sentMessage,
     successMessage,
   });
+  return [accInstr.account, trxHash];
 }
 
 export async function withdraw(

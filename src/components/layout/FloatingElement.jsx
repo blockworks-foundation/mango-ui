@@ -13,6 +13,7 @@ export default function FloatingElement({ style = undefined, children, stretchVe
     <Wrapper
       style={{
         height: stretchVertical ? 'calc(100% - 10px)' : undefined,
+        borderRadius: 10,
         ...style,
       }}
     >

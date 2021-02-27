@@ -14,7 +14,6 @@ import { settleBorrow } from '../../../utils/mango';
 import { useWallet } from '../../../utils/wallet';
 
 const { Text } = Typography;
-const antIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />;
 
 export default function MarginInfo() {
   // Connection hook
@@ -22,7 +21,7 @@ export default function MarginInfo() {
   // Wallet hook
   const { wallet } = useWallet();
   // Get our account info
-  const { marginAccount, mango_options, mangoGroup, maPending } = useMarginAccount();
+  const { marginAccount, mango_options, mangoGroup } = useMarginAccount();
   // Working state
   const [working, setWorking] = useState(false);
   // Hold the margin account info
@@ -95,16 +94,12 @@ export default function MarginInfo() {
   return (
     <FloatingElement style={{ flex: 0.5, paddingTop: 10 }}>
       <React.Fragment>
-        {maPending.sma ? (
-          <RowBox justify="space-around">
-            <Spin indicator={antIcon} />
-          </RowBox>
-        ) : mAccountInfo ? (
+        {mAccountInfo ? (
           mAccountInfo.map((entry, i) => (
             <Row key={i} justify="space-around" style={{ padding: '10px' }}>
               <Popover content={entry.desc} placement="topLeft" trigger="hover">
                 <LeftCol span={14}>
-                  <Text disabled code ellipsis={true}>
+                  <Text ellipsis={true} style={{ cursor: 'help' }}>
                     {entry.label}
                   </Text>
                 </LeftCol>

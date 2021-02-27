@@ -3,9 +3,9 @@ import styled from 'styled-components';
 import { Col, Row, Button, Divider } from 'antd';
 import { LineChart, Line, ReferenceLine, XAxis, YAxis, Tooltip } from 'recharts';
 import useDimensions from 'react-cool-dimensions';
-import btcIcon from '../assets/btc.svg';
-import ethIcon from '../assets/eth.svg';
-import usdcIcon from '../assets/usdc.svg';
+import btcIcon from '../assets/icons/btc.svg';
+import ethIcon from '../assets/icons/eth.svg';
+import usdcIcon from '../assets/icons//usdc.svg';
 import FloatingElement from '../components/layout/FloatingElement';
 
 const Wrapper = styled.div`
@@ -40,7 +40,7 @@ const ChartWrapper = styled.div`
 const icons = {
   BTC: btcIcon,
   ETH: ethIcon,
-  USDC: usdcIcon
+  USDC: usdcIcon,
 };
 
 const useMangoStats = () => {

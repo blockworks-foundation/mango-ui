@@ -275,20 +275,20 @@ const RenderNormal = ({ onChangeOrderRef, onPrice, onSize }) => {
         flexWrap: 'nowrap',
       }}
     >
-      <Col flex="auto" style={{ display: 'flex', flexDirection: 'column' }}>
-        <FloatingElement style={{ flex: 1, minHeight: '300px', padding: 0 }}>
-          <TVChartContainer />
-        </FloatingElement>
-        <UserInfoTable />
-      </Col>
-      <Col flex={'360px'} style={{ height: '100%' }}>
-        <Orderbook smallScreen={false} onPrice={onPrice} onSize={onSize} />
-        <TradesTable smallScreen={false} />
-      </Col>
       <Col flex="420px" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
         <TradeForm setChangeOrderRef={onChangeOrderRef} />
         <BalancesDisplay />
         <MarginInfo />
+      </Col>
+      <Col flex="auto" style={{ display: 'flex', flexDirection: 'column' }}>
+        <FloatingElement style={{ flex: 2, minHeight: '300px', padding: 0 }}>
+          <TVChartContainer />
+        </FloatingElement>
+        <UserInfoTable />
+      </Col>
+      <Col flex={'340px'} style={{ height: '100%' }}>
+        <Orderbook smallScreen={false} onPrice={onPrice} onSize={onSize} />
+        <TradesTable smallScreen={false} />
       </Col>
     </Row>
   );

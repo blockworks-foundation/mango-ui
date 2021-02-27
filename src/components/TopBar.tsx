@@ -1,14 +1,12 @@
-import { Col, Menu, Row, Select, Typography, Popover, Button } from 'antd';
+import { Col, Menu, Row, Select, Typography } from 'antd';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
-import logo from '../assets/logo.svg';
+import logo from '../assets/icons/logo.svg';
 import styled from 'styled-components';
 import { useWallet, WALLET_PROVIDERS } from '../utils/wallet';
 import { ENDPOINTS, useConnectionConfig } from '../utils/connection';
 import WalletConnect from './WalletConnect';
 import { getTradePageUrl } from '../utils/markets';
-import Settings from './Settings';
-import { SettingOutlined } from '@ant-design/icons';
 
 const { Title } = Typography;
 const Wrapper = styled.div`
