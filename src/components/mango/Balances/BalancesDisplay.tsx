@@ -138,9 +138,9 @@ export default function BalancesDisplay() {
           <Row align="middle" justify="center">
             <BalanceCol>
               <Text>
-                No data For Current Account
+
                 <br />
-                (select a margin account)
+
               </Text>
             </BalanceCol>
           </Row>

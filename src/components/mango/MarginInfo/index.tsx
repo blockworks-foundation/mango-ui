@@ -118,7 +118,7 @@ export default function MarginInfo() {
           ))
         ) : (
           <RowBox justify="center" align="middle">
-            <BalanceCol>No Margin Account info available</BalanceCol>
+            <BalanceCol></BalanceCol>
           </RowBox>
         )}
         <RowBox align="middle" justify="space-around">

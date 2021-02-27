@@ -201,7 +201,6 @@ export async function initMarginAccountAndDeposit(
 
   // Specify signers in addition to the wallet
   const signers = [accInstr.account];
-
   const functionName = 'InitMarginAccount';
   const sendingMessage = `sending ${functionName} instruction...`;
   const sentMessage = `${functionName} instruction sent`;
