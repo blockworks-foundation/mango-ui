@@ -30,7 +30,7 @@ const Deposit = (props: {
   mango_groups: Array<string>;
   visible: boolean;
   operation: string;
-  tokenAccount?: TokenAccount;
+  srmTokenAccounts?: TokenAccount[];
   onCancel: () => void;
 }) => {
   // Connection and wallet options
@@ -52,7 +52,9 @@ const Deposit = (props: {
   const [currency, setCurrency] = useState<string>(props.currency || mango_groups[0]);
   // Set the current token account upon currency change
   // The current token account
-  const [tokenAccount, setTokenAccount] = useState<TokenAccount | null>(props.tokenAccount || null);
+  const [tokenAccount, setTokenAccount] = useState<TokenAccount | null>(
+    props.srmTokenAccounts?.[0] || null,
+  );
   // WOrking state
   const [working, setWorking] = useState(false);
   // Ref to get the underlying input box
@@ -61,14 +63,17 @@ const Deposit = (props: {
   // How much does this token account have
   const userUiBalance = useCallback(() => {
     if (currency === 'SRM') {
-      const srmAccount =
-        props.tokenAccount && props.tokenAccount.account
-          ? parseTokenAccountData(props.tokenAccount.account.data)
-          : null;
-
-      const srmAmount = srmAccount ? srmAccount.amount : 0;
-
-      return nativeToUi(srmAmount, SRM_DECIMALS);
+      if (props.srmTokenAccounts?.length && tokenAccount?.account) {
+        const acct = props.srmTokenAccounts.find(
+          (acct) => acct.pubkey.toString() === tokenAccount.pubkey.toString(),
+        );
+        let srmAmount = 0;
+        if (acct?.account) {
+          srmAmount = parseTokenAccountData(acct?.account.data).amount;
+        }
+        return nativeToUi(srmAmount, SRM_DECIMALS);
+      }
+      return 0;
     }
     if (
       props.operation === 'Deposit' &&
@@ -80,7 +85,7 @@ const Deposit = (props: {
       return Math.floor(marginAccount.getUiDeposit(mangoGroup, mango_groups.indexOf(currency)));
     }
     return '0';
-  }, [tokenAccount, tokenAccountsMapping, currency]);
+  }, [tokenAccount, tokenAccountsMapping, currency, props.srmTokenAccounts]);
   // TODO: Pack clinet library instruction into one
   // When the user hits deposit
   const depositFunds = async () => {
@@ -108,7 +113,7 @@ const Deposit = (props: {
         type: 'error',
       });
       return;
-    } else if (!tokenAccount && !props.tokenAccount) {
+    } else if (!tokenAccount && !props.srmTokenAccounts?.length) {
       notify({
         message: 'Please create a token Account',
         description: 'Create a token acount for this currency',
@@ -130,7 +135,7 @@ const Deposit = (props: {
           marginAccount,
           wallet,
           // @ts-ignore
-          props.tokenAccount.pubkey,
+          tokenAccount.pubkey,
           // @ts-ignore
           Number(inputRef.current.state.value),
         )
@@ -203,7 +208,7 @@ const Deposit = (props: {
         marginAccount,
         wallet,
         // @ts-ignore
-        props.tokenAccount.pubkey,
+        tokenAccount.pubkey,
         // @ts-ignore
         Number(inputRef.current.state.value),
       )
@@ -316,6 +321,7 @@ const Deposit = (props: {
         onSelectAccount={setTokenAccount}
         currency={currency}
         tokenAccount={tokenAccount}
+        customTokenAccounts={{ SRM: props.srmTokenAccounts }}
         userUiBalance={userUiBalance}
         ref={inputRef}
         working={working}

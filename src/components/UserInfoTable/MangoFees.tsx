@@ -36,7 +36,7 @@ const DepositWrapper = styled.div`
 //         onCancel={props.onCancel}
 //         handleClick={depositFunds}
 //         setCurrency={setCurrency}
-//         onSelectAccount={setTokenAccount}
+//         onSelectAccount={setSrmAccounts}
 //         currency="SRM"
 //         tokenAccount={tokenAccount}
 //         userUiBalance={userUiBalance}
@@ -50,7 +50,7 @@ const DepositWrapper = styled.div`
 
 export default function MangoFees() {
   const [contributedSrm, setContributedSrm] = useState(0);
-  const [tokenAccount, setTokenAccount] = useState<TokenAccount | undefined>();
+  const [srmTokenAccounts, setSrmAccounts] = useState<TokenAccount[]>([]);
   const [showDeposit, setShowDeposit] = useState<boolean>(false);
   const operation = useRef('deposit');
 
@@ -77,7 +77,7 @@ export default function MangoFees() {
   }, []);
 
   const DepositModal = useMemo(() => {
-    if (!tokenAccount) return null;
+    if (!srmTokenAccounts.length) return null;
     return (
       <Deposit
         currency="SRM"
@@ -85,25 +85,27 @@ export default function MangoFees() {
         visible={showDeposit}
         operation={operation.current}
         onCancel={hideModal}
-        tokenAccount={tokenAccount}
+        srmTokenAccounts={srmTokenAccounts}
       />
     );
-  }, [showDeposit, hideModal, tokenAccount]);
+  }, [showDeposit, hideModal, srmTokenAccounts]);
 
   useEffect(() => {
     const getTotalSrm = async () => {
       if (wallet && connected) {
         // connected wallet srm account info
         const walletTokenAccount = await getTokenAccountInfo(connection, wallet.publicKey);
-        const walletSrmAcctData = walletTokenAccount.find(
+        const walletSrmAccts = walletTokenAccount.filter(
           (acct) => acct.effectiveMint.toString() === SRM_ADDRESS,
         );
-        setTokenAccount(walletSrmAcctData);
+
+        setSrmAccounts(walletSrmAccts);
       }
     };
+    console.log('gettingTotalSrm');
 
     getTotalSrm();
-  }, [connection, wallet, connected]);
+  }, [connection, wallet, connected, SRM_ADDRESS, marginAccount]);
 
   useEffect(() => {
     if (marginAccount) {
