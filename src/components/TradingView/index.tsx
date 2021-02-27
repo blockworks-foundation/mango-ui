@@ -4,7 +4,7 @@ import {
   widget,
   ChartingLibraryWidgetOptions,
   IChartingLibraryWidget,
-  ResolutionString
+  ResolutionString,
 } from '../../charting_library'; // Make sure to follow step 1 of the README
 import { useMarket } from '../../utils/markets';
 import { BONFIDA_DATA_FEED } from '../../utils/bonfidaConnector';
@@ -42,7 +42,10 @@ export const TVChartContainer = () => {
     libraryPath: '/charting_library/',
     fullscreen: false,
     autosize: true,
-    studiesOverrides: {},
+    studiesOverrides: {
+      'volume.volume.color.0': '#AFD803',
+      'volume.volume.color.1': '#E54033',
+    },
   };
 
   const tvWidgetRef = React.useRef<IChartingLibraryWidget | null>(null);
@@ -53,14 +56,32 @@ export const TVChartContainer = () => {
       symbol: marketName,
       // BEWARE: no trailing slash is expected in feed URL
       // tslint:disable-next-line:no-any
-      datafeed: new (window as any).Datafeeds.UDFCompatibleDatafeed(
-        defaultProps.datafeedUrl,
-      ),
+      datafeed: new (window as any).Datafeeds.UDFCompatibleDatafeed(defaultProps.datafeedUrl),
       interval: defaultProps.interval as ChartingLibraryWidgetOptions['interval'],
       container_id: defaultProps.containerId as ChartingLibraryWidgetOptions['container_id'],
       library_path: defaultProps.libraryPath as string,
       locale: 'en',
-      disabled_features: ['use_localstorage_for_settings'],
+      disabled_features: [
+        'use_localstorage_for_settings',
+        'timeframes_toolbar',
+        'volume_force_overlay',
+        'left_toolbar',
+        'show_logo_on_all_charts',
+        'caption_buttons_text_if_possible',
+        'header_settings',
+        'header_chart_type',
+        'header_compare',
+        'compare_symbol',
+        'header_screenshot',
+        'header_widget_dom_node',
+        'header_saveload',
+        'header_undo_redo',
+        'header_interval_dialog_button',
+        'show_interval_dialog_on_key_press',
+        'header_symbol_search',
+        'header_resolutions',
+        'header_widget',
+      ],
       enabled_features: ['study_templates'],
       load_last_chart: true,
       client_id: defaultProps.clientId,
@@ -69,6 +90,18 @@ export const TVChartContainer = () => {
       autosize: defaultProps.autosize,
       studies_overrides: defaultProps.studiesOverrides,
       theme: 'Dark',
+      overrides: {
+        'paneProperties.background': '#141026',
+        'mainSeriesProperties.candleStyle.upColor': '#AFD803',
+        'mainSeriesProperties.candleStyle.downColor': '#E54033',
+        'mainSeriesProperties.candleStyle.drawWick': true,
+        'mainSeriesProperties.candleStyle.drawBorder': true,
+        'mainSeriesProperties.candleStyle.borderColor': '#AFD803',
+        'mainSeriesProperties.candleStyle.borderUpColor': '#AFD803',
+        'mainSeriesProperties.candleStyle.borderDownColor': '#E54033',
+        'mainSeriesProperties.candleStyle.wickUpColor': '#AFD803',
+        'mainSeriesProperties.candleStyle.wickDownColor': '#E54033',
+      },
     };
 
     const tvWidget = new widget(widgetOptions);

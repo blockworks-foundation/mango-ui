@@ -41,7 +41,11 @@ const Line = styled.div`
 const Price = styled.div`
   position: absolute;
   right: 5px;
-  color: white;
+  ${(props) =>
+    props['data-color'] &&
+    css`
+      color: ${props['data-color']};
+    `}
 `;
 
 export default function Orderbook({ smallScreen, depth = 7, onPrice, onSize }) {
@@ -175,9 +179,11 @@ const OrderbookRow = React.memo(
         <Col span={12} style={{ textAlign: 'right' }}>
           <Line
             data-width={sizePercent + '%'}
-            data-bgcolor={side === 'buy' ? 'rgba(103,140,0,1)' : 'rgba(229,64,51,1)'}
+            data-bgcolor={side === 'buy' ? 'rgba(175,216,1,0.4)' : 'rgba(229,64,51,1)'}
           />
-          <Price onClick={onPriceClick}>{formattedPrice}</Price>
+          <Price data-color={side === 'buy' ? '#ffffff' : 'white'} onClick={onPriceClick}>
+            {formattedPrice}
+          </Price>
         </Col>
       </Row>
     );

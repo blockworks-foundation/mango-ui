@@ -29,14 +29,15 @@ import { useMarginAccount } from '../utils/marginAccounts';
 
 const SellButton = styled(Button)`
   margin: 20px 0px 0px 0px;
-  background: #f23b69;
-  border-color: #f23b69;
+  background: #e54033;
+  border-color: #e54033;
 `;
 
 const BuyButton = styled(Button)`
   margin: 20px 0px 0px 0px;
-  background: #678c00;
-  border-color: #678c00;
+  color: #141026;
+  background: #9bd104;
+  border-color: #9bd104;
 `;
 
 const sliderMarks = {
@@ -285,8 +286,9 @@ export default function TradeForm({
             style={{
               width: '50%',
               textAlign: 'center',
-              background: side === 'buy' ? '#678c00' : '',
-              borderColor: side === 'buy' ? '#678c00' : '',
+              color: side === 'buy' ? '#141026' : '',
+              background: side === 'buy' ? '#AFD803' : '',
+              borderColor: side === 'buy' ? '#AFD803' : '',
             }}
           >
             BUY
