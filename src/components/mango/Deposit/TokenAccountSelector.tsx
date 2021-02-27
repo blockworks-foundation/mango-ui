@@ -20,7 +20,7 @@ const AccountSelector = ({ currency, customTokenAccounts, setTokenAccount, token
 
   const tokenAccounts = useMemo(() => {
     return customTokenAccounts.SRM ? customTokenAccounts : mangoGroupTokenAccounts;
-  }, [customTokenAccounts, mangoGroupTokenAccounts]);
+  }, [customTokenAccounts]);
 
   const options = useMemo(() => {
     // @ts-ignore
@@ -50,6 +50,7 @@ const AccountSelector = ({ currency, customTokenAccounts, setTokenAccount, token
   }, [currency, tokenAccounts]);
 
   useEffect(() => {
+    if (currency === 'SRM') return;
     // Set the first account for the token
     if (tokenAccounts[currency] && tokenAccounts[currency].length > 0) {
       // Set the account with highest balance
