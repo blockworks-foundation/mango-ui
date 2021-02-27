@@ -22,6 +22,8 @@ import {
 import DepositModal from './DepositModal';
 import { parseTokenAccountData } from '../../../utils/tokens';
 import { PublicKey } from '@solana/web3.js';
+import { nativeToUi } from '@mango/client/lib/utils';
+import { SRM_DECIMALS } from '@project-serum/serum/lib/token-instructions';
 
 const Deposit = (props: {
   currency?: string;
@@ -31,7 +33,7 @@ const Deposit = (props: {
   tokenAccount?: TokenAccount;
   onCancel: () => void;
 }) => {
-  // COnnection and wallet options
+  // Connection and wallet options
   const connection = useConnection();
   const { wallet, connected } = useWallet();
   // Get the mango group and mango options
@@ -64,7 +66,9 @@ const Deposit = (props: {
           ? parseTokenAccountData(props.tokenAccount.account.data)
           : null;
 
-      return srmAccount?.amount;
+      const srmAmount = srmAccount ? srmAccount.amount : 0;
+
+      return nativeToUi(srmAmount, SRM_DECIMALS);
     }
     if (
       props.operation === 'Deposit' &&
@@ -302,7 +306,6 @@ const Deposit = (props: {
   };
 
   const DepoModal = useMemo(() => {
-    console.log('render deposit');
     return (
       <DepositModal
         mango_groups={props.mango_groups}

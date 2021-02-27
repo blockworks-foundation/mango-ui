@@ -10,7 +10,7 @@ const AppTitle = () => {
     <Helmet>
       {markPrice && marketName ? (
         <title>
-          ${`${markPrice}`} {marketName} &middot; Mango
+          ${`${markPrice.toFixed(2)}`} {marketName} &middot; Mango
         </title>
       ) : (
         <title>Mango Markets</title>

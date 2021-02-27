@@ -1,28 +1,19 @@
 import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
-import { Row, Col, Typography, Tag } from 'antd';
+import { Row, Col, Typography } from 'antd';
 import styled from 'styled-components';
-// import { useFeeDiscountKeys } from '../../utils/markets';
-// import DataTable from '../layout/DataTable';
-import { getTokenAccountInfo, parseTokenAccountData } from '../../utils/tokens';
-import { TokenInstructions, getFeeRates, getFeeTier } from '@project-serum/serum';
+import { IDS } from '@mango/client';
+import { nativeToUi } from '@mango/client/lib/utils';
+import { SRM_DECIMALS } from '@project-serum/serum/lib/token-instructions';
+
+import { getTokenAccountInfo } from '../../utils/tokens';
 import { percentFormat } from '../../utils/utils';
 import { useConnection, useConnectionConfig } from '../../utils/connection';
 import { RowBox, SizeTitle, ActionButton } from '../mango/componentStyles';
 import { useMarginAccount } from '../../utils/marginAccounts';
-import { IDS, MangoClient, MangoGroup } from '@mango/client';
-import { PublicKey } from '@solana/web3.js';
-import FloatingElement from '../layout/FloatingElement';
 import Deposit from '../mango/Deposit/index';
-import { nativeToUi } from '@mango/client/lib/utils';
-import { SRM_DECIMALS } from '@project-serum/serum/lib/token-instructions';
 import { useWallet } from '../../utils/wallet';
 import { TokenAccount } from '../../utils/types';
-import { DEFAULT_MANGO_GROUP } from '../../utils/mango';
-
-type FeeRates = {
-  taker: number;
-  maker: number;
-};
+// import DepositModal from '../mango/Deposit/DepositModal';
 
 const FeeWrapper = styled.div`
   background: #262337;
@@ -34,38 +25,37 @@ const DepositWrapper = styled.div`
   background-color: #141026;
 `;
 
-const useMangoGroup = () => {
-  const [mangoGroup, setMangoGroup] = useState<MangoGroup | null>();
-  const connection = useConnection();
-  const { endpointInfo } = useConnectionConfig();
-  const mangoGroupPk = new PublicKey(
-    IDS[endpointInfo!.name].mango_groups[DEFAULT_MANGO_GROUP].mango_group_pk,
-  );
+// const DepositSrmMoal = (props) => {
+//   const inputRef = useRef<any>(null);
 
-  useEffect(() => {
-    const getAcctInfo = async () => {
-      const mangoClient = new MangoClient();
-      const mangoGroup = await mangoClient.getMangoGroup(connection, mangoGroupPk);
-      setMangoGroup(mangoGroup);
-    };
-
-    getAcctInfo();
-  }, []);
-
-  return mangoGroup;
-};
+//   return (
+//     <>
+//       <DepositModal
+//         mango_groups={props.mango_groups}
+//         visible={props.visible}
+//         onCancel={props.onCancel}
+//         handleClick={depositFunds}
+//         setCurrency={setCurrency}
+//         onSelectAccount={setTokenAccount}
+//         currency="SRM"
+//         tokenAccount={tokenAccount}
+//         userUiBalance={userUiBalance}
+//         ref={inputRef}
+//         working={working}
+//         operation={props.operation}
+//       />
+//     </>
+//   )
+// }
 
 export default function MangoFees() {
-  const [totalSrm, setTotalSrm] = useState(0);
   const [contributedSrm, setContributedSrm] = useState(0);
   const [tokenAccount, setTokenAccount] = useState<TokenAccount | undefined>();
   const [showDeposit, setShowDeposit] = useState<boolean>(false);
-  const [feeRates, setFeeRates] = useState<FeeRates | null>(null);
   const operation = useRef('deposit');
 
   const connection = useConnection();
-  const mangoGroup = useMangoGroup();
-  const { marginAccount } = useMarginAccount();
+  const { marginAccount, mangoGroup, srmFeeRates, totalSrm } = useMarginAccount();
   const { wallet, connected } = useWallet();
   const { endpointInfo } = useConnectionConfig();
 
@@ -101,18 +91,7 @@ export default function MangoFees() {
   }, [showDeposit, hideModal, tokenAccount]);
 
   useEffect(() => {
-    if (!mangoGroup) return;
-
     const getTotalSrm = async () => {
-      // mango srm account info
-      const srmAccountInfo = await connection.getAccountInfo(mangoGroup.srmVault);
-      if (!srmAccountInfo) return;
-      const accountData = parseTokenAccountData(srmAccountInfo.data);
-      const amount = nativeToUi(accountData.amount, SRM_DECIMALS);
-      setTotalSrm(amount);
-      const feeTier = getFeeTier(0, amount);
-      const rates = getFeeRates(feeTier);
-      setFeeRates(rates);
       if (wallet && connected) {
         // connected wallet srm account info
         const walletTokenAccount = await getTokenAccountInfo(connection, wallet.publicKey);
@@ -124,7 +103,7 @@ export default function MangoFees() {
     };
 
     getTotalSrm();
-  }, [connection, mangoGroup]);
+  }, [connection, wallet, connected]);
 
   useEffect(() => {
     if (marginAccount) {
@@ -143,10 +122,10 @@ export default function MangoFees() {
         </Col>
       </Row>
       <Row align="middle" justify="center">
-        <Col>Maker Fee: {feeRates ? percentFormat.format(feeRates.maker) : null}</Col>
+        <Col>Maker Fee: {srmFeeRates ? percentFormat.format(srmFeeRates.maker) : null}</Col>
       </Row>
       <Row align="middle" justify="center">
-        <Col>Taker Fee: {feeRates ? percentFormat.format(feeRates.taker) : null}</Col>
+        <Col>Taker Fee: {srmFeeRates ? percentFormat.format(srmFeeRates.taker) : null}</Col>
       </Row>
       <Row align="middle" justify="center">
         <Col>
