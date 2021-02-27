@@ -28,7 +28,8 @@ const DepositModal = React.forwardRef(
     },
     ref: any,
   ) => {
-    console.log('renser Deposit modal');
+    console.log('visible============', props.visible);
+
     return (
       <Modal
         title={

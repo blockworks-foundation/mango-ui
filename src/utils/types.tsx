@@ -135,6 +135,11 @@ export interface BonfidaTrade {
   marketAddress: string;
 }
 
+export interface FeeRates {
+  taker: number;
+  maker: number;
+}
+
 export interface SwapContextValues {
   slippage: number;
   setSlippage: (newSlippage: number) => void;
@@ -158,6 +163,8 @@ export interface MarginAccountContextValues {
   maPending: any; // Is the context updating
   setMAPending: (any) => void; // Set the pending states on margin account transactions
   getMarginAccount: () => Promise<MarginAccount | null>;
+  srmFeeRates: FeeRates | null;
+  totalSrm: number;
 }
 
 // Type declaration for the margin accounts for the mango group

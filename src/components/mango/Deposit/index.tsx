@@ -23,6 +23,8 @@ import DepositModal from './DepositModal';
 import { MarginAccount } from '@mango/client';
 import { parseTokenAccountData } from '../../../utils/tokens';
 import { PublicKey } from '@solana/web3.js';
+import { nativeToUi } from '@mango/client/lib/utils';
+import { SRM_DECIMALS } from '@project-serum/serum/lib/token-instructions';
 
 const Deposit = (props: {
   currency?: string;
@@ -32,17 +34,11 @@ const Deposit = (props: {
   tokenAccount?: TokenAccount;
   onCancel: () => void;
 }) => {
-  // COnnection and wallet options
+  // Connection and wallet options
   const connection = useConnection();
   const { wallet, connected } = useWallet();
   // Get the mango group and mango options
-  const {
-    marginAccount,
-    mangoGroup,
-    mango_groups,
-    mango_options,
-    createMarginAccount,
-  } = useMarginAccount();
+  const { marginAccount, mangoGroup, mango_groups, mango_options } = useMarginAccount();
   // Get the mangoGroup token account
   const { tokenAccountsMapping } = useMangoTokenAccount();
   // The current mango group tokens
@@ -63,7 +59,9 @@ const Deposit = (props: {
           ? parseTokenAccountData(props.tokenAccount.account.data)
           : null;
 
-      return srmAccount?.amount;
+      const srmAmount = srmAccount ? srmAccount.amount : 0;
+
+      return nativeToUi(srmAmount, SRM_DECIMALS);
     }
     if (tokenAccount && tokenAccountsMapping.current[tokenAccount.pubkey.toString()]) {
       return tokenAccountsMapping.current[tokenAccount.pubkey.toString()].balance;
@@ -290,7 +288,6 @@ const Deposit = (props: {
   };
 
   const DepoModal = useMemo(() => {
-    console.log('render deposit');
     return (
       <DepositModal
         mango_groups={props.mango_groups}
