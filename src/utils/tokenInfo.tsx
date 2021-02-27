@@ -10,7 +10,7 @@ const useTokenInfo = () => {
   useEffect(() => {
     // fetch token files
     const knownMints = tokenmap.reduce((map, item) => {
-      map.set(item.mintAddress, item);
+      map.set(item.tokenSymbol, item);
       return map;
     }, new Map<string, KnownToken>());
     setTokenMap(knownMints);

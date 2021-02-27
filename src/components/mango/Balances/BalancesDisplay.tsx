@@ -102,7 +102,7 @@ export default function BalancesDisplay() {
                   alt="Token icon"
                   width="20"
                   height="20"
-                  src={tokenMap.get(mangoGroup.tokens[i].toString())?.icon}
+                  src={tokenMap.get(token.toUpperCase())?.icon}
                   style={{
                     marginBlock: 5,
                     marginRight: 5,
@@ -135,9 +135,7 @@ export default function BalancesDisplay() {
           <Row align="middle" justify="center">
             <BalanceCol>
               <Text>
-
                 <br />
-
               </Text>
             </BalanceCol>
           </Row>
