@@ -8,7 +8,7 @@ import { DEFAULT_MANGO_GROUP, initMarginAccount } from './mango';
 import { useConnection, useConnectionConfig } from '../utils/connection';
 // Wallet context
 import { useWallet } from '../utils/wallet';
-// Type annotations
+// Import our market list
 import { PublicKey } from '@solana/web3.js';
 import { MarginAccountContextValues } from '../utils/types';
 // Create a context to share account state across pages
@@ -19,7 +19,7 @@ export const tokenPrecision = {
   BTC: 4,
   ETH: 3,
   USDC: 2,
-  USDT: 2
+  USDT: 2,
 };
 
 // Create the margin account provider
@@ -30,6 +30,7 @@ export function MarginAccountProvider({ children }) {
     marginAccounts,
     mango_groups,
     mangoOptions,
+    MangoGroupOptions,
     mangoGroup,
     mangoClient,
     createMarginAccount,
@@ -38,6 +39,8 @@ export function MarginAccountProvider({ children }) {
     maPending,
     setMAPending,
     getMarginAccount,
+    size,
+    setSize,
   } = useMarginAccountHelper();
   // Return a context with this values set as default
   return (
@@ -47,6 +50,7 @@ export function MarginAccountProvider({ children }) {
         marginAccounts,
         mango_groups,
         mangoOptions,
+        MangoGroupOptions,
         mangoClient,
         mangoGroup,
         createMarginAccount,
@@ -55,6 +59,8 @@ export function MarginAccountProvider({ children }) {
         maPending,
         setMAPending,
         getMarginAccount,
+        size,
+        setSize,
       }}
     >
       {children}
@@ -89,6 +95,13 @@ const useMarginAccountHelper = () => {
   const { endpointInfo } = useConnectionConfig();
   // Get the mango Options (for connection type)
   const [mangoOptions, setmangoOptions] = useState<any>(IDS[endpointInfo!.name]);
+  // The options for the mango group
+  const [MangoGroupOptions, setMGO] = useState(mangoOptions.mango_groups[DEFAULT_MANGO_GROUP]);
+  // Size of buy or sell on tradeform
+  const [size, setSize] = useState<{ currency: string; size: number }>({
+    currency: '',
+    size: 0,
+  });
   // Now our mango client connection
   // Now our mango client instance
   const mangoClient = new MangoClient();
@@ -137,7 +150,6 @@ const useMarginAccountHelper = () => {
 
   /**
    * @summary get all margin accounts for a mango group
-   * @kehinde - this function is not necessary. mangoClient.getMarginAccountsForOwner already filters for mangoGroup
    */
   const getAllMarginAccountsForGroup = async () => {
     // Set pending transaction
@@ -161,12 +173,12 @@ const useMarginAccountHelper = () => {
       )
       .then((marginAccounts) => {
         console.log('It took %sms to get margin accounts ', performance.now() - time);
-        setMarginAccounts(marginAccounts);
-        // If margin account exist, set the first value
         setMAPending((prev) => {
           prev['sma'] = false;
           return prev;
         });
+        setMarginAccounts(marginAccounts);
+        // If margin account exist, set the first value
         if (marginAccounts.length > 0 && !marginAccount) {
           // Get the margin account with the largest amount
           let highestMAcc: MarginAccount = marginAccounts[0];
@@ -220,11 +232,10 @@ const useMarginAccountHelper = () => {
       // Did the user make any selection ??
       // Use default mango group of ETH_BTC_USDC
       // Set up default mango group
-      // Get the Mango group. For now we use our default BTC_ETH_USDC
+      // Get the Mango group. For now we use our default BTC_ETH_USDT
       // TODO: Allow to select a mango group
-      let MangoGroup = mangoOptions.mango_groups.BTC_ETH_USDT;
-      let mangoGroupPk = new PublicKey(MangoGroup.mango_group_pk);
-      let srmVaultPk = new PublicKey(MangoGroup.srm_vault_pk);
+      let mangoGroupPk = new PublicKey(MangoGroupOptions.mango_group_pk);
+      let srmVaultPk = new PublicKey(MangoGroupOptions.srm_vault_pk);
       mangoClient
         .getMangoGroup(connection, mangoGroupPk, srmVaultPk)
         .then((mangoGroup) => {
@@ -257,10 +268,27 @@ const useMarginAccountHelper = () => {
         clearTimeout(intervalId.current);
       }
     }
+    // Here we first check if we are still the owners of this margin account
+    if (marginAccount && marginAccount.owner !== wallet.publicKey) {
+      // This account has been liquidated
+      // CLear any timeout
+      if (intervalId.current) {
+        clearTimeout(intervalId.current);
+      }
+      // Get the new margin accounts
+      getAllMarginAccountsForGroup();
+      return;
+    }
     // Get the balance and interest every 10s
     const id = setTimeout(async () => {
       // Check if margin account exist
       if (!marginAccount || !connected) {
+        return;
+      }
+      // Check if user is still owner of account
+      if (marginAccount && marginAccount.owner !== wallet.publicKey) {
+        // User has been liguidated
+        setMarginAccount(null);
         return;
       }
       // Get all margin accounts again
@@ -292,6 +320,7 @@ const useMarginAccountHelper = () => {
     marginAccount,
     marginAccounts,
     mangoGroup,
+    MangoGroupOptions,
     mangoOptions,
     mango_groups,
     mangoClient,
@@ -301,6 +330,8 @@ const useMarginAccountHelper = () => {
     maPending,
     setMAPending,
     getMarginAccount,
+    size,
+    setSize,
   };
 };
 
@@ -328,6 +359,7 @@ export function useMarginAccount() {
     marginAccounts: marginAccountContext.marginAccounts,
     mango_groups: marginAccountContext.mango_groups,
     mango_options: marginAccountContext.mangoOptions,
+    MangoGroupOptions: marginAccountContext.MangoGroupOptions,
     mangoClient: marginAccountContext.mangoClient,
     mangoGroup: marginAccountContext.mangoGroup,
     createMarginAccount: marginAccountContext.createMarginAccount,
@@ -336,6 +368,8 @@ export function useMarginAccount() {
     maPending: marginAccountContext.maPending,
     setMAPending: marginAccountContext.setMAPending,
     getMarginAccount: marginAccountContext.getMarginAccount,
+    size: marginAccountContext.size,
+    setSize: marginAccountContext.setSize,
     keyMappings: buildPubKeytoAcountMapping,
   };
 }

@@ -1,6 +1,6 @@
 // Here we keep track of the token accounts for the current mango group
 import { useWallet } from './wallet';
-import { useEffect, useReducer, useRef } from 'react';
+import { useEffect, useReducer, useRef, useState } from 'react';
 // Import function to create margin account from mango library
 import { mangoTokenAccounts, TokenAccount } from '../utils/types';
 import { useMarginAccount } from './marginAccounts';
@@ -8,7 +8,7 @@ import { useTokenAccounts } from './markets';
 // Get token account balane
 import { parseTokenAccountData } from './tokens';
 // Hook to keep track of the token accounts for the selected mango group
-const useMangoTokenAccount = () => {
+export const useMangoTokenAccount = () => {
   // Get our mango group context
   const { mangoGroup, mango_groups } = useMarginAccount();
   // Get the cached token accounts
@@ -91,5 +91,3 @@ function mangoTokenAccReducer(state: mangoTokenAccounts, action: any) {
       return { ...state };
   }
 }
-
-export default useMangoTokenAccount;
