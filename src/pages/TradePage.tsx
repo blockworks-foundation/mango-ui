@@ -10,6 +10,7 @@ import {
   getTradePageUrl,
   MarketProvider,
   useMarket,
+  useMarketsList,
   useUnmigratedDeprecatedMarkets,
 } from '../utils/markets';
 import { TVChartContainer } from '../components/TradingView';
@@ -52,8 +53,8 @@ export default function TradePage() {
 }
 
 function TradePageInner() {
-  const { market, markets, marketName, customMarkets, setCustomMarkets } = useMarket();
-
+  const { market, marketName, customMarkets, setCustomMarkets } = useMarket();
+  const markets = useMarketsList();
   const [handleDeprecated, setHandleDeprecated] = useState(false);
   // const [addMarketVisible, setAddMarketVisible] = useState(false);
   const deprecatedMarkets = useUnmigratedDeprecatedMarkets();
@@ -275,7 +276,7 @@ const RenderNormal = ({ onChangeOrderRef, onPrice, onSize }) => {
       }}
     >
       <Col flex="auto" style={{ display: 'flex', flexDirection: 'column' }}>
-        <FloatingElement style={{ flex: 2, minHeight: '400px', padding: 0 }}>
+        <FloatingElement style={{ flex: 1, minHeight: '300px', padding: 0 }}>
           <TVChartContainer />
         </FloatingElement>
         <UserInfoTable />

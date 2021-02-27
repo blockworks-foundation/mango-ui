@@ -15,22 +15,12 @@ const footerElements = [
     icon: (
       <img
         alt="Discord"
-        src={require('../assets/icons/discord.svg')}
+        src="https://bonfida.com/social/discord.svg"
         style={{ width: '25px', height: '20px' }}
       ></img>
     ),
   },
-  {
-    description: 'GitHub',
-    link: helpUrls.github,
-    icon: (
-      <img
-        alt="Discord"
-        src={require('../assets/icons/github.svg')}
-        style={{ width: '25px', height: '20px' }}
-      ></img>
-    ),
-  },
+  { description: 'GitHub', link: helpUrls.github, icon: <GithubOutlined /> },
   {
     description: 'Solana',
     link: helpUrls.solana,
@@ -63,7 +53,7 @@ export const CustomFooter = () => {
               return (
                 <Col key={index + ''}>
                   <Link external to={elem.link}>
-                    {elem.description}
+                    {elem.icon || elem.description}
                   </Link>
                 </Col>
               );

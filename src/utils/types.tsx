@@ -57,9 +57,6 @@ export interface MarketContextValues extends FullMarketInfo {
   setMarketAddress: (newMarketAddress: string) => void;
   customMarkets: CustomMarketInfo[];
   setCustomMarkets: (newCustomMarkets: CustomMarketInfo[]) => void;
-  markets: any;
-  setMangoMarkets: (mangoMarkets: Array<string>) => void;
-  setAllMarkets: () => void;
 }
 
 export interface TokenAccount {
@@ -153,7 +150,6 @@ export interface MarginAccountContextValues {
   marginAccounts: MarginAccount[] | []; // List of all margin account pk in a mango group
   mango_groups: Array<string>; // Identifier for the mango group
   mangoOptions: any; //The different parameters for our mango program
-  MangoGroupOptions: any; // Params for the mango groups
   mangoClient: MangoClient; // Instance of mango clinet
   mangoGroup: MangoGroup | null; // The current mango group
   setMarginAccount: (marginAccount: null | MarginAccount) => void;
@@ -162,8 +158,6 @@ export interface MarginAccountContextValues {
   maPending: any; // Is the context updating
   setMAPending: (any) => void; // Set the pending states on margin account transactions
   getMarginAccount: () => Promise<MarginAccount | null>;
-  size: { currency: string; size: number }; // The size of buy or sell on tradeform
-  setSize: (size: { currency: string; size: number }) => void; // Set the size on trade form
 }
 
 // Type declaration for the margin accounts for the mango group

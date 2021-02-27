@@ -1,7 +1,7 @@
 import { Col, Menu, Row, Select, Typography, Popover, Button } from 'antd';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
-import logo from '../assets/icons/logo.svg';
+import logo from '../assets/logo.svg';
 import styled from 'styled-components';
 import { useWallet, WALLET_PROVIDERS } from '../utils/wallet';
 import { ENDPOINTS, useConnectionConfig } from '../utils/connection';

@@ -1,4 +1,4 @@
-import { Col, Popover, Typography, Spin } from 'antd';
+import { Row, Col, Popover, Typography, Spin, Tooltip } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 import { ActionButton } from '../componentStyles';
 import React, { useEffect, useState } from 'react';
@@ -93,14 +93,18 @@ export default function MarginInfo() {
     }
   }, [marginAccount, mangoGroup]);
   return (
-    <FloatingElement style={{ flex: 1 }}>
+    <FloatingElement style={{ flex: 0.5, paddingTop: 10 }}>
       <React.Fragment>
-        {mAccountInfo ? (
+        {maPending.sma ? (
+          <RowBox justify="space-around">
+            <Spin indicator={antIcon} />
+          </RowBox>
+        ) : mAccountInfo ? (
           mAccountInfo.map((entry, i) => (
-            <RowBox key={i} justify="space-around" align="middle" style={{ padding: '10px' }}>
+            <Row key={i} justify="space-around" style={{ padding: '10px' }}>
               <Popover content={entry.desc} placement="topLeft" trigger="hover">
                 <LeftCol span={14}>
-                  <Text ellipsis={true} style={{ cursor: 'help' }}>
+                  <Text disabled code ellipsis={true}>
                     {entry.label}
                   </Text>
                 </LeftCol>
@@ -114,7 +118,7 @@ export default function MarginInfo() {
                   {entry.unit}
                 </Text>
               </RightCol>
-            </RowBox>
+            </Row>
           ))
         ) : (
           <RowBox justify="center" align="middle">

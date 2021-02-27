@@ -1,16 +1,17 @@
 import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
-import { Row, Col, Typography } from 'antd';
+import { Row, Col, Typography, Tag } from 'antd';
 import styled from 'styled-components';
 // import { useFeeDiscountKeys } from '../../utils/markets';
 // import DataTable from '../layout/DataTable';
 import { getTokenAccountInfo, parseTokenAccountData } from '../../utils/tokens';
-import { getFeeRates, getFeeTier } from '@project-serum/serum';
+import { TokenInstructions, getFeeRates, getFeeTier } from '@project-serum/serum';
 import { percentFormat } from '../../utils/utils';
 import { useConnection, useConnectionConfig } from '../../utils/connection';
 import { RowBox, SizeTitle, ActionButton } from '../mango/componentStyles';
 import { useMarginAccount } from '../../utils/marginAccounts';
 import { IDS, MangoClient, MangoGroup } from '@mango/client';
 import { PublicKey } from '@solana/web3.js';
+import FloatingElement from '../layout/FloatingElement';
 import Deposit from '../mango/Deposit/index';
 import { nativeToUi } from '@mango/client/lib/utils';
 import { SRM_DECIMALS } from '@project-serum/serum/lib/token-instructions';
@@ -86,7 +87,7 @@ export default function MangoFees() {
   }, []);
 
   const DepositModal = useMemo(() => {
-    // if (!tokenAccount) return null;
+    if (!tokenAccount) return null;
     return (
       <Deposit
         currency="SRM"

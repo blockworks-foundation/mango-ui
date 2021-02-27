@@ -2,7 +2,7 @@
 import React, { useMemo, useEffect } from 'react';
 import { Typography, Select } from 'antd';
 // Mango group token account hook
-import { useMangoTokenAccount } from '../../../utils/mangoTokenAccounts';
+import useMangoTokenAccount from '../../../utils/mangoTokenAccounts';
 // TYpe annotation
 import { TokenAccount } from '../../../utils/types';
 
