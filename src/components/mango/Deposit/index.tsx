@@ -25,6 +25,12 @@ import { PublicKey } from '@solana/web3.js';
 import { nativeToUi } from '@mango/client/lib/utils';
 import { SRM_DECIMALS } from '@project-serum/serum/lib/token-instructions';
 
+const decimals = {
+  BTC: 4,
+  ETH: 3,
+  USDC: 2,
+};
+
 const Deposit = (props: {
   currency?: string;
   mango_groups: Array<string>;
@@ -88,8 +94,9 @@ const Deposit = (props: {
   }, [tokenAccount, tokenAccountsMapping, currency, props.srmTokenAccounts]);
 
   const userUiBalance = useCallback(() => {
-    return userBalance().toFixed(3);
-  }, [userBalance]);
+    const fixedDecimals = decimals[currency] || 3;
+    return userBalance().toFixed(fixedDecimals);
+  }, [userBalance, currency]);
   // TODO: Pack clinet library instruction into one
   // When the user hits deposit
   const depositFunds = async () => {
