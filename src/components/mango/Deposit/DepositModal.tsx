@@ -25,10 +25,10 @@ const DepositModal = React.forwardRef(
       currency: string;
       userUiBalance: () => void;
       tokenAccount: TokenAccount | null;
+      customTokenAccounts: any;
     },
     ref: any,
   ) => {
-    console.log('renser Deposit modal');
     return (
       <Modal
         title={
@@ -36,6 +36,7 @@ const DepositModal = React.forwardRef(
             currency={props.currency}
             setTokenAccount={props.onSelectAccount}
             tokenAccount={props.tokenAccount}
+            customTokenAccounts={props.customTokenAccounts}
           />
         }
         onCancel={props.onCancel}
