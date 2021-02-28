@@ -20,7 +20,6 @@ import {
   withdrawSrm,
 } from '../../../utils/mango';
 import DepositModal from './DepositModal';
-import { MarginAccount } from '@mango/client';
 import { parseTokenAccountData } from '../../../utils/tokens';
 import { PublicKey } from '@solana/web3.js';
 
