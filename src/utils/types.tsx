@@ -157,7 +157,9 @@ export interface MarginAccountContextValues {
   createMarginAccount: () => Promise<MarginAccount | null>; // For creating a margin account
   maPending: any; // Is the context updating
   setMAPending: (any) => void; // Set the pending states on margin account transactions
-  getMarginAccount: () => Promise<MarginAccount | null>;
+  getMarginAccount: (pubKey: PublicKey | undefined) => Promise<MarginAccount | null>;
+  size: { currency: string; size: number }; // The size of buy or sell on tradeform
+  setSize: (size: { currency: string; size: number }) => void; // Set the size on trade form
 }
 
 // Type declaration for the margin accounts for the mango group

@@ -67,7 +67,7 @@ export default function TradeForm({
 
   const connection = useConnection();
   const { endpointInfo } = useConnectionConfig();
-  const { marginAccount, mangoGroup } = useMarginAccount();
+  const { marginAccount, mangoGroup, size } = useMarginAccount();
   const markPrice = useMarkPrice();
   useFeeDiscountKeys();
   const { storedFeeDiscountKey: feeDiscountKey } = useLocallyStoredFeeDiscountKey();
@@ -103,6 +103,17 @@ export default function TradeForm({
     updateSizeFraction();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [price, baseSize]);
+
+  // Set the price from the balance comp
+  useEffect(() => {
+    if (size.currency) {
+      if (size.currency === baseCurrency) {
+        onSetBaseSize(size.size);
+      } else {
+        onSetQuoteSize(size.size);
+      }
+    }
+  }, [size]);
 
   useEffect(() => {
     const warmUpCache = async () => {

@@ -276,12 +276,12 @@ const RenderNormal = ({ onChangeOrderRef, onPrice, onSize }) => {
       }}
     >
       <Col flex="auto" style={{ display: 'flex', flexDirection: 'column' }}>
-        <FloatingElement style={{ flex: 1, minHeight: '300px', padding: 0 }}>
+        <FloatingElement style={{ flex: 2, minHeight: '300px', padding: 0 }}>
           <TVChartContainer />
         </FloatingElement>
         <UserInfoTable />
       </Col>
-      <Col flex={'360px'} style={{ height: '100%' }}>
+      <Col flex={'340px'} style={{ height: '100%' }}>
         <Orderbook smallScreen={false} onPrice={onPrice} onSize={onSize} />
         <TradesTable smallScreen={false} />
       </Col>

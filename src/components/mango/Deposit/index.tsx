@@ -20,7 +20,6 @@ import {
   withdrawSrm,
 } from '../../../utils/mango';
 import DepositModal from './DepositModal';
-import { MarginAccount } from '@mango/client';
 import { parseTokenAccountData } from '../../../utils/tokens';
 import { PublicKey } from '@solana/web3.js';
 
@@ -41,7 +40,9 @@ const Deposit = (props: {
     mangoGroup,
     mango_groups,
     mango_options,
-    createMarginAccount,
+    setMarginAccount,
+    setMarginAccounts,
+    getMarginAccount,
   } = useMarginAccount();
   // Get the mangoGroup token account
   const { tokenAccountsMapping } = useMangoTokenAccount();
@@ -65,10 +66,14 @@ const Deposit = (props: {
 
       return srmAccount?.amount;
     }
-    if (tokenAccount && tokenAccountsMapping.current[tokenAccount.pubkey.toString()]) {
+    if (
+      props.operation === 'Deposit' &&
+      tokenAccount &&
+      tokenAccountsMapping.current[tokenAccount.pubkey.toString()]
+    ) {
       return tokenAccountsMapping.current[tokenAccount.pubkey.toString()].balance;
     } else if (props.operation === 'Withdraw' && marginAccount && mangoGroup) {
-      return marginAccount.getUiDeposit(mangoGroup, mango_groups.indexOf(currency));
+      return Math.floor(marginAccount.getUiDeposit(mangoGroup, mango_groups.indexOf(currency)));
     }
     return '0';
   }, [tokenAccount, tokenAccountsMapping, currency]);
@@ -232,12 +237,19 @@ const Deposit = (props: {
           // @ts-ignore
           Number(inputRef.current.state.value),
         )
-          .then((transSig: string) => {
+          .then(async (response: Array<any>) => {
+            let marginAcc;
+            while (!marginAcc) {
+              marginAcc = await getMarginAccount(response[0].publicKey);
+            }
+            // @ts-ignore
+            setMarginAccounts((prev) => prev.concat(marginAcc));
+            setMarginAccount(marginAcc);
             setWorking(false);
             notify({
               // @ts-ignore
               message: `Deposited ${inputRef.current.state.value} ${currency} into your account`,
-              description: `Hash of transaction is ${transSig}`,
+              description: `Hash of transaction is ${response[1]}`,
               type: 'info',
             });
             props.onCancel();

@@ -1,5 +1,4 @@
-import { Row, Col, Popover, Typography, Spin, Tooltip } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
+import { Row, Col, Popover, Typography } from 'antd';
 import { ActionButton } from '../componentStyles';
 import React, { useEffect, useState } from 'react';
 import FloatingElement from '../../layout/FloatingElement';
@@ -9,12 +8,11 @@ import { useMarginAccount } from '../../../utils/marginAccounts';
 // Connection hook
 import { useConnection } from '../../../utils/connection';
 // Mango client library
-import { settleBorrow } from '../../../utils/mango';
+import { settleAllBorrows } from '../../../utils/mango';
 // Wallet hook
 import { useWallet } from '../../../utils/wallet';
 
 const { Text } = Typography;
-const antIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />;
 
 export default function MarginInfo() {
   // Connection hook
@@ -22,7 +20,7 @@ export default function MarginInfo() {
   // Wallet hook
   const { wallet } = useWallet();
   // Get our account info
-  const { marginAccount, mango_options, mangoGroup, maPending } = useMarginAccount();
+  const { marginAccount, mango_options, mangoGroup } = useMarginAccount();
   // Working state
   const [working, setWorking] = useState(false);
   // Hold the margin account info
@@ -34,21 +32,23 @@ export default function MarginInfo() {
   const settleBorrows = async () => {
     // Set that we are working
     if (mangoGroup && marginAccount) {
-      mangoGroup.tokens.forEach((token, i) => {
-        setWorking(true);
-        // Call settle on each token
-        settleBorrow(
-          connection,
-          mango_options.mango_program_id,
-          mangoGroup,
-          marginAccount,
-          wallet,
-          token,
-          marginAccount.getUiBorrow(mangoGroup, i) * 2,
-        )
-          .then(() => setWorking(false))
-          .catch((err) => console.error('Error settling borrows', err));
+      setWorking(true);
+      let borrows = mangoGroup.tokens.map((_token, i) => {
+        return marginAccount.getUiBorrow(mangoGroup, i);
       });
+      // Call settle on each token
+      // @ts-ignore
+      settleAllBorrows(
+        connection,
+        mango_options.mango_program_id,
+        mangoGroup,
+        marginAccount,
+        wallet,
+        mangoGroup.tokens,
+        borrows,
+      )
+        .then(() => setWorking(false))
+        .catch((err) => console.error('Error settling borrows', err));
     }
   };
   useEffect(() => {
@@ -95,16 +95,12 @@ export default function MarginInfo() {
   return (
     <FloatingElement style={{ flex: 0.5, paddingTop: 10 }}>
       <React.Fragment>
-        {maPending.sma ? (
-          <RowBox justify="space-around">
-            <Spin indicator={antIcon} />
-          </RowBox>
-        ) : mAccountInfo ? (
+        {mAccountInfo ? (
           mAccountInfo.map((entry, i) => (
             <Row key={i} justify="space-around" style={{ padding: '10px' }}>
               <Popover content={entry.desc} placement="topLeft" trigger="hover">
                 <LeftCol span={14}>
-                  <Text disabled code ellipsis={true}>
+                  <Text ellipsis={true} style={{ cursor: 'help' }}>
                     {entry.label}
                   </Text>
                 </LeftCol>
@@ -126,7 +122,7 @@ export default function MarginInfo() {
           </RowBox>
         )}
         <RowBox align="middle" justify="space-around">
-          <Col span={8}>
+          <Col span={10}>
             <ActionButton
               block
               size="middle"

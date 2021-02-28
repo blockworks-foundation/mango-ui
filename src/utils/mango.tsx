@@ -141,7 +141,7 @@ export async function initMarginAccountAndDeposit(
   token: PublicKey,
   tokenAcc: PublicKey,
   quantity: number,
-): Promise<TransactionSignature> {
+): Promise<Array<any>> {
   // Create a Solana account for the MarginAccount and allocate spac
 
   const accInstr = await createAccountInstruction(
@@ -206,7 +206,7 @@ export async function initMarginAccountAndDeposit(
   const sentMessage = `${functionName} instruction sent`;
   const successMessage = `${functionName} instruction success`;
 
-  return await sendTransaction({
+  let trxHash = await sendTransaction({
     transaction,
     wallet,
     signers,
@@ -215,6 +215,7 @@ export async function initMarginAccountAndDeposit(
     sentMessage,
     successMessage,
   });
+  return [accInstr.account, trxHash];
 }
 
 export async function withdraw(
@@ -357,6 +358,55 @@ export async function settleBorrow(
   const transaction = new Transaction();
   transaction.add(instruction);
   return await packageAndSend(transaction, connection, wallet, [], 'SettleBorrow');
+}
+
+// Settle all borrows in one transaction
+export async function settleAllBorrows(
+  connection: Connection,
+  programId: PublicKey,
+  mangoGroup: MangoGroup,
+  marginAccount: MarginAccount,
+  wallet: Wallet,
+
+  token: Array<PublicKey>,
+  quantity: Array<number>,
+): Promise<TransactionSignature> {
+  // Pack all transaction into one transaction
+  const transaction = new Transaction();
+  // Signer of the transaction
+  const signers = [];
+  // Add each token into transaction
+  token.forEach((tok: PublicKey, i: number) => {
+    const tokenIndex = mangoGroup.getTokenIndex(tok);
+    const nativeQuantity = uiToNative(quantity[i], mangoGroup.mintDecimals[tokenIndex]);
+    console.log(tokenIndex, nativeQuantity.toNumber());
+    const keys = [
+      { isSigner: false, isWritable: true, pubkey: mangoGroup.publicKey },
+      { isSigner: false, isWritable: true, pubkey: marginAccount.publicKey },
+      { isSigner: true, isWritable: false, pubkey: wallet.publicKey },
+      { isSigner: false, isWritable: false, pubkey: SYSVAR_CLOCK_PUBKEY },
+    ];
+    const data = encodeMangoInstruction({
+      SettleBorrow: { tokenIndex: new BN(tokenIndex), quantity: nativeQuantity },
+    });
+    const instruction = new TransactionInstruction({ keys, data, programId });
+
+    transaction.add(instruction);
+  });
+  const functionName = 'SettleBorrows';
+  const sendingMessage = `sending ${functionName} instruction...`;
+  const sentMessage = `${functionName} instruction sent`;
+  const successMessage = `${functionName} instruction success`;
+
+  return await sendTransaction({
+    transaction,
+    connection,
+    wallet,
+    signers,
+    sendingMessage,
+    sentMessage,
+    successMessage,
+  });
 }
 
 export async function depositSrm(

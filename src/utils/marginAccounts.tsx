@@ -19,7 +19,7 @@ export const tokenPrecision = {
   BTC: 4,
   ETH: 3,
   USDC: 2,
-  USDT: 2
+  USDT: 2,
 };
 
 // Create the margin account provider
@@ -38,6 +38,8 @@ export function MarginAccountProvider({ children }) {
     maPending,
     setMAPending,
     getMarginAccount,
+    size,
+    setSize,
   } = useMarginAccountHelper();
   // Return a context with this values set as default
   return (
@@ -55,6 +57,8 @@ export function MarginAccountProvider({ children }) {
         maPending,
         setMAPending,
         getMarginAccount,
+        size,
+        setSize,
       }}
     >
       {children}
@@ -89,6 +93,8 @@ const useMarginAccountHelper = () => {
   const { endpointInfo } = useConnectionConfig();
   // Get the mango Options (for connection type)
   const [mangoOptions, setmangoOptions] = useState<any>(IDS[endpointInfo!.name]);
+  // Size of token to buy in the trade form
+  const [size, setSize] = useState<{ currency: string; size: number }>({ currency: '', size: 0 });
   // Now our mango client connection
   // Now our mango client instance
   const mangoClient = new MangoClient();
@@ -101,10 +107,10 @@ const useMarginAccountHelper = () => {
   const createMarginAccount = async (): Promise<MarginAccount | null> => {
     if (!mangoGroup) {
       console.error('No mango group selected before creating a margin account');
-      setMAPending((prev) => {
-        prev['cma'] = false;
-        return prev;
-      });
+      // setMAPending((prev) => {
+      //   prev['cma'] = false;
+      //   return prev;
+      // });
       return null;
     }
     // Carry on if we have mango group
@@ -151,7 +157,6 @@ const useMarginAccountHelper = () => {
       return [];
     }
     // Let's get the public keys for the margin accounts
-    let time = performance.now();
     await mangoClient
       .getMarginAccountsForOwner(
         connection,
@@ -160,21 +165,20 @@ const useMarginAccountHelper = () => {
         wallet,
       )
       .then((marginAccounts) => {
-        console.log('It took %sms to get margin accounts ', performance.now() - time);
-        setMarginAccounts(marginAccounts);
-        // If margin account exist, set the first value
         setMAPending((prev) => {
           prev['sma'] = false;
           return prev;
         });
+        setMarginAccounts(marginAccounts);
         if (marginAccounts.length > 0 && !marginAccount) {
           // Get the margin account with the largest amount
           let highestMAcc: MarginAccount = marginAccounts[0];
           let lastEquity = 0;
           mangoGroup.getPrices(connection).then((prices) => {
             marginAccounts.forEach((marginAcc: MarginAccount) => {
-              highestMAcc =
-                marginAcc.computeValue(mangoGroup, prices) > lastEquity ? marginAcc : highestMAcc;
+              let equity = marginAcc.computeValue(mangoGroup, prices);
+              highestMAcc = equity > lastEquity ? marginAcc : highestMAcc;
+              lastEquity = equity;
             });
             setMarginAccount(highestMAcc);
           });
@@ -189,17 +193,19 @@ const useMarginAccountHelper = () => {
       });
   };
 
-  const getMarginAccount = async (): Promise<MarginAccount | null> => {
-    if (!mangoGroup || !marginAccount) {
-      // Did the user not make a selection or maybe our effects have not ran
-      console.error('No mango group while getting all margin accounts for a group');
+  const getMarginAccount = async (pubKey: PublicKey | undefined): Promise<MarginAccount | null> => {
+    if (!mangoGroup || (!pubKey && !marginAccount)) {
+      console.error(
+        'No mango group or margin account while getting margin account detail for a group',
+      );
       return marginAccount;
     }
     // Let's get the public keys for the margin accounts
     return mangoClient
       .getMarginAccount(
         connection,
-        marginAccount.publicKey,
+        // @ts-ignore
+        pubKey ? pubKey : marginAccount.publicKey,
         new PublicKey(mangoOptions.dex_program_id),
       )
       .then((account: MarginAccount | null) => {
@@ -264,7 +270,7 @@ const useMarginAccountHelper = () => {
         return;
       }
       // Get all margin accounts again
-      await getMarginAccount()
+      await getMarginAccount(undefined)
         .then((account) => {
           // If the margin account has changed by the time we are done, ignore the state update
           if (
@@ -301,6 +307,8 @@ const useMarginAccountHelper = () => {
     maPending,
     setMAPending,
     getMarginAccount,
+    size,
+    setSize,
   };
 };
 
@@ -336,6 +344,8 @@ export function useMarginAccount() {
     maPending: marginAccountContext.maPending,
     setMAPending: marginAccountContext.setMAPending,
     getMarginAccount: marginAccountContext.getMarginAccount,
+    size: marginAccountContext.size,
+    setSize: marginAccountContext.setSize,
     keyMappings: buildPubKeytoAcountMapping,
   };
 }
