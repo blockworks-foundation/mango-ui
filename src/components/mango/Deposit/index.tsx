@@ -238,7 +238,10 @@ const Deposit = (props: {
           Number(inputRef.current.state.value),
         )
           .then(async (response: Array<any>) => {
-            let marginAcc = await getMarginAccount(response[0].publicKey);
+            let marginAcc;
+            while (!marginAcc) {
+              marginAcc = await getMarginAccount(response[0].publicKey);
+            }
             // @ts-ignore
             setMarginAccounts((prev) => prev.concat(marginAcc));
             setMarginAccount(marginAcc);
