@@ -3,6 +3,8 @@ import React, { useMemo } from 'react';
 import { Card, Select } from 'antd';
 import { NumericInput } from '../NumericInput';
 import './styles.less';
+import useMangoTokenAccount from '../../../utils/mangoTokenAccounts';
+import { TokenAccount } from '../../../utils/types';
 const { Option } = Select;
 
 export const CurrencyInput = React.forwardRef(
@@ -12,10 +14,46 @@ export const CurrencyInput = React.forwardRef(
       setCurrency: (value: string) => void;
       currency: string;
       userUiBalance: () => void; // The token balance of the user
+      setTokenAccount: any;
+      customTokenAccounts: any;
     },
     ref: any,
   ) => {
-    const { currencies, currency, setCurrency, userUiBalance } = props;
+    const {
+      currencies,
+      currency,
+      setCurrency,
+      userUiBalance,
+      customTokenAccounts,
+      setTokenAccount,
+    } = props;
+    const { mangoGroupTokenAccounts, tokenAccountsMapping } = useMangoTokenAccount();
+    const tokenAccounts = customTokenAccounts.SRM ? customTokenAccounts : mangoGroupTokenAccounts;
+
+    const handleCurrencyChange = (value) => {
+      if (value === 'SRM') return;
+      // Set the first account for the token
+      if (tokenAccounts[value] && tokenAccounts[value].length > 0) {
+        // Set the account with highest balance
+        let hAccount: TokenAccount = tokenAccounts[value][0];
+        tokenAccounts[value].forEach((account: TokenAccount, i: number) => {
+          if (i === 0 || !tokenAccountsMapping.current[account.pubkey.toString()]) {
+            return;
+          }
+          hAccount =
+            tokenAccountsMapping.current[account.pubkey.toString()].balance >
+            tokenAccountsMapping.current[hAccount.pubkey.toString()].balance
+              ? tokenAccountsMapping.current[account.pubkey.toString()].account
+              : hAccount;
+        });
+
+        setTokenAccount(hAccount);
+      } else {
+        setTokenAccount(null);
+      }
+      setCurrency(value);
+    };
+
     // Let's create a memoized select and options for each mango group currency
     const createCurrencyOptions = useMemo(() => {
       return (
@@ -23,9 +61,7 @@ export const CurrencyInput = React.forwardRef(
           size="large"
           style={{ minWidth: 150 }}
           value={currency}
-          onChange={(value) => {
-            setCurrency(value);
-          }}
+          onChange={handleCurrencyChange}
         >
           {currencies.map((currency: string, i: number) => {
             return (

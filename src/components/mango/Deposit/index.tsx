@@ -61,7 +61,7 @@ const Deposit = (props: {
   const inputRef = useRef<any>(null);
 
   // How much does this token account have
-  const userUiBalance = useCallback(() => {
+  const userBalance = useCallback(() => {
     if (currency === 'SRM') {
       if (props.srmTokenAccounts?.length && tokenAccount?.account) {
         const acct = props.srmTokenAccounts.find(
@@ -82,10 +82,14 @@ const Deposit = (props: {
     ) {
       return tokenAccountsMapping.current[tokenAccount.pubkey.toString()].balance;
     } else if (props.operation === 'Withdraw' && marginAccount && mangoGroup) {
-      return Math.floor(marginAccount.getUiDeposit(mangoGroup, mango_groups.indexOf(currency)));
+      return marginAccount.getUiDeposit(mangoGroup, mango_groups.indexOf(currency));
     }
-    return '0';
+    return 0;
   }, [tokenAccount, tokenAccountsMapping, currency, props.srmTokenAccounts]);
+
+  const userUiBalance = useCallback(() => {
+    return userBalance().toFixed(3);
+  }, [userBalance]);
   // TODO: Pack clinet library instruction into one
   // When the user hits deposit
   const depositFunds = async () => {
@@ -106,7 +110,7 @@ const Deposit = (props: {
       return;
     }
     // @ts-ignore
-    if (Number(inputRef.current.state.value) > Number(userUiBalance())) {
+    if (Number(inputRef.current.state.value) > Number(userBalance())) {
       notify({
         message: 'Not enough funds',
         description: 'Please Input Amount less than your balance',
@@ -331,7 +335,7 @@ const Deposit = (props: {
   }, [
     tokenAccount,
     currency,
-    userUiBalance,
+    userBalance,
     props.visible,
     props.onCancel,
     working,

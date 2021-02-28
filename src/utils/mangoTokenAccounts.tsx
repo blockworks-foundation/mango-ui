@@ -45,10 +45,9 @@ const useMangoTokenAccount = () => {
         accounts.forEach((account) => {
           if (account && account.account) {
             // How much does this token account have
-            let balance = (
+            let balance =
               parseTokenAccountData(account.account.data).amount /
-              Math.pow(10, mangoGroup?.mintDecimals[i])
-            ).toFixed(3);
+              Math.pow(10, mangoGroup?.mintDecimals[i]);
             tokenAccountsMapping.current[account.pubkey.toString()] = { account, balance };
           }
         });

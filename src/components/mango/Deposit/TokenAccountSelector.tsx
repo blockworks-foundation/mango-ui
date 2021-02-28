@@ -1,5 +1,5 @@
 // For the dialog box component
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useRef } from 'react';
 import { Typography, Select } from 'antd';
 // Mango group token account hook
 import useMangoTokenAccount from '../../../utils/mangoTokenAccounts';
@@ -18,9 +18,7 @@ const AccountSelector = ({ currency, customTokenAccounts, setTokenAccount, token
   // Get the mangoGroup token account
   const { mangoGroupTokenAccounts, tokenAccountsMapping } = useMangoTokenAccount();
 
-  const tokenAccounts = useMemo(() => {
-    return customTokenAccounts.SRM ? customTokenAccounts : mangoGroupTokenAccounts;
-  }, [customTokenAccounts]);
+  const tokenAccounts = customTokenAccounts.SRM ? customTokenAccounts : mangoGroupTokenAccounts;
 
   const options = useMemo(() => {
     // @ts-ignore
@@ -50,15 +48,13 @@ const AccountSelector = ({ currency, customTokenAccounts, setTokenAccount, token
   }, [currency, tokenAccounts]);
 
   useEffect(() => {
-    if (currency === 'SRM') return;
+    if (currency === 'SRM' || tokenAccount) return;
     // Set the first account for the token
     if (tokenAccounts[currency] && tokenAccounts[currency].length > 0) {
       // Set the account with highest balance
       let hAccount: TokenAccount = tokenAccounts[currency][0];
       tokenAccounts[currency].forEach((account: TokenAccount, i: number) => {
-        if (i === 0) {
-          return;
-        } else if (!tokenAccountsMapping.current[account.pubkey.toString()]) {
+        if (i === 0 || !tokenAccountsMapping.current[account.pubkey.toString()]) {
           return;
         }
         hAccount =
@@ -67,11 +63,10 @@ const AccountSelector = ({ currency, customTokenAccounts, setTokenAccount, token
             ? tokenAccountsMapping.current[account.pubkey.toString()].account
             : hAccount;
       });
+
       setTokenAccount(hAccount);
-    } else {
-      setTokenAccount(null);
     }
-  });
+  }, [tokenAccounts]);
 
   const handleChange = (e) => {
     if (currency === 'SRM') {

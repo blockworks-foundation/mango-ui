@@ -48,6 +48,8 @@ const DepositModal = React.forwardRef(
           setCurrency={props.setCurrency}
           currency={props.currency}
           userUiBalance={props.userUiBalance}
+          setTokenAccount={props.onSelectAccount}
+          customTokenAccounts={props.customTokenAccounts}
           ref={ref}
         />
         <RowBox align="middle" justify="center">
