@@ -8,7 +8,6 @@ import {
 } from '../../charting_library'; // Make sure to follow step 1 of the README
 import { useMarket } from '../../utils/markets';
 import { BONFIDA_DATA_FEED } from '../../utils/bonfidaConnector';
-import { findTVMarketFromAddress } from '../../utils/tradingview';
 
 // This is a basic example of how to create a TV widget
 // You can add more feature such as storing charts in localStorage
@@ -117,7 +116,7 @@ export const TVChartContainer = () => {
             title: 'Notification',
             body: 'TradingView Charting Library API works correctly',
             callback: () => {
-              console.log('It works!!');
+              // console.log('It works!!');
             },
           }),
         );
