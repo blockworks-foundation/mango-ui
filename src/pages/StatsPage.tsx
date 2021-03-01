@@ -180,10 +180,10 @@ export default function StatsPage() {
                         <div style={{ width: '100%' }}>{stat.symbol}</div>
                       </Button>
                     </Col>
-                    <Col span={4}>{stat.totalDeposits}</Col>
-                    <Col span={4}>{stat.totalBorrows}</Col>
-                    <Col span={4}>{stat.depositInterest}%</Col>
-                    <Col span={4}>{stat.borrowInterest}%</Col>
+                    <Col span={4}>{stat.totalDeposits.toFixed(2)}</Col>
+                    <Col span={4}>{stat.totalBorrows.toFixed(2)}</Col>
+                    <Col span={4}>{stat.depositInterest.toFixed(2)}%</Col>
+                    <Col span={4}>{stat.borrowInterest.toFixed(2)}%</Col>
                     <Col span={4}>{(parseFloat(stat.utilization) * 100).toFixed(2)}%</Col>
                   </Row>
                 </div>
