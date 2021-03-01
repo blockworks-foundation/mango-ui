@@ -5,7 +5,8 @@ import { LineChart, Line, ReferenceLine, XAxis, YAxis, Tooltip } from 'recharts'
 import useDimensions from 'react-cool-dimensions';
 import btcIcon from '../assets/icons/btc.svg';
 import ethIcon from '../assets/icons/eth.svg';
-import usdcIcon from '../assets/icons//usdc.svg';
+import usdtIcon from '../assets/icons/usdt.svg';
+import usdcIcon from '../assets/icons/usdc.svg';
 import FloatingElement from '../components/layout/FloatingElement';
 
 const Wrapper = styled.div`
@@ -40,6 +41,7 @@ const ChartWrapper = styled.div`
 const icons = {
   BTC: btcIcon,
   ETH: ethIcon,
+  USDT: usdtIcon,
   USDC: usdcIcon,
 };
 
