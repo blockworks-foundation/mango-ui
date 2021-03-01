@@ -3,7 +3,7 @@ import Wallet from '@project-serum/sol-wallet-adapter';
 import { Market, OpenOrders } from '@project-serum/serum';
 import { Event } from '@project-serum/serum/lib/queue';
 import { Order } from '@project-serum/serum/lib/market';
-import { MangoGroup, MarginAccount, MangoClient } from '@mango/client';
+import { MangoGroup, MarginAccount, MangoClient } from '@blockworks-foundation/mango-client';
 
 export interface ConnectionContextValues {
   endpoint: string;

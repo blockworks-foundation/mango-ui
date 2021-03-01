@@ -36,11 +36,11 @@ import {
 import { WRAPPED_SOL_MINT } from '@project-serum/serum/lib/token-instructions';
 import { Order } from '@project-serum/serum/lib/market';
 import BonfidaApi from './bonfidaConnector';
-import { IDS } from '@mango/client';
-import { nativeToUi } from '@mango/client/lib/utils';
+import { IDS } from '@blockworks-foundation/mango-client';
+import { nativeToUi } from '@blockworks-foundation/mango-client/lib/utils';
 import { sleep } from './utils';
 import { useMarginAccount } from './marginAccounts';
-import { NUM_TOKENS } from '@mango/client/lib/layout';
+import { NUM_TOKENS } from '@blockworks-foundation/mango-client/lib/layout';
 import { DEFAULT_MANGO_GROUP } from './mango';
 
 // Used in debugging, should be false in production

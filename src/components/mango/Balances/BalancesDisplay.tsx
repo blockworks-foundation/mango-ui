@@ -5,7 +5,7 @@ import FloatingElement from '../../layout/FloatingElement';
 // Let's get our account context
 import { tokenPrecision, useMarginAccount } from '../../../utils/marginAccounts';
 // Type annotaions
-import { MarginAccount } from '@mango/client';
+import { MarginAccount } from '@blockworks-foundation/mango-client';
 import { PublicKey } from '@solana/web3.js';
 // Let's import our Deposit component
 import Deposit from '../Deposit';

@@ -1166,6 +1166,19 @@
     lodash "^4.17.19"
     to-fast-properties "^2.0.0"
 
+"@blockworks-foundation/mango-client@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@blockworks-foundation/mango-client/-/mango-client-0.1.1.tgz#809c7917f23d940c64cb718bc6edbe83a55d8e7d"
+  integrity sha512-mHt/uttKimuEf+cg3UTYQsK3ObsUO4aZu9dtfg9LBC945w85r7b2CSi2mY4q/cPCyvkwIQRyFld87ehTqRyKXw==
+  dependencies:
+    "@project-serum/serum" "^0.13.20"
+    "@project-serum/sol-wallet-adapter" "^0.1.4"
+    "@solana/spl-token" "0.0.13"
+    "@solana/web3.js" "^0.90.0"
+    bn.js "^5.1.2"
+    borsh "https://github.com/defactojob/borsh-js#field-mapper"
+    buffer-layout "^1.2.0"
+
 "@cnakazawa/watch@^1.0.3":
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/@cnakazawa/watch/-/watch-1.0.4.tgz#f864ae85004d0fcab6f50be9141c4da368d1656a"
@@ -1420,18 +1433,6 @@
     "@types/node" "*"
     "@types/yargs" "^15.0.0"
     chalk "^4.0.0"
-
-"@mango/client@git+ssh://git@github.com:blockworks-foundation/mango-client-ts.git":
-  version "0.2.0"
-  resolved "git+ssh://git@github.com:blockworks-foundation/mango-client-ts.git#6957ab72092ee98855b92c93e6625827fbb05a23"
-  dependencies:
-    "@project-serum/serum" "^0.13.20"
-    "@project-serum/sol-wallet-adapter" "^0.1.4"
-    "@solana/spl-token" "0.0.13"
-    "@solana/web3.js" "^0.90.0"
-    bn.js "^5.1.2"
-    borsh "https://github.com/defactojob/borsh-js#field-mapper"
-    buffer-layout "^1.2.0"
 
 "@mrmlnc/readdir-enhanced@^2.2.1":
   version "2.2.1"
@@ -2979,9 +2980,9 @@ boolbase@^1.0.0, boolbase@~1.0.0:
   resolved "https://registry.yarnpkg.com/boolbase/-/boolbase-1.0.0.tgz#68dff5fbe60c51eb37725ea9e3ed310dcc1e776e"
   integrity sha1-aN/1++YMUes3cl6p4+0xDcwed24=
 
-"borsh@https://github.com/defactojob/borsh-js#field-mapper":
+"borsh@git+https://github.com/defactojob/borsh-js.git#field-mapper":
   version "0.3.1"
-  resolved "https://github.com/defactojob/borsh-js#33a0d24af281112c0a48efb3fa503f3212443de9"
+  resolved "git+https://github.com/defactojob/borsh-js.git#33a0d24af281112c0a48efb3fa503f3212443de9"
   dependencies:
     "@types/bn.js" "^4.11.5"
     bn.js "^5.0.0"

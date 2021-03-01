@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { Col, Row, Button, Divider } from 'antd';
 import { LineChart, Line, ReferenceLine, XAxis, YAxis, Tooltip } from 'recharts';
 import useDimensions from 'react-cool-dimensions';
-import { IDS, MangoClient } from '@mango/client';
+import { IDS, MangoClient } from '@blockworks-foundation/mango-client';
 import { PublicKey, Connection } from '@solana/web3.js';
 import btcIcon from '../assets/icons/btc.svg';
 import ethIcon from '../assets/icons/eth.svg';

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Button, Col, Row, Tag } from 'antd';
 import { PublicKey } from '@solana/web3.js';
-import { IDS } from '@mango/client';
+import { IDS } from '@blockworks-foundation/mango-client';
 
 import DataTable from '../layout/DataTable';
 import { useWallet } from '../../utils/wallet';

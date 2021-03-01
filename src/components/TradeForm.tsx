@@ -2,7 +2,7 @@ import { Button, Input, Radio, Switch } from 'antd';
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { PublicKey } from '@solana/web3.js';
-import { IDS } from '@mango/client';
+import { IDS } from '@blockworks-foundation/mango-client';
 import {
   useSelectedBaseCurrencyBalances,
   useSelectedQuoteCurrencyBalances,

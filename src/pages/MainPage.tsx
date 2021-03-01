@@ -1,15 +1,11 @@
 import React, { useEffect, useState } from 'react';
 
-import {
-  ENDPOINTS,
-  useConnection,
-  useConnectionConfig,
-} from '../utils/connection';
+import { ENDPOINTS, useConnection, useConnectionConfig } from '../utils/connection';
 import { useWallet } from '../utils/wallet';
 
-import { MangoClient, IDS, MangoGroup, MarginAccount } from '@mango/client';
+import { MangoClient, IDS, MangoGroup, MarginAccount } from '@blockworks-foundation/mango-client';
 import { PublicKey } from '@solana/web3.js';
-import { zeroKey } from '@mango/client/lib/utils';
+import { zeroKey } from '@blockworks-foundation/mango-client/lib/utils';
 import { DEFAULT_MANGO_GROUP } from '../utils/mango';
 
 function MarginAccountList() {
@@ -18,9 +14,7 @@ function MarginAccountList() {
 
   const client = new MangoClient();
   const { wallet, connected } = useWallet();
-  const [mangoGroup, setMangoGroup] = useState<MangoGroup | undefined>(
-    undefined,
-  );
+  const [mangoGroup, setMangoGroup] = useState<MangoGroup | undefined>(undefined);
 
   const mangoGroupIds = IDS[endpointInfo!.name].mango_groups[DEFAULT_MANGO_GROUP]; // TODO allow selection of mango group with drop down
   const mangoGroupPk = new PublicKey(mangoGroupIds.mango_group_pk);
@@ -91,10 +85,7 @@ export default function MainPage() {
 
   if (IDS[endpointInfo!.name] === undefined) {
     return (
-      <>
-        Endpoint {endpointInfo!.name} does not yet have a valid mango markets
-        contract deployed
-      </>
+      <>Endpoint {endpointInfo!.name} does not yet have a valid mango markets contract deployed</>
     );
   } else {
     return <MarginAccountList />;

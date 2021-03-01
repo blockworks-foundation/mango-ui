@@ -1,7 +1,7 @@
 // Hooks and helper functions for handling user's margin accounts are here
 import React, { useState, useEffect, useContext, useRef } from 'react';
 // Import function to create margin account from mango library
-import { IDS, MangoGroup, MangoClient, MarginAccount } from '@mango/client';
+import { IDS, MangoGroup, MangoClient, MarginAccount } from '@blockworks-foundation/mango-client';
 // Import some mango client functions
 import { DEFAULT_MANGO_GROUP, initMarginAccount } from './mango';
 // Connection context
@@ -12,7 +12,7 @@ import { useWallet } from '../utils/wallet';
 import { PublicKey } from '@solana/web3.js';
 import { FeeRates, MarginAccountContextValues } from '../utils/types';
 import { parseTokenAccountData } from './tokens';
-import { nativeToUi } from '@mango/client/lib/utils';
+import { nativeToUi } from '@blockworks-foundation/mango-client/lib/utils';
 import { SRM_DECIMALS } from '@project-serum/serum/lib/token-instructions';
 import { getFeeTier, getFeeRates } from '@project-serum/serum';
 

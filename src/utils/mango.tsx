@@ -1,4 +1,9 @@
-import { createAccountInstruction, nativeToUi, uiToNative, zeroKey } from '@mango/client/lib/utils';
+import {
+  createAccountInstruction,
+  nativeToUi,
+  uiToNative,
+  zeroKey,
+} from '@blockworks-foundation/mango-client/lib/utils';
 import {
   Account,
   Connection,
@@ -10,12 +15,20 @@ import {
   TransactionSignature,
 } from '@solana/web3.js';
 import Wallet from '@project-serum/sol-wallet-adapter';
-import { MangoGroup, MarginAccount, MarginAccountLayout } from '@mango/client';
-import { encodeMangoInstruction, NUM_MARKETS, NUM_TOKENS } from '@mango/client/lib/layout';
+import {
+  MangoGroup,
+  MarginAccount,
+  MarginAccountLayout,
+} from '@blockworks-foundation/mango-client';
+import {
+  encodeMangoInstruction,
+  NUM_MARKETS,
+  NUM_TOKENS,
+} from '@blockworks-foundation/mango-client/lib/layout';
 import {
   makeSettleBorrowInstruction,
   makeSettleFundsInstruction,
-} from '@mango/client/lib/instruction';
+} from '@blockworks-foundation/mango-client/lib/instruction';
 import { sendTransaction } from './send';
 import { TOKEN_PROGRAM_ID } from './tokens';
 import BN from 'bn.js';

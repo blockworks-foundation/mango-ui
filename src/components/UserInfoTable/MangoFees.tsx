@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { Row, Col, Typography } from 'antd';
 import styled from 'styled-components';
-import { IDS } from '@mango/client';
-import { nativeToUi } from '@mango/client/lib/utils';
+import { IDS } from '@blockworks-foundation/mango-client';
+import { nativeToUi } from '@blockworks-foundation/mango-client/lib/utils';
 import { SRM_DECIMALS } from '@project-serum/serum/lib/token-instructions';
 
 import { getTokenAccountInfo } from '../../utils/tokens';

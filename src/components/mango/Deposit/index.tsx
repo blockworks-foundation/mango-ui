@@ -22,7 +22,7 @@ import {
 import DepositModal from './DepositModal';
 import { parseTokenAccountData } from '../../../utils/tokens';
 import { PublicKey } from '@solana/web3.js';
-import { nativeToUi } from '@mango/client/lib/utils';
+import { nativeToUi } from '@blockworks-foundation/mango-client/lib/utils';
 import { SRM_DECIMALS } from '@project-serum/serum/lib/token-instructions';
 
 const Deposit = (props: {

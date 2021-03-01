@@ -6,7 +6,7 @@
   "dependencies": {
     "@ant-design/icons": "^4.2.1",
     "@craco/craco": "^5.6.4",
-    "@mango/client": "git+ssh://git@github.com:blockworks-foundation/mango-client-ts.git",
+    "@blockworks-foundation/mango-client": "^0.1.1",
     "@project-serum/associated-token": "0.1.0",
     "@project-serum/awesome-serum": "1.0.1",
     "@project-serum/pool": "^0.2.0",

@@ -4,7 +4,7 @@ import React, { useContext, useEffect, useMemo, useRef } from 'react';
 import { setCache, useAsyncData } from './fetch-loop';
 import tuple from 'immutable-tuple';
 import { ConnectionContextValues, EndpointInfo } from './types';
-import { IDS } from '@mango/client';
+import { IDS } from '@blockworks-foundation/mango-client';
 
 export const ENDPOINTS: EndpointInfo[] = [
   {
