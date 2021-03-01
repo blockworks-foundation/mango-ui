@@ -93,7 +93,7 @@ export default function MarginInfo() {
     }
   }, [marginAccount, mangoGroup]);
   return (
-    <FloatingElement style={{ flex: 0.5, paddingTop: 10 }}>
+    <FloatingElement style={{ flex: 1 }}>
       <React.Fragment>
         {mAccountInfo ? (
           mAccountInfo.map((entry, i) => (
@@ -126,7 +126,7 @@ export default function MarginInfo() {
             <ActionButton
               block
               size="middle"
-              disabled={marginAccount && mAccountInfo && mAccountInfo?.length > 0 ? false : true}
+              disabled={marginAccount ? false : true}
               onClick={settleBorrows}
               loading={working}
             >

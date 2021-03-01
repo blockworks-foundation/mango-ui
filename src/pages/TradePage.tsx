@@ -286,8 +286,8 @@ const RenderNormal = ({ onChangeOrderRef, onPrice, onSize }) => {
         <TradesTable smallScreen={false} />
       </Col>
       <Col flex="420px" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-        <TradeForm setChangeOrderRef={onChangeOrderRef} />
-        <BalancesDisplay />
+        <TradeForm setChangeOrderRef={onChangeOrderRef} style={{ minHeight: 300 }} />
+        <BalancesDisplay style={{ minHeight: 300 }} />
         <MarginInfo />
       </Col>
     </Row>

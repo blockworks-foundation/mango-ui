@@ -1,6 +1,5 @@
 import React, { useMemo, useState, useRef, useCallback } from 'react';
-import { Col, Typography, Row, Select, Spin, Divider, Skeleton } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
+import { Col, Typography, Row, Select, Divider, Skeleton } from 'antd';
 import { RowBox, SizeTitle, BalanceCol, ActionButton } from '../componentStyles';
 import FloatingElement from '../../layout/FloatingElement';
 // Let's get our account context
@@ -12,12 +11,11 @@ import { PublicKey } from '@solana/web3.js';
 import Deposit from '../Deposit';
 // Connection hook
 import { useWallet } from '../../../utils/wallet';
-const antIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />;
 
 const { Option } = Select;
 const { Text } = Typography;
 
-export default function BalancesDisplay() {
+export default function BalancesDisplay({ style }: { style?: any }) {
   // Connection hook
   const { connected } = useWallet();
   const {
@@ -76,7 +74,7 @@ export default function BalancesDisplay() {
   );
 
   return (
-    <FloatingElement style={{ flex: 0.5, padding: 10 }}>
+    <FloatingElement style={{ flex: 0.5, padding: 10, ...style }}>
       <React.Fragment>
         <Divider>Margin Account</Divider>
         {marginAccounts.length > 1 && MAccountSelector}
@@ -91,7 +89,7 @@ export default function BalancesDisplay() {
             let depo = marginAccount ? marginAccount.getUiDeposit(mangoGroup, i) : 0;
             let borr = marginAccount ? marginAccount.getUiBorrow(mangoGroup, i) : 0;
             return (
-              <Row key={i} style={{ marginBottom: 4 }}>
+              <Row key={i} style={{ marginBottom: 10 }}>
                 <Col span={6}>
                   <img
                     alt=""

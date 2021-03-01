@@ -66,6 +66,16 @@ export const CurrencyInput = React.forwardRef(
           {currencies.map((currency: string, i: number) => {
             return (
               <Option key={i} value={currency} name={currency} title={currency}>
+                <img
+                  alt=""
+                  width="20"
+                  height="20"
+                  src={require(`../../../assets/icons/${currency.toLowerCase()}.svg`)}
+                  style={{
+                    marginRight: 5,
+                    alignSelf: 'center',
+                  }}
+                />
                 {currency}
               </Option>
             );

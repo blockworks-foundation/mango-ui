@@ -1,4 +1,4 @@
-import { Col, Row } from 'antd';
+import { Col, Row, Divider } from 'antd';
 import React, { useRef, useEffect, useState } from 'react';
 import styled, { css } from 'styled-components';
 import { useMarket, useOrderbook, useMarkPrice } from '../utils/markets';
@@ -107,7 +107,9 @@ export default function Orderbook({ smallScreen, depth = 7, onPrice, onSize }) {
 
   return (
     <FloatingElement style={smallScreen ? { flex: 1 } : { height: '500px', overflow: 'hidden' }}>
-      <Title>Orderbook</Title>
+      <Divider>
+        <Title>Orderbook</Title>
+      </Divider>
       <SizeTitle>
         <Col span={12} style={{ textAlign: 'left' }}>
           Size ({baseCurrency})
