@@ -1,7 +1,7 @@
 // For the dialog box component
 import React, { useRef, useMemo, useState, useCallback } from 'react';
 // Mango margin account hook
-import { useMarginAccount } from '../../../utils/marginAccounts';
+import { useMarginAccount, tokenPrecision as decimals } from '../../../utils/marginAccounts';
 // Mango token accounts
 import useMangoTokenAccount from '../../../utils/mangoTokenAccounts';
 // TYpe annotation
@@ -24,12 +24,6 @@ import { parseTokenAccountData } from '../../../utils/tokens';
 import { PublicKey } from '@solana/web3.js';
 import { nativeToUi } from '@mango/client/lib/utils';
 import { SRM_DECIMALS } from '@project-serum/serum/lib/token-instructions';
-
-const decimals = {
-  BTC: 4,
-  ETH: 3,
-  USDC: 2,
-};
 
 const Deposit = (props: {
   currency?: string;
@@ -95,7 +89,8 @@ const Deposit = (props: {
 
   const userUiBalance = useCallback(() => {
     const fixedDecimals = decimals[currency] || 3;
-    return userBalance().toFixed(fixedDecimals);
+    let bal = userBalance();
+    return bal < 1 / Math.pow(10, fixedDecimals) ? 0 : bal.toFixed(fixedDecimals);
   }, [userBalance, currency]);
   // TODO: Pack clinet library instruction into one
   // When the user hits deposit

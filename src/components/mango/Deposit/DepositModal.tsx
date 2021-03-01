@@ -4,7 +4,7 @@ import { CurrencyInput } from '../CurrencyInput';
 // Components from antd
 import { Modal, Col } from 'antd';
 // Styled components
-import { RowBox, GreenButton } from '../componentStyles';
+import { RowBox, ActionButton } from '../componentStyles';
 // TYpe annotation
 import { TokenAccount } from '../../../utils/types';
 // Import Acount selector
@@ -54,9 +54,9 @@ const DepositModal = React.forwardRef(
         />
         <RowBox align="middle" justify="center">
           <Col span={8}>
-            <GreenButton block size="middle" onClick={props.handleClick} loading={props.working}>
+            <ActionButton block size="middle" onClick={props.handleClick} loading={props.working}>
               {props.operation}
-            </GreenButton>
+            </ActionButton>
           </Col>
         </RowBox>
       </Modal>

@@ -150,6 +150,7 @@ export async function initMarginAccountAndDeposit(
     MarginAccountLayout.span,
     programId,
   );
+  console.log('Account is ', accInstr);
 
   // Specify the accounts this instruction takes in (see program/src/instruction.rs)
   const keys = [
