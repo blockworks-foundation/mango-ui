@@ -3,11 +3,16 @@ import styled from 'styled-components';
 import { Col, Row, Button, Divider } from 'antd';
 import { LineChart, Line, ReferenceLine, XAxis, YAxis, Tooltip } from 'recharts';
 import useDimensions from 'react-cool-dimensions';
+import { IDS, MangoClient } from '@mango/client';
+import { PublicKey, Connection } from '@solana/web3.js';
 import btcIcon from '../assets/icons/btc.svg';
 import ethIcon from '../assets/icons/eth.svg';
 import usdtIcon from '../assets/icons/usdt.svg';
 import usdcIcon from '../assets/icons/usdc.svg';
 import FloatingElement from '../components/layout/FloatingElement';
+import { DEFAULT_MANGO_GROUP } from '../utils/mango';
+
+const CLUSTER = 'mainnet-beta';
 
 const Wrapper = styled.div`
   height: 100%;
@@ -56,6 +61,7 @@ const useMangoStats = () => {
       utilization: '0',
     },
   ]);
+  const [latestStats, setLatestStats] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -68,7 +74,35 @@ const useMangoStats = () => {
     fetchStats();
   }, []);
 
-  const latestStats = stats.slice(-3).reverse();
+  useEffect(() => {
+    const getLatestStats = async () => {
+      const client = new MangoClient();
+      const connection = new Connection(IDS.cluster_urls[CLUSTER], 'singleGossip');
+      const assets = IDS[CLUSTER].mango_groups?.[DEFAULT_MANGO_GROUP]?.symbols;
+      const mangoGroupId = IDS[CLUSTER].mango_groups?.[DEFAULT_MANGO_GROUP]?.mango_group_pk;
+      if (!mangoGroupId) return;
+      const mangoGroupPk = new PublicKey(mangoGroupId);
+      const mangoGroup = await client.getMangoGroup(connection, mangoGroupPk);
+      const latestStats = Object.keys(assets).map((symbol, index) => {
+        const totalDeposits = mangoGroup.getUiTotalDeposit(index);
+        const totalBorrows = mangoGroup.getUiTotalBorrow(index);
+        console.log('assets', symbol, index, totalDeposits, totalBorrows);
+
+        return {
+          time: new Date(),
+          symbol,
+          totalDeposits,
+          totalBorrows,
+          depositInterest: mangoGroup.getDepositRate(index),
+          borrowInterest: mangoGroup.getBorrowRate(index),
+          utilization: totalDeposits > 0.0 ? totalBorrows / totalDeposits : 0.0,
+        };
+      });
+      setLatestStats(latestStats);
+    };
+
+    getLatestStats();
+  }, []);
 
   return { latestStats, stats };
 };
@@ -150,6 +184,7 @@ const StatsChart = ({ title, xAxis, yAxis, data }) => {
 export default function StatsPage() {
   const [selectedAsset, setSelectedAsset] = useState<string | null>(null);
   const { latestStats, stats } = useMangoStats();
+  console.log('latestStats', latestStats);
 
   const selectedStatsData = stats.filter((stat) => stat.symbol === selectedAsset);
 
@@ -180,8 +215,8 @@ export default function StatsPage() {
                         <div style={{ width: '100%' }}>{stat.symbol}</div>
                       </Button>
                     </Col>
-                    <Col span={4}>{stat.totalDeposits.toFixed(2)}</Col>
-                    <Col span={4}>{stat.totalBorrows.toFixed(2)}</Col>
+                    <Col span={4}>{stat.totalDeposits.toFixed(4)}</Col>
+                    <Col span={4}>{stat.totalBorrows.toFixed(4)}</Col>
                     <Col span={4}>{stat.depositInterest.toFixed(2)}%</Col>
                     <Col span={4}>{stat.borrowInterest.toFixed(2)}%</Col>
                     <Col span={4}>{(parseFloat(stat.utilization) * 100).toFixed(2)}%</Col>
