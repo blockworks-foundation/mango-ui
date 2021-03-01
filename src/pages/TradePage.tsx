@@ -132,7 +132,7 @@ function TradePageInner() {
               </Popover>
             </Col>
           ) : null}
-          {deprecatedMarkets && deprecatedMarkets.length > 0 && (
+          {/* {deprecatedMarkets && deprecatedMarkets.length > 0 && (
             <React.Fragment>
               <Col>
                 <Typography>
@@ -146,7 +146,7 @@ function TradePageInner() {
                 </Button>
               </Col>
             </React.Fragment>
-          )}
+          )} */}
         </Row>
         {component}
       </Wrapper>
