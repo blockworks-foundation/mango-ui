@@ -90,7 +90,12 @@ const Deposit = (props: {
   const userUiBalance = useCallback(() => {
     const fixedDecimals = decimals[currency] || 3;
     let bal = userBalance();
-    return bal < 1 / Math.pow(10, fixedDecimals) ? 0 : bal.toFixed(fixedDecimals);
+    // Get the deciamal part
+    let dPart = bal - Math.trunc(bal);
+    return (
+      Math.trunc(bal) +
+      Math.floor(dPart * Math.pow(10, fixedDecimals)) / Math.pow(10, fixedDecimals)
+    );
   }, [userBalance, currency]);
   // TODO: Pack clinet library instruction into one
   // When the user hits deposit

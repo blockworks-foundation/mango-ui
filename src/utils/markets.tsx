@@ -126,7 +126,7 @@ export function useUnmigratedOpenOrdersAccounts() {
     if (!wallet || !connection || !wallet.publicKey) {
       return [];
     }
-    console.log('refreshing useUnmigratedOpenOrdersAccounts');
+    // console.log('refreshing useUnmigratedOpenOrdersAccounts');
     let deprecatedOpenOrdersAccounts: OpenOrders[] = [];
     const deprecatedProgramIds = Array.from(
       new Set(
@@ -156,7 +156,7 @@ export function useUnmigratedOpenOrdersAccounts() {
             ),
         );
       } catch (e) {
-        console.log('Error loading deprecated markets', programId?.toBase58(), e.message);
+        // console.log('Error loading deprecated markets', programId?.toBase58(), e.message);
       }
     }
     // Maybe sort
@@ -262,7 +262,7 @@ export function MarketProvider({ marketAddress, setMarketAddress, children }) {
   // Replace existing market with a non-deprecated one on first load
   useEffect(() => {
     if (marketInfo && marketInfo.deprecated) {
-      console.log('Switching markets from deprecated', marketInfo);
+      // console.log('Switching markets from deprecated', marketInfo);
       if (DEFAULT_MARKET) {
         setMarketAddress(DEFAULT_MARKET.address.toBase58());
       }
@@ -713,7 +713,7 @@ export function useFillsForAllMarkets(limit = 100) {
       fills = fills.concat(ownFillsForMarket);
     }
 
-    console.log(JSON.stringify(fills));
+    // console.log(JSON.stringify(fills));
     return fills;
   }
 
@@ -834,7 +834,7 @@ export const useAllOpenOrders = (): {
     if (new Date().getTime() - lastRefresh > 10 * 1000) {
       setRefresh((prev) => prev + 1);
     } else {
-      console.log('not refreshing');
+      // console.log('not refreshing');
     }
   };
 
@@ -996,7 +996,7 @@ export function useUnmigratedDeprecatedMarkets() {
     const getMarket = async (address) => {
       const marketInfo = USE_MARKETS.find((market) => market.address.equals(address));
       if (!marketInfo) {
-        console.log('Failed loading market');
+        // console.log('Failed loading market');
         notify({
           message: 'Error loading market',
           type: 'error',
@@ -1004,11 +1004,11 @@ export function useUnmigratedDeprecatedMarkets() {
         return null;
       }
       try {
-        console.log('Loading market', marketInfo.name);
+        // console.log('Loading market', marketInfo.name);
         // NOTE: Should this just be cached by (connection, marketInfo.address, marketInfo.programId)?
         return await Market.load(connection, marketInfo.address, {}, marketInfo.programId);
       } catch (e) {
-        console.log('Failed loading market', marketInfo.name, e);
+        // console.log('Failed loading market', marketInfo.name, e);
         notify({
           message: 'Error loading market',
           description: e.message,
@@ -1060,14 +1060,14 @@ export function useGetOpenOrdersForDeprecatedMarkets(): {
     if (!marketsList) {
       return null;
     }
-    console.log('refreshing getOpenOrdersForDeprecatedMarkets');
+    // console.log('refreshing getOpenOrdersForDeprecatedMarkets');
     const getOrders = async (market: Market | null) => {
       if (!market) {
         return null;
       }
       const { marketName } = getMarketDetails(market, customMarkets);
       try {
-        console.log('Fetching open orders for', marketName);
+        // console.log('Fetching open orders for', marketName);
         // Can do better than this, we have the open orders accounts already
         return (await market.loadOrdersForOwner(connection, wallet.publicKey)).map((order) => ({
           marketName,
@@ -1075,7 +1075,7 @@ export function useGetOpenOrdersForDeprecatedMarkets(): {
           ...order,
         }));
       } catch (e) {
-        console.log('Failed loading open orders', market.address.toBase58(), e);
+        // console.log('Failed loading open orders', market.address.toBase58(), e);
         notify({
           message: `Error loading open orders for deprecated ${marketName}`,
           description: e.message,
@@ -1099,7 +1099,7 @@ export function useGetOpenOrdersForDeprecatedMarkets(): {
   const [openOrders, loaded] = useAsyncData(getOpenOrdersForDeprecatedMarkets, cacheKey, {
     refreshInterval: _VERY_SLOW_REFRESH_INTERVAL,
   });
-  console.log('openOrders', openOrders);
+  // console.log('openOrders', openOrders);
   return {
     openOrders,
     loaded,
