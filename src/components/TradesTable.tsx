@@ -17,6 +17,7 @@ const SizeTitle = styled(Row)`
 export default function PublicTrades({ smallScreen }) {
   const { baseCurrency, quoteCurrency, market } = useMarket();
   const [trades, loaded] = useBonfidaTrades();
+  console.log('bonfida trades', trades);
 
   return (
     <FloatingElement
@@ -31,7 +32,7 @@ export default function PublicTrades({ smallScreen }) {
       }
     >
       <Divider>
-        <Title>Recent Market trades</Title>
+        <Title>Recent Market Trades</Title>
       </Divider>
       <SizeTitle>
         <Col span={8}>Price ({quoteCurrency}) </Col>
