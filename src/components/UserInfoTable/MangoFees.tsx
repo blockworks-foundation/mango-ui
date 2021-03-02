@@ -59,6 +59,16 @@ export default function MangoFees() {
   const { wallet, connected } = useWallet();
   const { endpointInfo } = useConnectionConfig();
 
+  /*
+  1. Fetch this user's MangoSrmAccounts with client.getMangoSrmAccountsForOwner()
+  2. Sort that list by MangoSrmAccount.amount and pick largest one
+  3. If list is empty then just pass in null or don't pass in an arg for mangoSrmAccount: PublicKey in depositSrm()
+
+  No need for the user's margin account
+
+  To get user's srm balance use MangoSrmAccount.getUiSrmAmount()
+   */
+
   const SRM_ADDRESS = IDS[endpointInfo!.name].symbols['SRM'];
 
   const showModalDeposit = useCallback(() => {
