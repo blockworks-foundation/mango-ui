@@ -15,6 +15,7 @@ import { nativeToUi } from '@blockworks-foundation/mango-client/lib/utils';
 import { SRM_DECIMALS } from '@project-serum/serum/lib/token-instructions';
 import { getFeeTier, getFeeRates } from '@project-serum/serum';
 import { MangoSrmAccount } from '@blockworks-foundation/mango-client/lib/client';
+import { parseTokenAccountData } from './tokens';
 
 // Create a context to share account state across pages
 const MarginAccountContext = React.createContext<null | MarginAccountContextValues>(null);
@@ -317,10 +318,10 @@ const useMarginAccountHelper = () => {
   const getSrmFeeInfo = useCallback(async () => {
     if (!mangoGroup) return;
 
-    let amount = 0;
-    if (mangoGroup.nativeSrm) {
-      amount = nativeToUi(mangoGroup.nativeSrm, SRM_DECIMALS);
-    }
+    const srmAccountInfo = await connection.getAccountInfo(mangoGroup.srmVault);
+    if (!srmAccountInfo) return;
+    const accountData = parseTokenAccountData(srmAccountInfo.data);
+    const amount = nativeToUi(accountData.amount, SRM_DECIMALS);
     setTotalSrm(amount);
     const feeTier = getFeeTier(0, amount);
     const rates = getFeeRates(feeTier);
@@ -346,7 +347,7 @@ const useMarginAccountHelper = () => {
     if (usersMangoSrmAccounts.length) {
       setContributedSrm(nativeToUi(usersMangoSrmAccounts[0].amount, SRM_DECIMALS));
     }
-    getSrmFeeInfo();
+    await getSrmFeeInfo();
   }, [connected, mangoGroup]);
 
   useEffect(() => {
