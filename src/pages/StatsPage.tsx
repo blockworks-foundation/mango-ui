@@ -93,8 +93,8 @@ const useMangoStats = () => {
           symbol,
           totalDeposits,
           totalBorrows,
-          depositInterest: mangoGroup.getDepositRate(index),
-          borrowInterest: mangoGroup.getBorrowRate(index),
+          depositInterest: mangoGroup.getDepositRate(index) * 100,
+          borrowInterest: mangoGroup.getBorrowRate(index) * 100,
           utilization: totalDeposits > 0.0 ? totalBorrows / totalDeposits : 0.0,
         };
       });
