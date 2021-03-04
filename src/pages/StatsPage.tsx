@@ -86,7 +86,6 @@ const useMangoStats = () => {
       const latestStats = Object.keys(assets).map((symbol, index) => {
         const totalDeposits = mangoGroup.getUiTotalDeposit(index);
         const totalBorrows = mangoGroup.getUiTotalBorrow(index);
-        console.log('assets', symbol, index, totalDeposits, totalBorrows);
 
         return {
           time: new Date(),
@@ -184,7 +183,6 @@ const StatsChart = ({ title, xAxis, yAxis, data }) => {
 export default function StatsPage() {
   const [selectedAsset, setSelectedAsset] = useState<string | null>(null);
   const { latestStats, stats } = useMangoStats();
-  console.log('latestStats', latestStats);
 
   const selectedStatsData = stats.filter((stat) => stat.symbol === selectedAsset);
 

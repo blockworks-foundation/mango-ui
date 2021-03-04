@@ -1,5 +1,5 @@
 // Hooks and helper functions for handling user's margin accounts are here
-import React, { useState, useEffect, useContext, useRef } from 'react';
+import React, { useState, useEffect, useContext, useCallback, useRef } from 'react';
 // Import function to create margin account from mango library
 import { IDS, MangoGroup, MangoClient, MarginAccount } from '@blockworks-foundation/mango-client';
 // Import some mango client functions
@@ -11,10 +11,10 @@ import { useWallet } from '../utils/wallet';
 // Type annotations
 import { PublicKey } from '@solana/web3.js';
 import { FeeRates, MarginAccountContextValues } from '../utils/types';
-import { parseTokenAccountData } from './tokens';
 import { nativeToUi } from '@blockworks-foundation/mango-client/lib/utils';
 import { SRM_DECIMALS } from '@project-serum/serum/lib/token-instructions';
 import { getFeeTier, getFeeRates } from '@project-serum/serum';
+import { MangoSrmAccount } from '@blockworks-foundation/mango-client/lib/client';
 
 // Create a context to share account state across pages
 const MarginAccountContext = React.createContext<null | MarginAccountContextValues>(null);
@@ -47,6 +47,9 @@ export function MarginAccountProvider({ children }) {
     setSize,
     srmFeeRates,
     totalSrm,
+    contributedSrm,
+    mangoSrmAccounts,
+    getUserSrmInfo,
   } = useMarginAccountHelper();
   // Return a context with this values set as default
   return (
@@ -68,6 +71,9 @@ export function MarginAccountProvider({ children }) {
         setSize,
         srmFeeRates,
         totalSrm,
+        contributedSrm,
+        mangoSrmAccounts,
+        getUserSrmInfo,
       }}
     >
       {children}
@@ -86,7 +92,6 @@ const useMarginAccountHelper = () => {
   const [mangoGroup, setMangoGroup] = useState<MangoGroup | null>(null);
   // Save the current mango group identifier
   // TODO: Allow for changing
-
   const [mango_groups, setMango_Groups] = useState(DEFAULT_MANGO_GROUP.split('_'));
   // Let's know when any transaction is pending
   const [maPending, setMAPending] = useState<any>(() => {
@@ -112,6 +117,8 @@ const useMarginAccountHelper = () => {
   // mango group srm fee info
   const [totalSrm, setTotalSrm] = useState(0);
   const [srmFeeRates, setSrmFeeRates] = useState<FeeRates | null>(null);
+  const [mangoSrmAccounts, setMangoSrmAccounts] = useState<MangoSrmAccount[] | null>(null);
+  const [contributedSrm, setContributedSrm] = useState(0);
 
   /**
    * @summary Create a margin account for a mango group
@@ -307,21 +314,44 @@ const useMarginAccountHelper = () => {
   }, [marginAccount, connected]);
   // TODO: Should the mango group change, reset our margin accounts and account
 
-  useEffect(() => {
+  const getSrmFeeInfo = useCallback(async () => {
     if (!mangoGroup) return;
 
-    const getSrmFeeInfo = async () => {
-      const srmAccountInfo = await connection.getAccountInfo(mangoGroup.srmVault);
-      if (!srmAccountInfo) return;
-      const accountData = parseTokenAccountData(srmAccountInfo.data);
-      const amount = nativeToUi(accountData.amount, SRM_DECIMALS);
-      setTotalSrm(amount);
-      const feeTier = getFeeTier(0, amount);
-      const rates = getFeeRates(feeTier);
-      setSrmFeeRates(rates);
-    };
+    let amount = 0;
+    if (mangoGroup.nativeSrm) {
+      amount = nativeToUi(mangoGroup.nativeSrm, SRM_DECIMALS);
+    }
+    setTotalSrm(amount);
+    const feeTier = getFeeTier(0, amount);
+    const rates = getFeeRates(feeTier);
+    setSrmFeeRates(rates);
+  }, [mangoGroup]);
+
+  useEffect(() => {
     getSrmFeeInfo();
-  }, [mangoGroup, marginAccount]);
+  }, [getSrmFeeInfo]);
+
+  const getUserSrmInfo = useCallback(async () => {
+    if (!mangoGroup || !connected) return;
+
+    const usersMangoSrmAccounts = await mangoClient.getMangoSrmAccountsForOwner(
+      connection,
+      new PublicKey(mangoOptions.mango_program_id),
+      mangoGroup,
+      wallet,
+    );
+
+    setMangoSrmAccounts(usersMangoSrmAccounts);
+
+    if (usersMangoSrmAccounts.length) {
+      setContributedSrm(nativeToUi(usersMangoSrmAccounts[0].amount, SRM_DECIMALS));
+    }
+    getSrmFeeInfo();
+  }, [connected, mangoGroup]);
+
+  useEffect(() => {
+    getUserSrmInfo();
+  }, [getUserSrmInfo]);
 
   return {
     marginAccount,
@@ -340,6 +370,9 @@ const useMarginAccountHelper = () => {
     setSize,
     srmFeeRates,
     totalSrm,
+    mangoSrmAccounts,
+    contributedSrm,
+    getUserSrmInfo,
   };
 };
 
@@ -380,5 +413,8 @@ export function useMarginAccount() {
     keyMappings: buildPubKeytoAcountMapping,
     srmFeeRates: marginAccountContext.srmFeeRates,
     totalSrm: marginAccountContext.totalSrm,
+    mangoSrmAccounts: marginAccountContext.mangoSrmAccounts,
+    contributedSrm: marginAccountContext.contributedSrm,
+    getUserSrmInfo: marginAccountContext.getUserSrmInfo,
   };
 }

@@ -4,6 +4,7 @@ import { Market, OpenOrders } from '@project-serum/serum';
 import { Event } from '@project-serum/serum/lib/queue';
 import { Order } from '@project-serum/serum/lib/market';
 import { MangoGroup, MarginAccount, MangoClient } from '@blockworks-foundation/mango-client';
+import { MangoSrmAccount } from '@blockworks-foundation/mango-client/lib/client';
 
 export interface ConnectionContextValues {
   endpoint: string;
@@ -167,6 +168,9 @@ export interface MarginAccountContextValues {
   setSize: (size: { currency: string; size: number }) => void; // Set the size on trade form
   srmFeeRates: FeeRates | null;
   totalSrm: number;
+  contributedSrm: number;
+  mangoSrmAccounts: MangoSrmAccount[] | null;
+  getUserSrmInfo: () => void;
 }
 
 // Type declaration for the margin accounts for the mango group

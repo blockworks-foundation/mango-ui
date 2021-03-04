@@ -1,19 +1,19 @@
-import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Row, Col, Typography } from 'antd';
 import styled from 'styled-components';
 import { IDS } from '@blockworks-foundation/mango-client';
-import { nativeToUi } from '@blockworks-foundation/mango-client/lib/utils';
-import { SRM_DECIMALS } from '@project-serum/serum/lib/token-instructions';
 
-import { getTokenAccountInfo } from '../../utils/tokens';
+import { getTokenAccountInfo, parseTokenAccountData } from '../../utils/tokens';
 import { percentFormat } from '../../utils/utils';
 import { useConnection, useConnectionConfig } from '../../utils/connection';
 import { RowBox, SizeTitle, ActionButton } from '../mango/componentStyles';
 import { useMarginAccount } from '../../utils/marginAccounts';
-import Deposit from '../mango/Deposit/index';
 import { useWallet } from '../../utils/wallet';
+import { PublicKey } from '@solana/web3.js';
+import CustomDepositModal from '../mango/Deposit/CustomDepositModal';
 import { TokenAccount } from '../../utils/types';
-// import DepositModal from '../mango/Deposit/DepositModal';
+import { notify } from '../../utils/notifications';
+import { depositSrm, withdrawSrm } from '../../utils/mango';
 
 const FeeWrapper = styled.div`
   background: #262337;
@@ -25,96 +25,131 @@ const DepositWrapper = styled.div`
   background-color: #141026;
 `;
 
-// const DepositSrmMoal = (props) => {
-//   const inputRef = useRef<any>(null);
-
-//   return (
-//     <>
-//       <DepositModal
-//         mango_groups={props.mango_groups}
-//         visible={props.visible}
-//         onCancel={props.onCancel}
-//         handleClick={depositFunds}
-//         setCurrency={setCurrency}
-//         onSelectAccount={setSrmAccounts}
-//         currency="SRM"
-//         tokenAccount={tokenAccount}
-//         userUiBalance={userUiBalance}
-//         ref={inputRef}
-//         working={working}
-//         operation={props.operation}
-//       />
-//     </>
-//   )
-// }
-
 export default function MangoFees() {
-  const [contributedSrm, setContributedSrm] = useState(0);
-  const [srmTokenAccounts, setSrmAccounts] = useState<TokenAccount[]>([]);
-  const [showDeposit, setShowDeposit] = useState<boolean>(false);
+  const [walletSrmAccounts, setWalletSrmAccounts] = useState<TokenAccount[]>([]);
+  // const [walletSrmBalance, setWalletSrmBalance] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [showModal, setShowModal] = useState<boolean>(false);
   const operation = useRef('deposit');
 
   const connection = useConnection();
-  const { marginAccount, mangoGroup, srmFeeRates, totalSrm } = useMarginAccount();
+  const {
+    mangoSrmAccounts,
+    mangoGroup,
+    srmFeeRates,
+    totalSrm,
+    contributedSrm,
+    mango_options,
+    getUserSrmInfo,
+  } = useMarginAccount();
   const { wallet, connected } = useWallet();
   const { endpointInfo } = useConnectionConfig();
-
+  const inputRef = useRef<HTMLInputElement>();
   const SRM_ADDRESS = IDS[endpointInfo!.name].symbols['SRM'];
 
   const showModalDeposit = useCallback(() => {
-    // Set the operation
     operation.current = 'Deposit';
-    setShowDeposit((showDeposit) => true);
-  }, []);
-  const showModalWithdraw = useCallback(() => {
-    // Set the operation
-    operation.current = 'Withdraw';
-    setShowDeposit((showDeposit) => true);
-  }, []);
-  // Hide the modal
-  const hideModal = useCallback(() => {
-    setShowDeposit((showDeposit) => false);
+    setShowModal((showModal) => true);
   }, []);
 
-  const DepositModal = useMemo(() => {
-    if (!srmTokenAccounts.length) return null;
-    return (
-      <Deposit
-        currency="SRM"
-        mango_groups={['SRM']}
-        visible={showDeposit}
-        operation={operation.current}
-        onCancel={hideModal}
-        srmTokenAccounts={srmTokenAccounts}
-      />
-    );
-  }, [showDeposit, hideModal, srmTokenAccounts]);
+  const showModalWithdraw = useCallback(() => {
+    operation.current = 'Withdraw';
+    setShowModal((showModal) => true);
+  }, []);
+
+  const hideModal = useCallback(() => {
+    setShowModal((showModal) => false);
+  }, []);
+
+  const handleSubmit = (values) => {
+    if (!mangoGroup || !mangoSrmAccounts) return;
+    if (operation.current === 'Withdraw') {
+      withdrawSrm(
+        connection,
+        new PublicKey(mango_options.mango_program_id),
+        mangoGroup,
+        mangoSrmAccounts[0],
+        wallet,
+        new PublicKey(values.selectedAccount),
+        values.amount,
+      )
+        .then((transSig: string) => {
+          getUserSrmInfo();
+          setLoading(false);
+          notify({
+            // @ts-ignore
+            message: `Withdrew ${inputRef.current.state.value} SRM into your account`,
+            description: `Hash of transaction is ${transSig}`,
+            type: 'info',
+          });
+          hideModal();
+        })
+        .catch((err) => {
+          setLoading(false);
+          console.error(err);
+          notify({
+            message: 'Could not perform withdraw operation',
+            description: ``,
+            type: 'error',
+          });
+          hideModal();
+        });
+    } else {
+      depositSrm(
+        connection,
+        new PublicKey(mango_options.mango_program_id),
+        mangoGroup,
+        wallet,
+        new PublicKey(values.selectedAccount),
+        values.amount,
+        mangoSrmAccounts.length ? mangoSrmAccounts[0].publicKey : undefined,
+      )
+        .then((mangoSrmAcct: PublicKey) => {
+          getUserSrmInfo();
+          setLoading(false);
+          notify({
+            // @ts-ignore
+            message: `Deposited ${inputRef.current.state.value} SRM into your account`,
+            description: ``,
+            type: 'info',
+          });
+          hideModal();
+        })
+        .catch((err) => {
+          setLoading(false);
+          console.error(err);
+          notify({
+            message: 'Could not perform deposit operation',
+            description: '',
+            type: 'error',
+          });
+          hideModal();
+        });
+    }
+  };
 
   useEffect(() => {
-    const getTotalSrm = async () => {
+    const getSrmAccounts = async () => {
       if (wallet && connected) {
         // connected wallet srm account info
         const walletTokenAccount = await getTokenAccountInfo(connection, wallet.publicKey);
         const walletSrmAccts = walletTokenAccount.filter(
           (acct) => acct.effectiveMint.toString() === SRM_ADDRESS,
         );
-
-        setSrmAccounts(walletSrmAccts);
+        if (walletSrmAccts.length) {
+          const accountsWithAmount = walletSrmAccts.map((acc) => {
+            const amount = acc?.account?.data
+              ? parseTokenAccountData(acc?.account?.data).amount
+              : null;
+            return { ...acc, amount };
+          });
+          setWalletSrmAccounts(accountsWithAmount);
+        }
       }
     };
-    console.log('gettingTotalSrm');
 
-    getTotalSrm();
-  }, [connection, wallet, connected, SRM_ADDRESS, marginAccount]);
-
-  useEffect(() => {
-    if (marginAccount) {
-      const srm = nativeToUi(marginAccount.srmBalance, SRM_DECIMALS);
-      setContributedSrm(srm);
-    }
-  }, [marginAccount]);
-
-  if (!mangoGroup) return null;
+    getSrmAccounts();
+  }, [connection, wallet, connected, SRM_ADDRESS]);
 
   return (
     <FeeWrapper>
@@ -147,7 +182,7 @@ export default function MangoFees() {
                     <ActionButton
                       block
                       size="middle"
-                      disabled={marginAccount ? false : true}
+                      disabled={contributedSrm ? false : true}
                       onClick={showModalWithdraw}
                     >
                       Withdraw
@@ -161,7 +196,19 @@ export default function MangoFees() {
           </DepositWrapper>
         </Col>
       </Row>
-      {DepositModal}
+      {showModal ? (
+        <CustomDepositModal
+          accounts={walletSrmAccounts}
+          currency="SRM"
+          currencies={['SRM']}
+          loading={loading}
+          visible={showModal}
+          operation={operation.current}
+          onCancel={hideModal}
+          handleSubmit={handleSubmit}
+          ref={inputRef}
+        />
+      ) : null}
     </FeeWrapper>
   );
 }

@@ -17,6 +17,7 @@ import {
 import Wallet from '@project-serum/sol-wallet-adapter';
 import {
   MangoGroup,
+  MangoSrmAccountLayout,
   MarginAccount,
   MarginAccountLayout,
 } from '@blockworks-foundation/mango-client';
@@ -35,6 +36,7 @@ import BN from 'bn.js';
 import { getFeeRates, getFeeTier, Market, OpenOrders } from '@project-serum/serum';
 import { Order } from '@project-serum/serum/lib/market';
 import { SRM_DECIMALS } from '@project-serum/serum/lib/token-instructions';
+import { MangoSrmAccount } from '@blockworks-foundation/mango-client/lib/client';
 
 export const DEFAULT_MANGO_GROUP = 'BTC_ETH_USDT';
 
@@ -420,42 +422,61 @@ export async function settleAllBorrows(
   });
 }
 
+/**
+ * If there is no mangoSrmAccount provided, it will create one in the same transaction
+ */
 export async function depositSrm(
   connection: Connection,
   programId: PublicKey,
   mangoGroup: MangoGroup,
-  marginAccount: MarginAccount,
   wallet: Wallet,
   srmAccount: PublicKey,
-
   quantity: number,
-): Promise<TransactionSignature> {
+
+  mangoSrmAccount?: PublicKey,
+): Promise<PublicKey> {
+  const transaction = new Transaction();
+  const additionalSigners: Account[] = [];
+  if (!mangoSrmAccount) {
+    const accInstr = await createAccountInstruction(
+      connection,
+      wallet.publicKey,
+      MangoSrmAccountLayout.span,
+      programId,
+    );
+
+    transaction.add(accInstr.instruction);
+    additionalSigners.push(accInstr.account);
+    mangoSrmAccount = accInstr.account.publicKey;
+  }
+
   const nativeQuantity = uiToNative(quantity, SRM_DECIMALS);
 
   const keys = [
     { isSigner: false, isWritable: true, pubkey: mangoGroup.publicKey },
-    { isSigner: false, isWritable: true, pubkey: marginAccount.publicKey },
+    { isSigner: false, isWritable: true, pubkey: mangoSrmAccount },
     { isSigner: true, isWritable: false, pubkey: wallet.publicKey },
     { isSigner: false, isWritable: true, pubkey: srmAccount },
     { isSigner: false, isWritable: true, pubkey: mangoGroup.srmVault },
     { isSigner: false, isWritable: false, pubkey: TOKEN_PROGRAM_ID },
     { isSigner: false, isWritable: false, pubkey: SYSVAR_CLOCK_PUBKEY },
+    { isSigner: false, isWritable: false, pubkey: SYSVAR_RENT_PUBKEY },
   ];
   const data = encodeMangoInstruction({
     DepositSrm: { quantity: nativeQuantity },
   });
   const instruction = new TransactionInstruction({ keys, data, programId });
-
-  const transaction = new Transaction();
   transaction.add(instruction);
-  return await packageAndSend(transaction, connection, wallet, [], 'DepositSrm');
+
+  await packageAndSend(transaction, connection, wallet, additionalSigners, 'Deposit SRM');
+  return mangoSrmAccount;
 }
 
 export async function withdrawSrm(
   connection: Connection,
   programId: PublicKey,
   mangoGroup: MangoGroup,
-  marginAccount: MarginAccount,
+  mangoSrmAccount: MangoSrmAccount,
   wallet: Wallet,
   srmAccount: PublicKey,
 
@@ -465,7 +486,7 @@ export async function withdrawSrm(
 
   const keys = [
     { isSigner: false, isWritable: true, pubkey: mangoGroup.publicKey },
-    { isSigner: false, isWritable: true, pubkey: marginAccount.publicKey },
+    { isSigner: false, isWritable: true, pubkey: mangoSrmAccount.publicKey },
     { isSigner: true, isWritable: false, pubkey: wallet.publicKey },
     { isSigner: false, isWritable: true, pubkey: srmAccount },
     { isSigner: false, isWritable: true, pubkey: mangoGroup.srmVault },
