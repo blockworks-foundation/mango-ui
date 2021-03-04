@@ -435,14 +435,6 @@ export async function depositSrm(
 
   mangoSrmAccount?: PublicKey,
 ): Promise<PublicKey> {
-  console.log('connection', connection);
-  console.log('programId', programId);
-  console.log('mangoGroup', mangoGroup);
-  console.log('wallet', wallet);
-  console.log('srmAccount', srmAccount);
-  console.log('quantity', quantity);
-  console.log('mangoSrmAccount--', mangoSrmAccount);
-
   const transaction = new Transaction();
   const additionalSigners: Account[] = [];
   if (!mangoSrmAccount) {
@@ -459,7 +451,6 @@ export async function depositSrm(
   }
 
   const nativeQuantity = uiToNative(quantity, SRM_DECIMALS);
-  console.log('mango srm account2', mangoSrmAccount);
 
   const keys = [
     { isSigner: false, isWritable: true, pubkey: mangoGroup.publicKey },
@@ -477,9 +468,7 @@ export async function depositSrm(
   const instruction = new TransactionInstruction({ keys, data, programId });
   transaction.add(instruction);
 
-  console.log('transaction', transaction, connection, wallet);
-
-  await packageAndSend(transaction, connection, wallet, additionalSigners, 'DepositSrm');
+  await packageAndSend(transaction, connection, wallet, additionalSigners, 'Deposit SRM');
   return mangoSrmAccount;
 }
 

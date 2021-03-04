@@ -2,6 +2,8 @@ import React, { useEffect } from 'react';
 import { Modal, Col, Select, Typography, Input, Card } from 'antd';
 // Styled components
 import { RowBox, ActionButton } from '../componentStyles';
+import { nativeToUi } from '@blockworks-foundation/mango-client/lib/utils';
+import { SRM_DECIMALS } from '@project-serum/serum/lib/token-instructions';
 
 const formStateReducer = (state, action) => {
   switch (action.type) {
@@ -16,12 +18,15 @@ const formStateReducer = (state, action) => {
   }
 };
 
+const findAccount = (accounts, publicKey, accessor) => {
+  return accounts.find((acct) => acct[accessor].toString() === publicKey);
+};
+
 // For the modal when a user wants to deposit
 const CustomDepositModal = React.forwardRef(
   (
     props: {
       accounts: Array<any>;
-      balance: number;
       visible: boolean;
       loading: boolean;
       operation: string;
@@ -34,7 +39,6 @@ const CustomDepositModal = React.forwardRef(
   ) => {
     const {
       accounts,
-      balance,
       onCancel,
       visible,
       currency,
@@ -43,6 +47,7 @@ const CustomDepositModal = React.forwardRef(
       handleSubmit,
       loading,
     } = props;
+    const publicKeyAccessor = operation === 'Deposit' ? 'pubkey' : 'pubkey';
 
     useEffect(() => {
       dispatch({ type: 'UPDATE_AMOUNT', value: '' });
@@ -50,13 +55,11 @@ const CustomDepositModal = React.forwardRef(
 
     useEffect(() => {
       if (accounts.length) {
-        console.log('accounts', accounts);
-
         const highestAcct = accounts.reduce((prev, next) => {
           return prev.amount > next.amount ? prev : next;
         });
 
-        dispatch({ type: 'UPDATE_ACCOUNT', value: highestAcct.pubkey.toString() });
+        dispatch({ type: 'UPDATE_ACCOUNT', value: highestAcct[publicKeyAccessor].toString() });
       }
     }, [accounts]);
 
@@ -69,12 +72,13 @@ const CustomDepositModal = React.forwardRef(
     const handleTextInput = (e) => {
       const { value } = e.target;
       const reg = /^-?\d*(\.\d*)?$/;
-      console.log('value', value);
 
       if (reg.test(value) || value === '' || value === '-') {
         dispatch({ type: 'UPDATE_AMOUNT', value });
       }
     };
+
+    const selectedAccount = findAccount(accounts, formState.selectedAccount, publicKeyAccessor);
 
     return (
       <Modal
@@ -89,11 +93,11 @@ const CustomDepositModal = React.forwardRef(
               onChange={(value) => dispatch({ type: 'UPDATE_ACCOUNT', value })}
             >
               {accounts.map((acct, i) => (
-                <Select.Option key={i} value={acct.pubkey.toString()}>
+                <Select.Option key={i} value={acct[publicKeyAccessor].toString()}>
                   <Typography.Text code>
-                    {acct.pubkey.toString().substr(0, 9) +
+                    {acct[publicKeyAccessor].toString().substr(0, 9) +
                       '...' +
-                      acct.pubkey.toString().substr(-9)}
+                      acct[publicKeyAccessor].toString().substr(-9)}
                   </Typography.Text>
                 </Select.Option>
               ))}
@@ -117,7 +121,10 @@ const CustomDepositModal = React.forwardRef(
         <Card className="ccy-input" style={{ borderRadius: 20 }} bodyStyle={{ padding: 0 }}>
           <div className="ccy-input-header">
             <div className="ccy-input-header-left">Amount</div>
-            <div className="ccy-input-header-right">Balance: {balance}</div>
+            <div className="ccy-input-header-right">
+              Balance:
+              {selectedAccount?.amount ? nativeToUi(selectedAccount.amount, SRM_DECIMALS) : 0}
+            </div>
           </div>
           <div className="ccy-input-header" style={{ padding: '0px 10px 5px 7px' }}>
             <Input
