@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Input } from "antd";
+import React, { useState } from 'react';
+import { Input } from 'antd';
 
 export const NumericInput = React.forwardRef((props: any, ref: any) => {
   // The value of the number in input box
@@ -9,7 +9,7 @@ export const NumericInput = React.forwardRef((props: any, ref: any) => {
   const onChange = (e: any) => {
     const { value } = e.target;
     const reg = /^-?\d*(\.\d*)?$/;
-    if (reg.test(value) || value === "" || value === "-") {
+    if (reg.test(value) || value === '' || value === '-') {
       setValue(value);
     }
   };
@@ -29,13 +29,5 @@ export const NumericInput = React.forwardRef((props: any, ref: any) => {
   //     onBlur();
   //   }
   // };
-  return (
-    <Input
-      {...props}
-      value={value}
-      ref={ref}
-      onChange={onChange}
-      maxLength={25}
-    />
-  );
+  return <Input {...props} value={value} ref={ref} onChange={onChange} maxLength={25} />;
 });

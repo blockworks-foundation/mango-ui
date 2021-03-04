@@ -25,7 +25,6 @@ const DepositModal = React.forwardRef(
       currency: string;
       userUiBalance: () => void;
       tokenAccount: TokenAccount | null;
-      customTokenAccounts: any;
     },
     ref: any,
   ) => {
@@ -36,7 +35,6 @@ const DepositModal = React.forwardRef(
             currency={props.currency}
             setTokenAccount={props.onSelectAccount}
             tokenAccount={props.tokenAccount}
-            customTokenAccounts={props.customTokenAccounts}
           />
         }
         onCancel={props.onCancel}
@@ -49,7 +47,6 @@ const DepositModal = React.forwardRef(
           currency={props.currency}
           userUiBalance={props.userUiBalance}
           setTokenAccount={props.onSelectAccount}
-          customTokenAccounts={props.customTokenAccounts}
           ref={ref}
         />
         <RowBox align="middle" justify="center">

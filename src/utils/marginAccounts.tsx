@@ -311,14 +311,16 @@ const useMarginAccountHelper = () => {
     if (!mangoGroup) return;
 
     const getSrmFeeInfo = async () => {
-      const srmAccountInfo = await connection.getAccountInfo(mangoGroup.srmVault);
+      const srmAccountInfo = await mangoClient.getMangoSrmAccount(connection, mangoGroup.srmVault);
+      console.log('srmAccountInfo and mangoGroup', srmAccountInfo);
       if (!srmAccountInfo) return;
-      const accountData = parseTokenAccountData(srmAccountInfo.data);
-      const amount = nativeToUi(accountData.amount, SRM_DECIMALS);
-      setTotalSrm(amount);
-      const feeTier = getFeeTier(0, amount);
-      const rates = getFeeRates(feeTier);
-      setSrmFeeRates(rates);
+
+      // const accountData = parseTokenAccountData(srmAccountInfo.data);
+      // const amount = nativeToUi(accountData.amount, SRM_DECIMALS);
+      // setTotalSrm(amount);
+      // const feeTier = getFeeTier(0, amount);
+      // const rates = getFeeRates(feeTier);
+      // setSrmFeeRates(rates);
     };
     getSrmFeeInfo();
   }, [mangoGroup, marginAccount]);

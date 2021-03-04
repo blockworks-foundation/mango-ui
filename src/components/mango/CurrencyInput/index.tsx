@@ -15,28 +15,19 @@ export const CurrencyInput = React.forwardRef(
       currency: string;
       userUiBalance: () => void; // The token balance of the user
       setTokenAccount: any;
-      customTokenAccounts: any;
     },
     ref: any,
   ) => {
-    const {
-      currencies,
-      currency,
-      setCurrency,
-      userUiBalance,
-      customTokenAccounts,
-      setTokenAccount,
-    } = props;
+    const { currencies, currency, setCurrency, userUiBalance, setTokenAccount } = props;
     const { mangoGroupTokenAccounts, tokenAccountsMapping } = useMangoTokenAccount();
-    const tokenAccounts = customTokenAccounts.SRM ? customTokenAccounts : mangoGroupTokenAccounts;
 
     const handleCurrencyChange = (value) => {
       if (value === 'SRM') return;
       // Set the first account for the token
-      if (tokenAccounts[value] && tokenAccounts[value].length > 0) {
+      if (mangoGroupTokenAccounts[value] && mangoGroupTokenAccounts[value].length > 0) {
         // Set the account with highest balance
-        let hAccount: TokenAccount = tokenAccounts[value][0];
-        tokenAccounts[value].forEach((account: TokenAccount, i: number) => {
+        let hAccount: TokenAccount = mangoGroupTokenAccounts[value][0];
+        mangoGroupTokenAccounts[value].forEach((account: TokenAccount, i: number) => {
           if (i === 0 || !tokenAccountsMapping.current[account.pubkey.toString()]) {
             return;
           }

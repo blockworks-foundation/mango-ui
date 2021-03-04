@@ -14,16 +14,14 @@ const { Text } = Typography;
  * @param accounts The list of margin accounts for this user
  */
 
-const AccountSelector = ({ currency, customTokenAccounts, setTokenAccount, tokenAccount }) => {
+const AccountSelector = ({ currency, setTokenAccount, tokenAccount }) => {
   // Get the mangoGroup token account
   const { mangoGroupTokenAccounts, tokenAccountsMapping } = useMangoTokenAccount();
 
-  const tokenAccounts = customTokenAccounts.SRM ? customTokenAccounts : mangoGroupTokenAccounts;
-
   const options = useMemo(() => {
     // @ts-ignore
-    return tokenAccounts[currency] && tokenAccounts[currency].length > 0 ? (
-      tokenAccounts[currency].map((account: TokenAccount, i: number) => (
+    return mangoGroupTokenAccounts[currency] && mangoGroupTokenAccounts[currency].length > 0 ? (
+      mangoGroupTokenAccounts[currency].map((account: TokenAccount, i: number) => (
         <Option key={i} value={account.pubkey.toString()}>
           <Text code>
             {account.pubkey.toString().substr(0, 9) + '...' + account.pubkey.toString().substr(-9)}
@@ -45,15 +43,14 @@ const AccountSelector = ({ currency, customTokenAccounts, setTokenAccount, token
         </Text>
       </Option>
     );
-  }, [currency, tokenAccounts]);
+  }, [currency, mangoGroupTokenAccounts]);
 
   useEffect(() => {
-    if (currency === 'SRM' || tokenAccount) return;
     // Set the first account for the token
-    if (tokenAccounts[currency] && tokenAccounts[currency].length > 0) {
+    if (mangoGroupTokenAccounts[currency] && mangoGroupTokenAccounts[currency].length > 0) {
       // Set the account with highest balance
-      let hAccount: TokenAccount = tokenAccounts[currency][0];
-      tokenAccounts[currency].forEach((account: TokenAccount, i: number) => {
+      let hAccount: TokenAccount = mangoGroupTokenAccounts[currency][0];
+      mangoGroupTokenAccounts[currency].forEach((account: TokenAccount, i: number) => {
         if (i === 0 || !tokenAccountsMapping.current[account.pubkey.toString()]) {
           return;
         }
@@ -66,14 +63,10 @@ const AccountSelector = ({ currency, customTokenAccounts, setTokenAccount, token
 
       setTokenAccount(hAccount);
     }
-  }, [tokenAccounts]);
+  }, [mangoGroupTokenAccounts]);
 
   const handleChange = (e) => {
-    if (currency === 'SRM') {
-      setTokenAccount(tokenAccounts[currency].find((acct) => acct.pubkey.toString() === e));
-    } else {
-      setTokenAccount(tokenAccountsMapping.current[e].account);
-    }
+    setTokenAccount(tokenAccountsMapping.current[e].account);
   };
 
   return (

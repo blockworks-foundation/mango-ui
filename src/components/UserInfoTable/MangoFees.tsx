@@ -5,15 +5,19 @@ import { IDS } from '@blockworks-foundation/mango-client';
 import { nativeToUi } from '@blockworks-foundation/mango-client/lib/utils';
 import { SRM_DECIMALS } from '@project-serum/serum/lib/token-instructions';
 
-import { getTokenAccountInfo } from '../../utils/tokens';
+import { getTokenAccountInfo, parseTokenAccountData } from '../../utils/tokens';
 import { percentFormat } from '../../utils/utils';
 import { useConnection, useConnectionConfig } from '../../utils/connection';
 import { RowBox, SizeTitle, ActionButton } from '../mango/componentStyles';
 import { useMarginAccount } from '../../utils/marginAccounts';
-import Deposit from '../mango/Deposit/index';
 import { useWallet } from '../../utils/wallet';
+import { PublicKey } from '@solana/web3.js';
+import { MangoSrmAccount } from '@blockworks-foundation/mango-client/lib/client';
+import CustomDepositModal from '../mango/Deposit/CustomDepositModal';
 import { TokenAccount } from '../../utils/types';
-// import DepositModal from '../mango/Deposit/DepositModal';
+import { accountFlagsLayout } from '@project-serum/serum/lib/layout';
+import { notify } from '../../utils/notifications';
+import { depositSrm, withdrawSrm } from '../../utils/mango';
 
 const FeeWrapper = styled.div`
   background: #262337;
@@ -25,40 +29,27 @@ const DepositWrapper = styled.div`
   background-color: #141026;
 `;
 
-// const DepositSrmMoal = (props) => {
-//   const inputRef = useRef<any>(null);
-
-//   return (
-//     <>
-//       <DepositModal
-//         mango_groups={props.mango_groups}
-//         visible={props.visible}
-//         onCancel={props.onCancel}
-//         handleClick={depositFunds}
-//         setCurrency={setCurrency}
-//         onSelectAccount={setSrmAccounts}
-//         currency="SRM"
-//         tokenAccount={tokenAccount}
-//         userUiBalance={userUiBalance}
-//         ref={inputRef}
-//         working={working}
-//         operation={props.operation}
-//       />
-//     </>
-//   )
-// }
-
 export default function MangoFees() {
   const [contributedSrm, setContributedSrm] = useState(0);
-  const [srmTokenAccounts, setSrmAccounts] = useState<TokenAccount[]>([]);
+  const [mangoSrmAccounts, setMangoSrmAccounts] = useState<MangoSrmAccount[]>([]);
+  const [walletSrmAccounts, setWalletSrmAccounts] = useState<TokenAccount[]>([]);
+  const [walletSrmBalance, setWalletSrmBalance] = useState(0);
+  const [loading, setLoading] = useState(false);
   const [showDeposit, setShowDeposit] = useState<boolean>(false);
   const operation = useRef('deposit');
 
   const connection = useConnection();
-  const { marginAccount, mangoGroup, srmFeeRates, totalSrm } = useMarginAccount();
+  const {
+    marginAccount,
+    mangoGroup,
+    srmFeeRates,
+    totalSrm,
+    mangoClient,
+    mango_options,
+  } = useMarginAccount();
   const { wallet, connected } = useWallet();
   const { endpointInfo } = useConnectionConfig();
-
+  const inputRef = useRef<HTMLInputElement>();
   /*
   1. Fetch this user's MangoSrmAccounts with client.getMangoSrmAccountsForOwner()
   2. Sort that list by MangoSrmAccount.amount and pick largest one
@@ -72,59 +63,144 @@ export default function MangoFees() {
   const SRM_ADDRESS = IDS[endpointInfo!.name].symbols['SRM'];
 
   const showModalDeposit = useCallback(() => {
-    // Set the operation
     operation.current = 'Deposit';
     setShowDeposit((showDeposit) => true);
   }, []);
+
   const showModalWithdraw = useCallback(() => {
-    // Set the operation
     operation.current = 'Withdraw';
     setShowDeposit((showDeposit) => true);
   }, []);
-  // Hide the modal
+
   const hideModal = useCallback(() => {
     setShowDeposit((showDeposit) => false);
   }, []);
 
+  const handleSubmit = (values) => {
+    if (operation.current === 'Withdraw') {
+      withdrawSrm(
+        connection,
+        new PublicKey(mango_options.mango_program_id),
+        // @ts-ignore
+        mangoGroup,
+        wallet,
+        // @ts-ignore
+        new PublicKey(values.selectedAccount),
+        values.amount,
+        // @ts-ignore
+        mangoSrmAccounts.length ? mangoSrmAccounts : null,
+      )
+        .then((transSig: string) => {
+          setLoading(false);
+          notify({
+            // @ts-ignore
+            message: `Withdrew ${inputRef.current.state.value} ${currency} into your account`,
+            description: `Hash of transaction is ${transSig}`,
+            type: 'info',
+          });
+          hideModal();
+        })
+        .catch((err) => {
+          setLoading(false);
+          console.error(err);
+          notify({
+            message: 'Could not perform withdraw operation',
+            description: ``,
+            type: 'error',
+          });
+          hideModal();
+        });
+    } else {
+      depositSrm(
+        connection,
+        new PublicKey(mango_options.mango_program_id),
+        // @ts-ignore
+        mangoGroup,
+        wallet,
+        new PublicKey(values.selectedAccount),
+        values.amount,
+        mangoSrmAccounts.length ? mangoSrmAccounts : null,
+      )
+        .then((mangoSrmAcct: PublicKey) => {
+          setLoading(false);
+          notify({
+            // @ts-ignore
+            message: `Deposited ${inputRef.current.state.value} ${currency} into your account`,
+            description: ``,
+            type: 'info',
+          });
+          hideModal();
+        })
+        .catch((err) => {
+          setLoading(false);
+          console.error(err);
+          notify({
+            message: 'Could not perform deposit operation',
+            description: '',
+            type: 'error',
+          });
+          hideModal();
+        });
+    }
+  };
+
   const DepositModal = useMemo(() => {
-    if (!srmTokenAccounts.length) return null;
     return (
-      <Deposit
+      <CustomDepositModal
+        accounts={operation.current === 'Deposit' ? walletSrmAccounts : mangoSrmAccounts}
+        balance={operation.current === 'Deposit' ? walletSrmBalance : mangoSrmAccounts[0]?.amount}
         currency="SRM"
-        mango_groups={['SRM']}
+        currencies={['SRM']}
+        loading={loading}
         visible={showDeposit}
         operation={operation.current}
         onCancel={hideModal}
-        srmTokenAccounts={srmTokenAccounts}
+        handleSubmit={handleSubmit}
+        ref={inputRef}
       />
     );
-  }, [showDeposit, hideModal, srmTokenAccounts]);
+  }, [showDeposit, hideModal, walletSrmBalance, mangoSrmAccounts]);
 
   useEffect(() => {
-    const getTotalSrm = async () => {
+    const getSrmAccounts = async () => {
+      if (!mangoGroup || !connected) return;
+
+      const usersMangoSrmAccounts = await mangoClient.getMangoSrmAccountsForOwner(
+        connection,
+        new PublicKey(mango_options.mango_program_id),
+        mangoGroup,
+        wallet,
+      );
+      setMangoSrmAccounts(usersMangoSrmAccounts);
+      if (usersMangoSrmAccounts.length) {
+        setContributedSrm(usersMangoSrmAccounts[0].amount);
+      }
+
       if (wallet && connected) {
         // connected wallet srm account info
         const walletTokenAccount = await getTokenAccountInfo(connection, wallet.publicKey);
         const walletSrmAccts = walletTokenAccount.filter(
           (acct) => acct.effectiveMint.toString() === SRM_ADDRESS,
         );
+        if (walletSrmAccts.length) {
+          const accountsWithAmount = walletSrmAccts.map((acc) => {
+            const amount = acc?.account?.data
+              ? parseTokenAccountData(acc?.account?.data).amount
+              : null;
+            return { ...acc, amount };
+          });
+          setWalletSrmAccounts(accountsWithAmount);
 
-        setSrmAccounts(walletSrmAccts);
+          const srmWalletAmount = accountsWithAmount.reduce((acc, cur) => {
+            return cur.amount ? acc + cur.amount : 0;
+          }, 0);
+          setWalletSrmBalance(nativeToUi(srmWalletAmount, SRM_DECIMALS));
+        }
       }
     };
-    console.log('gettingTotalSrm');
 
-    getTotalSrm();
+    getSrmAccounts();
   }, [connection, wallet, connected, SRM_ADDRESS, marginAccount]);
-
-  useEffect(() => {
-    if (marginAccount) {
-      const srm = nativeToUi(marginAccount.srmBalance, SRM_DECIMALS);
-      setContributedSrm(srm);
-    }
-  }, [marginAccount]);
-
-  if (!mangoGroup) return null;
 
   return (
     <FeeWrapper>
@@ -142,7 +218,7 @@ export default function MangoFees() {
       <Row align="middle" justify="center">
         <Col>
           <DepositWrapper>
-            {connected ? (
+            {true ? (
               <>
                 <SizeTitle align="middle" justify="center">
                   Your Contributed SRM: {contributedSrm}

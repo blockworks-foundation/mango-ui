@@ -16,7 +16,8 @@ import {
 } from '@solana/web3.js';
 import Wallet from '@project-serum/sol-wallet-adapter';
 import {
-  MangoGroup, MangoSrmAccountLayout,
+  MangoGroup,
+  MangoSrmAccountLayout,
   MarginAccount,
   MarginAccountLayout,
 } from '@blockworks-foundation/mango-client';
@@ -432,20 +433,33 @@ export async function depositSrm(
   srmAccount: PublicKey,
   quantity: number,
 
-  mangoSrmAccount?: PublicKey
+  mangoSrmAccount?: PublicKey,
 ): Promise<PublicKey> {
+  console.log('connection', connection);
+  console.log('programId', programId);
+  console.log('mangoGroup', mangoGroup);
+  console.log('wallet', wallet);
+  console.log('srmAccount', srmAccount);
+  console.log('quantity', quantity);
+  console.log('mangoSrmAccount--', mangoSrmAccount);
 
-  const transaction = new Transaction()
-  const additionalSigners: Account[] = []
+  const transaction = new Transaction();
+  const additionalSigners: Account[] = [];
   if (!mangoSrmAccount) {
-    const accInstr = await createAccountInstruction(connection,
-      wallet.publicKey, MangoSrmAccountLayout.span, programId)
-    transaction.add(accInstr.instruction)
-    additionalSigners.push(accInstr.account)
-    mangoSrmAccount = accInstr.account.publicKey
+    const accInstr = await createAccountInstruction(
+      connection,
+      wallet.publicKey,
+      MangoSrmAccountLayout.span,
+      programId,
+    );
+
+    transaction.add(accInstr.instruction);
+    additionalSigners.push(accInstr.account);
+    mangoSrmAccount = accInstr.account.publicKey;
   }
 
   const nativeQuantity = uiToNative(quantity, SRM_DECIMALS);
+  console.log('mango srm account2', mangoSrmAccount);
 
   const keys = [
     { isSigner: false, isWritable: true, pubkey: mangoGroup.publicKey },
@@ -463,8 +477,10 @@ export async function depositSrm(
   const instruction = new TransactionInstruction({ keys, data, programId });
   transaction.add(instruction);
 
+  console.log('transaction', transaction, connection, wallet);
+
   await packageAndSend(transaction, connection, wallet, additionalSigners, 'DepositSrm');
-  return mangoSrmAccount
+  return mangoSrmAccount;
 }
 
 export async function withdrawSrm(
