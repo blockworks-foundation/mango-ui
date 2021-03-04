@@ -5,9 +5,7 @@ import { useConnectionConfig } from './connection';
 import { useLocalStorageState } from './utils';
 import { WalletContextValues } from './types';
 
-export const WALLET_PROVIDERS = [
-  { name: 'sollet.io', url: 'https://www.sollet.io' },
-];
+export const WALLET_PROVIDERS = [{ name: 'sollet.io', url: 'https://www.sollet.io' }];
 
 const WalletContext = React.createContext<null | WalletContextValues>(null);
 
@@ -25,17 +23,13 @@ export function WalletProvider({ children }) {
     providerUrl = savedProviderUrl;
   }
 
-  const wallet = useMemo(() => new Wallet(providerUrl, endpoint), [
-    providerUrl,
-    endpoint,
-  ]);
+  const wallet = useMemo(() => new Wallet(providerUrl, endpoint), [providerUrl, endpoint]);
 
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
     wallet.on('connect', () => {
-      console.log('connected');
-      localStorage.removeItem('feeDiscountKey')
+      localStorage.removeItem('feeDiscountKey');
       setConnected(true);
       let walletPublicKey = wallet.publicKey.toBase58();
       let keyToDisplay =
@@ -56,7 +50,7 @@ export function WalletProvider({ children }) {
         message: 'Wallet update',
         description: 'Disconnected from wallet',
       });
-      localStorage.removeItem('feeDiscountKey')
+      localStorage.removeItem('feeDiscountKey');
     });
     return () => {
       wallet.disconnect();
@@ -71,9 +65,7 @@ export function WalletProvider({ children }) {
         connected,
         providerUrl,
         setProviderUrl,
-        providerName:
-          WALLET_PROVIDERS.find(({ url }) => url === providerUrl)?.name ??
-          providerUrl,
+        providerName: WALLET_PROVIDERS.find(({ url }) => url === providerUrl)?.name ?? providerUrl,
       }}
     >
       {children}

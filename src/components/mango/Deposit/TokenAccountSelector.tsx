@@ -1,5 +1,5 @@
 // For the dialog box component
-import React, { useMemo, useEffect, useRef } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { Typography, Select } from 'antd';
 // Mango group token account hook
 import useMangoTokenAccount from '../../../utils/mangoTokenAccounts';
