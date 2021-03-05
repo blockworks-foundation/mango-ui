@@ -12,19 +12,11 @@ import { notify } from '../../../utils/notifications';
 import { useConnection } from '../../../utils/connection';
 import { useWallet } from '../../../utils/wallet';
 // And now mango client library functions
-import {
-  deposit,
-  depositSrm,
-  initMarginAccountAndDeposit,
-  withdraw,
-  withdrawSrm,
-} from '../../../utils/mango';
+import { deposit, initMarginAccountAndDeposit, withdraw } from '../../../utils/mango';
 import DepositModal from './DepositModal';
-import { parseTokenAccountData } from '../../../utils/tokens';
 import { PublicKey } from '@solana/web3.js';
-import { nativeToUi } from '@blockworks-foundation/mango-client/lib/utils';
-import { SRM_DECIMALS } from '@project-serum/serum/lib/token-instructions';
 import { TokenAccount } from '../../../utils/types';
+import { formatBalanceDisplay } from '../../../utils/utils';
 
 const Deposit = (props: {
   currency?: string;
@@ -75,12 +67,8 @@ const Deposit = (props: {
   const userUiBalance = useCallback(() => {
     const fixedDecimals = decimals[currency] || 3;
     let bal = userBalance();
-    // Get the deciamal part
-    let dPart = bal - Math.trunc(bal);
-    return (
-      Math.trunc(bal) +
-      Math.floor(dPart * Math.pow(10, fixedDecimals)) / Math.pow(10, fixedDecimals)
-    );
+
+    return formatBalanceDisplay(bal, fixedDecimals).toFixed(fixedDecimals);
   }, [userBalance, currency]);
   // TODO: Pack clinet library instruction into one
   // When the user hits deposit

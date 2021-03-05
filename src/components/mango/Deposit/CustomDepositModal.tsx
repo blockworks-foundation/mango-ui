@@ -26,6 +26,7 @@ const findAccount = (accounts, publicKey, accessor) => {
 const CustomDepositModal = React.forwardRef(
   (
     props: {
+      balance: number | undefined;
       accounts: Array<any>;
       visible: boolean;
       loading: boolean;
@@ -38,6 +39,7 @@ const CustomDepositModal = React.forwardRef(
     ref: any,
   ) => {
     const {
+      balance,
       accounts,
       onCancel,
       visible,
@@ -80,6 +82,16 @@ const CustomDepositModal = React.forwardRef(
 
     const selectedAccount = findAccount(accounts, formState.selectedAccount, publicKeyAccessor);
 
+    const displayBalance = () => {
+      if (operation === 'Withdraw' && balance) {
+        return nativeToUi(balance, SRM_DECIMALS);
+      } else if (operation === 'Deposit') {
+        return selectedAccount?.amount ? nativeToUi(selectedAccount.amount, SRM_DECIMALS) : 0;
+      } else {
+        return 0.0;
+      }
+    };
+
     return (
       <Modal
         title={
@@ -101,16 +113,18 @@ const CustomDepositModal = React.forwardRef(
                   </Typography.Text>
                 </Select.Option>
               ))}
-              <Select.Option
-                value="No Token Account"
-                key=""
-                disabled={true}
-                style={{ backgroundColor: 'rgb(39, 44, 61)' }}
-              >
-                <Typography.Text keyboard type="warning">
-                  No Account
-                </Typography.Text>
-              </Select.Option>
+              {accounts.length ? null : (
+                <Select.Option
+                  value="No Token Account"
+                  key=""
+                  disabled={true}
+                  style={{ backgroundColor: 'rgb(39, 44, 61)' }}
+                >
+                  <Typography.Text keyboard type="warning">
+                    No Account
+                  </Typography.Text>
+                </Select.Option>
+              )}
             </Select>
           </div>
         }
@@ -121,10 +135,7 @@ const CustomDepositModal = React.forwardRef(
         <Card className="ccy-input" style={{ borderRadius: 20 }} bodyStyle={{ padding: 0 }}>
           <div className="ccy-input-header">
             <div className="ccy-input-header-left">Amount</div>
-            <div className="ccy-input-header-right">
-              Balance:
-              {selectedAccount?.amount ? nativeToUi(selectedAccount.amount, SRM_DECIMALS) : 0}
-            </div>
+            <div className="ccy-input-header-right">Balance: {displayBalance()}</div>
           </div>
           <div className="ccy-input-header" style={{ padding: '0px 10px 5px 7px' }}>
             <Input

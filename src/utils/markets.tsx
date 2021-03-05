@@ -910,6 +910,14 @@ export function useBalances(): Balances[] {
   const nativeQuote = openOrders?.quoteTokenFree || 0;
   const tokenIndex = marketIndex;
 
+  const net = (borrows, currencyIndex) => {
+    return (
+      marginAccount.getNativeDeposit(mangoGroup, currencyIndex) +
+      borrows -
+      marginAccount.getNativeBorrow(mangoGroup, currencyIndex)
+    );
+  };
+
   return [
     {
       market,
@@ -920,9 +928,11 @@ export function useBalances(): Balances[] {
         mangoGroup && marginAccount
           ? marginAccount.getUiDeposit(mangoGroup, baseCurrencyIndex)
           : null,
+      borrows: marginAccount.getUiBorrow(mangoGroup, baseCurrencyIndex),
       orders: nativeToUi(nativeBaseLocked, mangoGroup.mintDecimals[tokenIndex]),
       openOrders,
       unsettled: nativeToUi(nativeBase, mangoGroup.mintDecimals[tokenIndex]),
+      net: nativeToUi(net(nativeBaseLocked, tokenIndex), mangoGroup.mintDecimals[tokenIndex]),
     },
     {
       market,
@@ -933,9 +943,14 @@ export function useBalances(): Balances[] {
         mangoGroup && marginAccount
           ? marginAccount.getUiDeposit(mangoGroup, quoteCurrencyIndex)
           : null,
+      borrows: marginAccount.getUiBorrow(mangoGroup, quoteCurrencyIndex),
       openOrders,
       orders: nativeToUi(nativeQuoteLocked, mangoGroup.mintDecimals[NUM_TOKENS - 1]),
       unsettled: nativeToUi(nativeQuote, mangoGroup.mintDecimals[NUM_TOKENS - 1]),
+      net: nativeToUi(
+        net(nativeQuoteLocked, NUM_TOKENS - 1),
+        mangoGroup.mintDecimals[NUM_TOKENS - 1],
+      ),
     },
   ];
 }

@@ -11,6 +11,7 @@ import { PublicKey } from '@solana/web3.js';
 import Deposit from '../Deposit';
 // Connection hook
 import { useWallet } from '../../../utils/wallet';
+import { formatBalanceDisplay } from '../../../utils/utils';
 
 const { Option } = Select;
 const { Text } = Typography;
@@ -127,7 +128,7 @@ export default function BalancesDisplay({ style }: { style?: any }) {
                       }}
                     />
                   ) : (
-                    depo.toFixed(tokenPrecision[token])
+                    formatBalanceDisplay(depo, tokenPrecision[token]).toFixed(tokenPrecision[token])
                   )}
                 </BalanceCol>
                 <BalanceCol span={5}>

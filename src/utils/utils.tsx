@@ -24,17 +24,11 @@ export const percentFormat = new Intl.NumberFormat(undefined, {
   maximumFractionDigits: 2,
 });
 
-export function floorToDecimal(
-  value: number,
-  decimals: number | undefined | null,
-) {
+export function floorToDecimal(value: number, decimals: number | undefined | null) {
   return decimals ? Math.floor(value * 10 ** decimals) / 10 ** decimals : Math.floor(value);
 }
 
-export function roundToDecimal(
-  value: number,
-  decimals: number | undefined | null,
-) {
+export function roundToDecimal(value: number, decimals: number | undefined | null) {
   return decimals ? Math.round(value * 10 ** decimals) / 10 ** decimals : value;
 }
 
@@ -42,7 +36,7 @@ export function getDecimalCount(value): number {
   if (!isNaN(value) && Math.floor(value) !== value && value.toString().includes('.'))
     return value.toString().split('.')[1].length || 0;
   if (!isNaN(value) && Math.floor(value) !== value && value.toString().includes('e'))
-    return parseInt(value.toString().split(('e-'))[1] || "0");
+    return parseInt(value.toString().split('e-')[1] || '0');
   return 0;
 }
 
@@ -52,6 +46,15 @@ export function divideBnToNumber(numerator: BN, denominator: BN): number {
   const gcd = rem.gcd(denominator);
   return quotient + rem.div(gcd).toNumber() / denominator.div(gcd).toNumber();
 }
+
+export const formatBalanceDisplay = (balance, fixedDecimals) => {
+  // Get the deciamal part
+  let dPart = balance - Math.trunc(balance);
+  return (
+    Math.trunc(balance) +
+    Math.floor(dPart * Math.pow(10, fixedDecimals)) / Math.pow(10, fixedDecimals)
+  );
+};
 
 export function getTokenMultiplierFromDecimals(decimals: number): BN {
   return new BN(10).pow(new BN(decimals));
@@ -94,9 +97,7 @@ export function useLocalStorageStringState(
       } else {
         localStorage.setItem(key, newState);
       }
-      localStorageListeners[key].forEach((listener) =>
-        listener(key + '\n' + newState),
-      );
+      localStorageListeners[key].forEach((listener) => listener(key + '\n' + newState));
     },
     [state, key],
   );
@@ -108,10 +109,7 @@ export function useLocalStorageState<T = any>(
   key: string,
   defaultState: T | null = null,
 ): [T, (newState: T) => void] {
-  let [stringState, setStringState] = useLocalStorageStringState(
-    key,
-    JSON.stringify(defaultState),
-  );
+  let [stringState, setStringState] = useLocalStorageStringState(key, JSON.stringify(defaultState));
   return [
     useMemo(() => stringState && JSON.parse(stringState), [stringState]),
     (newState) => setStringState(JSON.stringify(newState)),

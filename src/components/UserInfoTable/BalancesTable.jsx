@@ -61,9 +61,14 @@ export default function BalancesTable({
           key: 'wallet',
         },
     {
-      title: 'Margin Deposits',
+      title: 'Deposits',
       dataIndex: 'marginDeposits',
       key: 'marginDeposits',
+    },
+    {
+      title: 'Borrows',
+      dataIndex: 'borrows',
+      key: 'borrows',
     },
     {
       title: 'In Orders',
@@ -74,6 +79,11 @@ export default function BalancesTable({
       title: 'Unsettled',
       dataIndex: 'unsettled',
       key: 'unsettled',
+    },
+    {
+      title: 'Net',
+      dataIndex: 'net',
+      key: 'net',
     },
     {
       key: 'action',
