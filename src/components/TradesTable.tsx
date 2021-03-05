@@ -25,8 +25,6 @@ export default function PublicTrades({ smallScreen }) {
           ? { flex: 1 }
           : {
               marginTop: '10px',
-              minHeight: '400px',
-              maxHeight: 'calc(100vh - 700px)',
               overflow: 'hidden',
             }
       }
@@ -45,11 +43,12 @@ export default function PublicTrades({ smallScreen }) {
       </SizeTitle>
       {!!trades && loaded && (
         <div
+          className="thin-scroll"
           style={{
             marginRight: '-20px',
             paddingRight: '5px',
             overflowY: 'scroll',
-            maxHeight: smallScreen ? 'calc(100% - 75px)' : 'calc(100vh - 800px)',
+            maxHeight: smallScreen ? 'calc(100% - 75px)' : 'calc(100vh - 400px)',
           }}
         >
           {trades.map((trade: BonfidaTrade, i: number) => (

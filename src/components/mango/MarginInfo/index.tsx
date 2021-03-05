@@ -58,13 +58,30 @@ export default function MarginInfo() {
           ? marginAccount.getCollateralRatio(mangoGroup, prices)
           : 200;
 
+        const accountEquity = marginAccount ? marginAccount.computeValue(mangoGroup, prices) : 0;
+        let leverage;
+        if (marginAccount) {
+          leverage = accountEquity
+            ? (1 / (marginAccount.getCollateralRatio(mangoGroup, prices) - 1)).toFixed(2)
+            : '∞';
+        } else {
+          leverage = '0';
+        }
+
         setMAccountInfo([
           {
             label: 'Equity',
-            value: marginAccount ? marginAccount.computeValue(mangoGroup, prices).toFixed(2) : '0',
+            value: accountEquity.toFixed(2),
             unit: '',
             currency: '$',
             desc: 'The value of the account',
+          },
+          {
+            label: 'Leverage',
+            value: leverage,
+            unit: 'x',
+            currency: '',
+            desc: 'Total position size divided by account value',
           },
           {
             // TODO: Get collaterization ratio
@@ -107,10 +124,7 @@ export default function MarginInfo() {
               </Popover>
               <RightCol span={8}>
                 <Text strong>
-                  {entry.currency +
-                    (isNaN(Number(entry.value)) || Number(entry.value) >= Number.MAX_VALUE
-                      ? '>200'
-                      : entry.value)}
+                  {entry.currency + entry.value}
                   {entry.unit}
                 </Text>
               </RightCol>
