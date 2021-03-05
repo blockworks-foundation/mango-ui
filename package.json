@@ -5,13 +5,12 @@
   "homepage": "https://dex.projectserum.com/",
   "dependencies": {
     "@ant-design/icons": "^4.2.1",
+    "@blockworks-foundation/mango-client": "^0.1.4",
     "@craco/craco": "^5.6.4",
-    "@blockworks-foundation/mango-client": "0.1.3",
-
     "@project-serum/associated-token": "0.1.0",
     "@project-serum/awesome-serum": "1.0.1",
     "@project-serum/pool": "^0.2.0",
-    "@project-serum/serum": "^0.13.19",
+    "@project-serum/serum": "0.13.25",
     "@project-serum/sol-wallet-adapter": "^0.1.1",
     "@solana/web3.js": "^0.86.1",
     "@testing-library/jest-dom": "^4.2.4",
