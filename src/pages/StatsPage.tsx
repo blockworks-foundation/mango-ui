@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { Col, Row, Button, Divider } from 'antd';
+import { Col, Row, Button, Divider, Select } from 'antd';
 import { LineChart, Line, ReferenceLine, XAxis, YAxis, Tooltip } from 'recharts';
 import useDimensions from 'react-cool-dimensions';
 import { IDS, MangoClient } from '@blockworks-foundation/mango-client';
@@ -13,6 +13,20 @@ import FloatingElement from '../components/layout/FloatingElement';
 import { DEFAULT_MANGO_GROUP } from '../utils/mango';
 
 const CLUSTER = 'mainnet-beta';
+
+const DECIMALS = {
+  BTC: 4,
+  ETH: 3,
+  USDT: 2,
+  USDC: 2,
+};
+
+const icons = {
+  BTC: btcIcon,
+  ETH: ethIcon,
+  USDT: usdtIcon,
+  USDC: usdcIcon,
+};
 
 const Wrapper = styled.div`
   height: 100%;
@@ -42,13 +56,6 @@ const ChartWrapper = styled.div`
   height: 100%;
   width: 100%;
 `;
-
-const icons = {
-  BTC: btcIcon,
-  ETH: ethIcon,
-  USDT: usdtIcon,
-  USDC: usdcIcon,
-};
 
 const useMangoStats = () => {
   const [stats, setStats] = useState([
@@ -106,7 +113,7 @@ const useMangoStats = () => {
   return { latestStats, stats };
 };
 
-const StatsChart = ({ title, xAxis, yAxis, data }) => {
+const StatsChart = ({ title, xAxis, yAxis, data, labelFormat }) => {
   const [mouseData, setMouseData] = useState<string | null>(null);
   const { ref, width, height } = useDimensions();
 
@@ -126,7 +133,7 @@ const StatsChart = ({ title, xAxis, yAxis, data }) => {
         <div>
           <strong>
             {title}
-            {mouseData ? `: ${mouseData[yAxis]}` : null}
+            {mouseData ? `: ${labelFormat(mouseData[yAxis])}` : null}
           </strong>
         </div>
         {mouseData ? (
@@ -181,20 +188,21 @@ const StatsChart = ({ title, xAxis, yAxis, data }) => {
 };
 
 export default function StatsPage() {
-  const [selectedAsset, setSelectedAsset] = useState<string | null>(null);
+  const [selectedAsset, setSelectedAsset] = useState<string>('BTC');
   const { latestStats, stats } = useMangoStats();
 
   const selectedStatsData = stats.filter((stat) => stat.symbol === selectedAsset);
 
   return (
-    <Wrapper style={{ paddingTop: 10 }}>
+    <Wrapper>
       <Row justify="center">
         <Col lg={24} xl={18} xxl={12}>
-          <FloatingElement style={{ paddingTop: 10 }}>
+          <FloatingElement style={{ marginBottom: 25 }}>
             <React.Fragment>
               <Divider style={{ borderColor: 'white' }}>Mango Stats</Divider>
               <SizeTitle>
-                <Col span={4}>Asset</Col>
+                <Col span={1}></Col>
+                <Col span={3}>Asset</Col>
                 <Col span={4}>Total Deposits</Col>
                 <Col span={4}>Total Borrows</Col>
                 <Col span={4}>Deposit Interest</Col>
@@ -225,7 +233,19 @@ export default function StatsPage() {
           </FloatingElement>
           {selectedAsset ? (
             <FloatingElement>
-              <Divider style={{ borderColor: 'white' }}>Historical {selectedAsset} Stats</Divider>
+              <Divider style={{ borderColor: 'white' }}>
+                <span>Historical</span>
+                <Select
+                  style={{ margin: '0px 8px', fontSize: 16 }}
+                  value={selectedAsset}
+                  onChange={(val) => setSelectedAsset(val)}
+                >
+                  {latestStats.map(({ symbol }) => (
+                    <Select.Option value={symbol}>{symbol}</Select.Option>
+                  ))}
+                </Select>
+                <span>Stats</span>
+              </Divider>
 
               <Row>
                 <Col span={12} style={{ height: '300px' }}>
@@ -234,6 +254,7 @@ export default function StatsPage() {
                     xAxis="time"
                     yAxis="totalDeposits"
                     data={selectedStatsData}
+                    labelFormat={(x) => x.toFixed(DECIMALS[selectedAsset])}
                   />
                 </Col>
                 <Col span={12} style={{ height: '300px' }}>
@@ -242,6 +263,7 @@ export default function StatsPage() {
                     xAxis="time"
                     yAxis="totalBorrows"
                     data={selectedStatsData}
+                    labelFormat={(x) => x.toFixed(DECIMALS[selectedAsset])}
                   />
                 </Col>
               </Row>
@@ -252,6 +274,7 @@ export default function StatsPage() {
                     xAxis="time"
                     yAxis="depositInterest"
                     data={selectedStatsData}
+                    labelFormat={(x) => `${(x * 100).toFixed(5)}%`}
                   />
                 </Col>
                 <Col span={12} style={{ height: '300px' }}>
@@ -260,6 +283,7 @@ export default function StatsPage() {
                     xAxis="time"
                     yAxis="borrowInterest"
                     data={selectedStatsData}
+                    labelFormat={(x) => `${(x * 100).toFixed(5)}%`}
                   />
                 </Col>
               </Row>
