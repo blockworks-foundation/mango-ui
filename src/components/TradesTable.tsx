@@ -26,6 +26,7 @@ export default function PublicTrades({ smallScreen }) {
           : {
               marginTop: '10px',
               overflow: 'hidden',
+              maxHeight: smallScreen ? 'calc(100% - 75px)' : 'calc(100vh - 100px)',
             }
       }
     >

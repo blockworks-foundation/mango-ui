@@ -23,3 +23,22 @@ code {
 .thin-scroll::-webkit-scrollbar-track {
   background-color: inherit;
 }
+
+*::-webkit-scrollbar {
+  width: 4px;
+  height: 8px;
+  background-color: #131025;
+}
+
+*::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background-color: #584f81;
+}
+
+*::-webkit-scrollbar-track {
+  background-color: #131025;
+}
+
+*::-webkit-scrollbar-track-piece {
+  background-color: #131025;
+}

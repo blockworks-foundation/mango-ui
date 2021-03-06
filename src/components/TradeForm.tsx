@@ -1,4 +1,4 @@
-import { Button, Input, Radio, Switch } from 'antd';
+import { Button, Input, Radio, Switch, Select } from 'antd';
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { PublicKey } from '@solana/web3.js';
@@ -8,6 +8,7 @@ import {
   useSelectedQuoteCurrencyBalances,
   useMarket,
   useMarkPrice,
+  useOrderbook,
   useSelectedOpenOrdersAccount,
   useSelectedBaseCurrencyAccount,
   useSelectedQuoteCurrencyAccount,
@@ -69,6 +70,8 @@ export default function TradeForm({
   const { endpointInfo } = useConnectionConfig();
   const { marginAccount, mangoGroup, size } = useMarginAccount();
   const markPrice = useMarkPrice();
+  const [orderbook] = useOrderbook();
+
   useFeeDiscountKeys();
   const { storedFeeDiscountKey: feeDiscountKey } = useLocallyStoredFeeDiscountKey();
   const { ipAllowed } = useIpAddress();
@@ -80,6 +83,7 @@ export default function TradeForm({
   const [price, setPrice] = useState<number | undefined>(undefined);
   const [submitting, setSubmitting] = useState(false);
   const [sizeFraction, setSizeFraction] = useState(0);
+  const [tradeType, setTradeType] = useState('Limit');
 
   const availableQuote =
     openOrdersAccount && market ? market.quoteSplSizeToNumber(openOrdersAccount.quoteTokenFree) : 0;
@@ -226,7 +230,7 @@ export default function TradeForm({
   };
 
   async function onSubmit() {
-    if (!price) {
+    if (!price && tradeType === 'Limit') {
       console.warn('Missing price');
       notify({
         message: 'Missing price',
@@ -251,7 +255,33 @@ export default function TradeForm({
     if (!mangoGroup || !address || !marginAccount || !market) return;
     setSubmitting(true);
 
+    const calculateMarketPrice = (orderBook) => {
+      let acc = 0;
+      let selectedOrder;
+      for (let order of orderBook) {
+        acc += order[1];
+        if (acc >= size.size) {
+          selectedOrder = order;
+          break;
+        }
+      }
+
+      if (side === 'buy') {
+        return selectedOrder[0] * 1.05;
+      } else {
+        return selectedOrder[0] * 0.95;
+      }
+    };
+
     try {
+      let calculatedPrice;
+      if (tradeType === 'Market') {
+        calculatedPrice =
+          side === 'buy'
+            ? calculateMarketPrice(orderbook.asks)
+            : calculateMarketPrice(orderbook.bids);
+      }
+
       await placeOrderAndSettle(
         connection,
         new PublicKey(IDS[endpointInfo!.name].mango_program_id),
@@ -260,7 +290,7 @@ export default function TradeForm({
         market,
         wallet,
         side,
-        price,
+        calculatedPrice ?? price,
         baseSize,
         ioc ? 'ioc' : postOnly ? 'postOnly' : 'limit',
       );
@@ -279,6 +309,14 @@ export default function TradeForm({
       setSubmitting(false);
     }
   }
+
+  const handleTradeTypeChange = (tradeType) => {
+    setTradeType(tradeType);
+    setIoc(true);
+    if (tradeType === 'Market') {
+      setPrice(undefined);
+    }
+  };
 
   return (
     <FloatingElement style={{ display: 'flex', flexDirection: 'column', ...style }}>
@@ -316,15 +354,26 @@ export default function TradeForm({
             SELL
           </Radio.Button>
         </Radio.Group>
-        <Input
-          style={{ textAlign: 'right', paddingBottom: 8 }}
-          addonBefore={<div style={{ width: '30px' }}>Price</div>}
-          suffix={<span style={{ fontSize: 10, opacity: 0.5 }}>{quoteCurrency}</span>}
-          value={price}
-          type="number"
-          step={market?.tickSize || 1}
-          onChange={(e) => setPrice(parseFloat(e.target.value))}
-        />
+        <Input.Group compact style={{ paddingBottom: 8 }}>
+          <Input
+            style={{ width: 'calc(50% + 30px)', textAlign: 'right', paddingBottom: 8 }}
+            addonBefore={<div style={{ width: '30px' }}>Price</div>}
+            suffix={<span style={{ fontSize: 10, opacity: 0.5 }}>{quoteCurrency}</span>}
+            value={price}
+            type="number"
+            step={market?.tickSize || 1}
+            onChange={(e) => setPrice(parseFloat(e.target.value))}
+            disabled={tradeType === 'Market'}
+          />
+          <Select
+            style={{ width: 'calc(50% - 30px)' }}
+            onChange={handleTradeTypeChange}
+            value={tradeType}
+          >
+            <Select.Option value="Limit">Limit</Select.Option>
+            <Select.Option value="Market">Market</Select.Option>
+          </Select>
+        </Input.Group>
         <Input.Group compact style={{ paddingBottom: 8 }}>
           <Input
             style={{ width: 'calc(50% + 30px)', textAlign: 'right' }}
@@ -354,13 +403,13 @@ export default function TradeForm({
           {'POST '}
           <Switch checked={postOnly} onChange={postOnChange} style={{ marginRight: 40 }} />
           {'IOC '}
-          <Switch checked={ioc} onChange={iocOnChange} />
+          <Switch checked={ioc} onChange={iocOnChange} disabled={tradeType === 'Market'} />
         </div>
       </div>
       {ipAllowed ? (
         side === 'buy' ? (
           <BuyButton
-            disabled={!price || !baseSize}
+            disabled={(!price && tradeType === 'Limit') || !baseSize}
             onClick={onSubmit}
             block
             type="primary"
@@ -371,7 +420,7 @@ export default function TradeForm({
           </BuyButton>
         ) : (
           <SellButton
-            disabled={!price || !baseSize}
+            disabled={(!price && tradeType === 'Limit') || !baseSize}
             onClick={onSubmit}
             block
             type="primary"
