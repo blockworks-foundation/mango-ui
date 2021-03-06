@@ -259,7 +259,7 @@ const RenderNormal = ({ onChangeOrderRef, onPrice, onSize }) => {
       }}
     >
       <Col flex="auto" style={{ display: 'flex', flexDirection: 'column' }}>
-        <FloatingElement style={{ flex: 1, minHeight: '300px', padding: 0 }}>
+        <FloatingElement style={{ flex: 1, minHeight: '300px', padding: 0, overflow: 'hidden' }}>
           <TVChartContainer />
         </FloatingElement>
         <UserInfoTable />
