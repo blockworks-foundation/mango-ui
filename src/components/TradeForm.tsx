@@ -343,6 +343,7 @@ export default function TradeForm({
             BUY
           </Radio.Button>
           <Radio.Button
+            className="sell-button"
             value="sell"
             style={{
               width: '50%',

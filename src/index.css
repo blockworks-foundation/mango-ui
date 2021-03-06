@@ -45,3 +45,8 @@ code {
 *::-webkit-scrollbar-track-piece {
   background-color: #131025;
 }
+
+/* disable thin line between buy and sell button */
+.sell-button:before {
+  background-color: transparent !important;
+}
