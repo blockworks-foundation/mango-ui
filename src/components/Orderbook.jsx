@@ -142,10 +142,10 @@ export default function Orderbook({ smallScreen, depth = 7, onPrice, onSize }) {
             <Col flex={1} style={{ paddingLeft: 10 }}>
               <SizeTitle>
                 <Col span={12} style={{ textAlign: 'left' }}>
-                  Price ({quoteCurrency})
+                  Size ({baseCurrency})
                 </Col>
                 <Col span={12} style={{ textAlign: 'right' }}>
-                  Size ({baseCurrency})
+                  Price ({quoteCurrency})
                 </Col>
               </SizeTitle>
               {orderbookData?.asks
