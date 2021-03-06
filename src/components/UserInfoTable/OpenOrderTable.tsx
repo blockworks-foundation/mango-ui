@@ -14,8 +14,8 @@ import { cancelOrderAndSettle } from '../../utils/mango';
 import { useMarginAccount } from '../../utils/marginAccounts';
 
 const CancelButton = styled(Button)`
-  color: #f23b69;
-  border: 1px solid #f23b69;
+  color: #e54033;
+  border: 1px solid #e54033;
 `;
 
 export default function OpenOrderTable({
@@ -83,7 +83,7 @@ export default function OpenOrderTable({
       dataIndex: 'side',
       key: 'side',
       render: (side) => (
-        <Tag color={side === 'buy' ? '#41C77A' : '#F23B69'} style={{ fontWeight: 700 }}>
+        <Tag color={side === 'buy' ? '#AFD803' : '#E54033'} style={{ fontWeight: 700 }}>
           {side.charAt(0).toUpperCase() + side.slice(1)}
         </Tag>
       ),

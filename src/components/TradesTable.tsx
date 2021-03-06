@@ -25,8 +25,9 @@ export default function PublicTrades({ smallScreen }) {
           ? { flex: 1 }
           : {
               marginTop: '10px',
-              overflow: 'hidden',
-              maxHeight: smallScreen ? 'calc(100% - 75px)' : 'calc(100vh - 100px)',
+              overflowY: 'hidden',
+              minHeight: '400px',
+              maxHeight: 'calc(100vh - 700px)',
             }
       }
     >
@@ -49,7 +50,7 @@ export default function PublicTrades({ smallScreen }) {
             marginRight: '-20px',
             paddingRight: '5px',
             overflowY: 'scroll',
-            maxHeight: smallScreen ? 'calc(100% - 75px)' : 'calc(100vh - 400px)',
+            maxHeight: smallScreen ? 'calc(100% - 90px)' : 'calc(100vh - 800px)',
           }}
         >
           {trades.map((trade: BonfidaTrade, i: number) => (
@@ -57,7 +58,7 @@ export default function PublicTrades({ smallScreen }) {
               <Col
                 span={8}
                 style={{
-                  color: trade.side === 'buy' ? '#41C77A' : '#F23B69',
+                  color: trade.side === 'buy' ? '#AFD803' : '#E54033',
                 }}
               >
                 {market?.tickSize && !isNaN(trade.price)
