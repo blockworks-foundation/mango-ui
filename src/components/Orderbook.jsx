@@ -13,7 +13,7 @@ const Title = styled.div`
 `;
 
 const SizeTitle = styled(Row)`
-  padding: 20px 0 14px;
+  padding: 14px 0 14px;
   color: #434a59;
 `;
 
@@ -110,37 +110,91 @@ export default function Orderbook({ smallScreen, depth = 7, onPrice, onSize }) {
       <Divider>
         <Title>Orderbook</Title>
       </Divider>
-      <SizeTitle>
-        <Col span={12} style={{ textAlign: 'left' }}>
-          Size ({baseCurrency})
-        </Col>
-        <Col span={12} style={{ textAlign: 'right' }}>
-          Price ({quoteCurrency})
-        </Col>
-      </SizeTitle>
-      {orderbookData?.asks.map(({ price, size, sizePercent }) => (
-        <OrderbookRow
-          key={price + ''}
-          price={price}
-          size={size}
-          side={'sell'}
-          sizePercent={sizePercent}
-          onPriceClick={() => onPrice(price)}
-          onSizeClick={() => onSize(size)}
-        />
-      ))}
-      <MarkPriceComponent markPrice={markPrice} />
-      {orderbookData?.bids.map(({ price, size, sizePercent }) => (
-        <OrderbookRow
-          key={price + ''}
-          price={price}
-          size={size}
-          side={'buy'}
-          sizePercent={sizePercent}
-          onPriceClick={() => onPrice(price)}
-          onSizeClick={() => onSize(size)}
-        />
-      ))}
+      {smallScreen ? (
+        <>
+          <Row>
+            <Col flex={1}>
+              <SizeTitle>
+                <Col span={12} style={{ textAlign: 'left' }}>
+                  Size ({baseCurrency})
+                </Col>
+                <Col span={12} style={{ textAlign: 'right', paddingRight: 10 }}>
+                  Price ({quoteCurrency})
+                </Col>
+              </SizeTitle>
+              {orderbookData?.bids.map(({ price, size, sizePercent }) => (
+                <OrderbookRow
+                  key={price + ''}
+                  price={price}
+                  size={size}
+                  side={'buy'}
+                  sizePercent={sizePercent}
+                  onPriceClick={() => onPrice(price)}
+                  onSizeClick={() => onSize(size)}
+                />
+              ))}
+            </Col>
+            <Col flex={1} style={{ paddingLeft: 10 }}>
+              <SizeTitle>
+                <Col span={12} style={{ textAlign: 'left' }}>
+                  Price ({quoteCurrency})
+                </Col>
+                <Col span={12} style={{ textAlign: 'right' }}>
+                  Size ({baseCurrency})
+                </Col>
+              </SizeTitle>
+              {orderbookData?.asks
+                .slice(0)
+                .reverse()
+                .map(({ price, size, sizePercent }) => (
+                  <OrderbookRow
+                    key={price + ''}
+                    price={price}
+                    size={size}
+                    side={'sell'}
+                    sizePercent={sizePercent}
+                    onPriceClick={() => onPrice(price)}
+                    onSizeClick={() => onSize(size)}
+                  />
+                ))}
+            </Col>
+          </Row>
+        </>
+      ) : (
+        <>
+          <SizeTitle>
+            <Col span={12} style={{ textAlign: 'left' }}>
+              Size ({baseCurrency})
+            </Col>
+            <Col span={12} style={{ textAlign: 'right' }}>
+              Price ({quoteCurrency})
+            </Col>
+          </SizeTitle>
+          {orderbookData?.asks.map(({ price, size, sizePercent }) => (
+            <OrderbookRow
+              key={price + ''}
+              price={price}
+              size={size}
+              side={'sell'}
+              sizePercent={sizePercent}
+              onPriceClick={() => onPrice(price)}
+              onSizeClick={() => onSize(size)}
+            />
+          ))}
+          <MarkPriceComponent markPrice={markPrice} />
+          {orderbookData?.bids.map(({ price, size, sizePercent }) => (
+            <OrderbookRow
+              key={price + ''}
+              price={price}
+              size={size}
+              side={'buy'}
+              sizePercent={sizePercent}
+              onPriceClick={() => onPrice(price)}
+              onSizeClick={() => onSize(size)}
+            />
+          ))}
+        </>
+      )}
     </FloatingElement>
   );
 }

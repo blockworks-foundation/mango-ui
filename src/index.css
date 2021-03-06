@@ -17,7 +17,7 @@ code {
 
 .thin-scroll::-webkit-scrollbar-thumb {
   border-radius: 4px;
-  background-color: #584f81;
+  background-color: #2a2544;
 }
 
 .thin-scroll::-webkit-scrollbar-track {
@@ -26,13 +26,12 @@ code {
 
 *::-webkit-scrollbar {
   width: 4px;
-  height: 8px;
   background-color: #131025;
 }
 
 *::-webkit-scrollbar-thumb {
   border-radius: 4px;
-  background-color: #584f81;
+  background-color: #2a2544;
 }
 
 *::-webkit-scrollbar-track {

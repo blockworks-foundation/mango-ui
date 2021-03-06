@@ -56,8 +56,6 @@ function TradePageInner() {
   const { market, marketName, customMarkets, setCustomMarkets } = useMarket();
   const markets = useMarketsList();
   const [handleDeprecated, setHandleDeprecated] = useState(false);
-  // const [addMarketVisible, setAddMarketVisible] = useState(false);
-  const deprecatedMarkets = useUnmigratedDeprecatedMarkets();
   const [dimensions, setDimensions] = useState({
     height: window.innerHeight,
     width: window.innerWidth,
@@ -132,21 +130,6 @@ function TradePageInner() {
               </Popover>
             </Col>
           ) : null}
-          {/* {deprecatedMarkets && deprecatedMarkets.length > 0 && (
-            <React.Fragment>
-              <Col>
-                <Typography>
-                  You have unsettled funds on old markets! Please go through them to claim your
-                  funds.
-                </Typography>
-              </Col>
-              <Col>
-                <Button onClick={() => setHandleDeprecated(!handleDeprecated)}>
-                  {handleDeprecated ? 'View new markets' : 'Handle old markets'}
-                </Button>
-              </Col>
-            </React.Fragment>
-          )} */}
         </Row>
         {component}
       </Wrapper>
@@ -276,7 +259,7 @@ const RenderNormal = ({ onChangeOrderRef, onPrice, onSize }) => {
       }}
     >
       <Col flex="auto" style={{ display: 'flex', flexDirection: 'column' }}>
-        <FloatingElement style={{ flex: 2, minHeight: '300px', padding: 0 }}>
+        <FloatingElement style={{ flex: 1, minHeight: '300px', padding: 0 }}>
           <TVChartContainer />
         </FloatingElement>
         <UserInfoTable />
@@ -297,21 +280,36 @@ const RenderNormal = ({ onChangeOrderRef, onPrice, onSize }) => {
 const RenderSmall = ({ onChangeOrderRef, onPrice, onSize }) => {
   return (
     <>
-      <Row
-        style={{
-          height: '950px',
-        }}
-      >
-        <Col flex="auto" style={{ height: '100%', display: 'flex' }}>
-          <Orderbook smallScreen={true} depth={13} onPrice={onPrice} onSize={onSize} />
+      <Row>
+        <Col flex="2" style={{ display: 'flex', flexDirection: 'column' }}>
+          <FloatingElement style={{ flex: 2, minHeight: '300px', padding: 0 }}>
+            <TVChartContainer />
+          </FloatingElement>
         </Col>
-        <Col flex="auto" style={{ height: '100%', display: 'flex' }}>
-          <TradesTable smallScreen={true} />
-        </Col>
-        <Col flex="400px" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-          <TradeForm setChangeOrderRef={onChangeOrderRef} />
+        <Col flex="1">
           <BalancesDisplay />
           <MarginInfo />
+        </Col>
+      </Row>
+      <Row>
+        {/* style={{
+          height: '950px',
+        }} */}
+        <Col flex="1" style={{ height: '100%', maxHeight: '450px', display: 'flex' }}>
+          <Orderbook smallScreen={true} depth={13} onPrice={onPrice} onSize={onSize} />
+        </Col>
+        <Col
+          flex="1"
+          style={{
+            height: '450px',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          <TradeForm setChangeOrderRef={onChangeOrderRef} />
+        </Col>
+        <Col flex="1" style={{ height: '100%', maxHeight: '450px', display: 'flex' }}>
+          <TradesTable smallScreen={true} />
         </Col>
       </Row>
       <Row>
