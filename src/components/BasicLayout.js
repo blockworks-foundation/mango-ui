@@ -6,10 +6,10 @@ import { CustomFooter as Footer } from './Footer';
 const { Header, Content } = Layout;
 
 const Alert = styled.div`
-  color: #8d7fcb;
-  padding: 16px 25px;
+  color: #ab9bf0;
+  padding: 8px 25px;
   font-size: 16px;
-  background-color: #262337;
+  background-color: #393260;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -23,9 +23,9 @@ export default function BasicLayout({ children }) {
       <Layout style={{ display: 'flex', minHeight: '100vh', flexDirection: 'column' }}>
         {showAlert ? (
           <Alert>
-            <span style={{ letterSpacing: 1 }}>
-              THIS IS AN ALPHA RELEASE OF MANGO MARKETS. THE SOFTWARE IS PROVIDED 'AS IS' WITHOUT
-              WARRANTY OF ANY KIND.
+            <span style={{ letterSpacing: 0.5 }}>
+              THIS IS AN UNAUDITED ALPHA RELEASE OF MANGO MARKETS. THE SOFTWARE IS PROVIDED 'AS IS'
+              WITHOUT WARRANTY OF ANY KIND.
             </span>
             <Button
               size="large"

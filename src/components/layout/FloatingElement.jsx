@@ -11,6 +11,7 @@ const Wrapper = styled.div`
 export default function FloatingElement({ style = undefined, children, stretchVertical = false }) {
   return (
     <Wrapper
+      className="thin-scroll"
       style={{
         height: stretchVertical ? 'calc(100% - 10px)' : undefined,
         borderRadius: 10,

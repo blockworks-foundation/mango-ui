@@ -13,12 +13,12 @@ const Title = styled.div`
 `;
 
 const SizeTitle = styled(Row)`
-  padding: 14px 0 14px;
+  padding: 12px 0 12px;
   color: #434a59;
 `;
 
 const MarkPriceTitle = styled(Row)`
-  padding: 20px 0 14px;
+  padding: 4px 0 4px;
   font-weight: 700;
 `;
 
@@ -106,12 +106,17 @@ export default function Orderbook({ smallScreen, depth = 7, onPrice, onSize }) {
   }
 
   return (
-    <FloatingElement style={smallScreen ? { flex: 1 } : { height: '500px', overflow: 'hidden' }}>
+    <FloatingElement
+      style={
+        smallScreen ? { flex: 1, overflow: 'scroll' } : { height: '500px', overflow: 'hidden' }
+      }
+    >
       <Divider>
         <Title>Orderbook</Title>
       </Divider>
       {smallScreen ? (
         <>
+          <MarkPriceComponent markPrice={markPrice} />
           <Row>
             <Col flex={1}>
               <SizeTitle>
@@ -235,7 +240,7 @@ const OrderbookRow = React.memo(
         <Col span={12} style={{ textAlign: 'right' }}>
           <Line
             data-width={sizePercent + '%'}
-            data-bgcolor={side === 'buy' ? 'rgba(175,216,1,0.4)' : 'rgba(229,64,51,1)'}
+            data-bgcolor={side === 'buy' ? '#5b6b16' : '#E54033'}
           />
           <Price data-color={side === 'buy' ? '#ffffff' : 'white'} onClick={onPriceClick}>
             {formattedPrice}

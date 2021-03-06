@@ -93,7 +93,7 @@ function TradePageInner() {
       return <DeprecatedMarketsPage switchToLiveMarkets={() => setHandleDeprecated(false)} />;
     } else if (width < 1000) {
       return <RenderSmaller {...componentProps} />;
-    } else if (width < 1450) {
+    } else if (width < 1600) {
       return <RenderSmall {...componentProps} />;
     } else {
       return <RenderNormal {...componentProps} />;

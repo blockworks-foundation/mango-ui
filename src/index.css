@@ -24,6 +24,10 @@ code {
   background-color: inherit;
 }
 
+.thin-scroll::-webkit-scrollbar-corner {
+  background-color: #131025;
+}
+
 *::-webkit-scrollbar {
   width: 4px;
   background-color: #131025;
