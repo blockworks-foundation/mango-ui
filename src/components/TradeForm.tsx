@@ -402,7 +402,12 @@ export default function TradeForm({
         /> */}
         <div style={{ paddingTop: 18 }}>
           {'POST '}
-          <Switch checked={postOnly} onChange={postOnChange} style={{ marginRight: 40 }} />
+          <Switch
+            checked={postOnly}
+            onChange={postOnChange}
+            style={{ marginRight: 40 }}
+            disabled={tradeType === 'Market'}
+          />
           {'IOC '}
           <Switch checked={ioc} onChange={iocOnChange} disabled={tradeType === 'Market'} />
         </div>

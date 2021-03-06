@@ -282,7 +282,7 @@ const RenderSmall = ({ onChangeOrderRef, onPrice, onSize }) => {
     <>
       <Row>
         <Col flex="2" style={{ display: 'flex', flexDirection: 'column' }}>
-          <FloatingElement style={{ flex: 2, minHeight: '300px', padding: 0 }}>
+          <FloatingElement style={{ flex: 2, minHeight: '300px', padding: 0, overflow: 'hidden' }}>
             <TVChartContainer />
           </FloatingElement>
         </Col>
@@ -335,20 +335,16 @@ const RenderSmaller = ({ onChangeOrderRef, onPrice, onSize }) => {
           <MarginInfo />
         </Col>
       </Row>
-      <Row
-        style={{
-          height: '500px',
-        }}
-      >
+      <Row>
         <Col xs={24} sm={12} style={{ height: '100%', display: 'flex' }}>
-          <Orderbook smallScreen={true} onPrice={onPrice} onSize={onSize} />
+          <Orderbook smallScreen={false} onPrice={onPrice} onSize={onSize} />
         </Col>
-        <Col xs={24} sm={12} style={{ height: '100%', display: 'flex' }}>
+        <Col xs={24} sm={12} style={{ height: '100%', display: 'flex', maxHeight: '500px' }}>
           <TradesTable smallScreen={true} />
         </Col>
       </Row>
       <Row>
-        <Col xs={24} sm={12} style={{ height: '100%', display: 'flex' }}>
+        <Col flex="auto" style={{ height: '100%', display: 'flex' }}>
           <UserInfoTable />
         </Col>
       </Row>
