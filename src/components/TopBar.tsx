@@ -14,7 +14,7 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
-  padding: 0px 30px;
+  padding: 0px 25px;
   flex-wrap: wrap;
 `;
 const LogoWrapper = styled.div`
