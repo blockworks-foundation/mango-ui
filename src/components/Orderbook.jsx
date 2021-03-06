@@ -13,7 +13,7 @@ const Title = styled.div`
 `;
 
 const SizeTitle = styled(Row)`
-  padding: 12px 0 12px;
+  padding: 4px 0 4px 0px;
   color: #434a59;
 `;
 
@@ -23,8 +23,8 @@ const MarkPriceTitle = styled(Row)`
 `;
 
 const Line = styled.div`
-  text-align: right;
-  float: right;
+  text-align: ${(props) => (props.invert ? 'left' : 'right')};
+  float: ${(props) => (props.invert ? 'left' : 'right')};
   height: 100%;
   ${(props) =>
     props['data-width'] &&
@@ -40,7 +40,14 @@ const Line = styled.div`
 
 const Price = styled.div`
   position: absolute;
-  right: 5px;
+  ${(props) =>
+    props.invert
+      ? css`
+          left: 5px;
+        `
+      : css`
+          right: 5px;
+        `}
   ${(props) =>
     props['data-color'] &&
     css`
@@ -108,7 +115,9 @@ export default function Orderbook({ smallScreen, depth = 7, onPrice, onSize }) {
   return (
     <FloatingElement
       style={
-        smallScreen ? { flex: 1, overflow: 'scroll' } : { height: '500px', overflow: 'hidden' }
+        smallScreen
+          ? { flex: 1, overflow: 'hidden' }
+          : { height: '500px', overflow: 'hidden', flex: 1 }
       }
     >
       <Divider>
@@ -121,10 +130,12 @@ export default function Orderbook({ smallScreen, depth = 7, onPrice, onSize }) {
             <Col flex={1}>
               <SizeTitle>
                 <Col span={12} style={{ textAlign: 'left' }}>
-                  Size ({baseCurrency})
+                  Size
+                  <div style={{ marginTop: -5 }}>({baseCurrency})</div>
                 </Col>
                 <Col span={12} style={{ textAlign: 'right', paddingRight: 10 }}>
-                  Price ({quoteCurrency})
+                  Price
+                  <div style={{ marginTop: -5 }}>({quoteCurrency})</div>
                 </Col>
               </SizeTitle>
               {orderbookData?.bids.map(({ price, size, sizePercent }) => (
@@ -139,13 +150,15 @@ export default function Orderbook({ smallScreen, depth = 7, onPrice, onSize }) {
                 />
               ))}
             </Col>
-            <Col flex={1} style={{ paddingLeft: 10 }}>
+            <Col flex={1} style={{ paddingLeft: 2 }}>
               <SizeTitle>
                 <Col span={12} style={{ textAlign: 'left' }}>
-                  Size ({baseCurrency})
+                  Price
+                  <div style={{ marginTop: -5 }}>({quoteCurrency})</div>
                 </Col>
-                <Col span={12} style={{ textAlign: 'right' }}>
-                  Price ({quoteCurrency})
+                <Col span={12} style={{ textAlign: 'right ' }}>
+                  Size
+                  <div style={{ marginTop: -5 }}>({baseCurrency})</div>
                 </Col>
               </SizeTitle>
               {orderbookData?.asks
@@ -153,6 +166,7 @@ export default function Orderbook({ smallScreen, depth = 7, onPrice, onSize }) {
                 .reverse()
                 .map(({ price, size, sizePercent }) => (
                   <OrderbookRow
+                    invert={true}
                     key={price + ''}
                     price={price}
                     size={size}
@@ -205,7 +219,7 @@ export default function Orderbook({ smallScreen, depth = 7, onPrice, onSize }) {
 }
 
 const OrderbookRow = React.memo(
-  ({ side, price, size, sizePercent, onSizeClick, onPriceClick }) => {
+  ({ side, price, size, sizePercent, onSizeClick, onPriceClick, invert }) => {
     const element = useRef();
 
     const { market } = useMarket();
@@ -234,18 +248,42 @@ const OrderbookRow = React.memo(
 
     return (
       <Row ref={element} style={{ marginBottom: 1 }} onClick={onSizeClick}>
-        <Col span={12} style={{ textAlign: 'left' }}>
-          {formattedSize}
-        </Col>
-        <Col span={12} style={{ textAlign: 'right' }}>
-          <Line
-            data-width={sizePercent + '%'}
-            data-bgcolor={side === 'buy' ? '#5b6b16' : '#E54033'}
-          />
-          <Price data-color={side === 'buy' ? '#ffffff' : 'white'} onClick={onPriceClick}>
-            {formattedPrice}
-          </Price>
-        </Col>
+        {invert ? (
+          <>
+            <Col span={12} style={{ textAlign: 'left' }}>
+              <Line
+                invert
+                data-width={sizePercent + '%'}
+                data-bgcolor={side === 'buy' ? '#5b6b16' : '#E54033'}
+              />
+              <Price
+                invert
+                data-color={side === 'buy' ? '#ffffff' : 'white'}
+                onClick={onPriceClick}
+              >
+                {formattedPrice}
+              </Price>
+            </Col>
+            <Col span={12} style={{ textAlign: 'right' }}>
+              {formattedSize}
+            </Col>
+          </>
+        ) : (
+          <>
+            <Col span={12} style={{ textAlign: 'left' }}>
+              {formattedSize}
+            </Col>
+            <Col span={12} style={{ textAlign: 'right' }}>
+              <Line
+                data-width={sizePercent + '%'}
+                data-bgcolor={side === 'buy' ? '#5b6b16' : '#E54033'}
+              />
+              <Price data-color={side === 'buy' ? '#ffffff' : 'white'} onClick={onPriceClick}>
+                {formattedPrice}
+              </Price>
+            </Col>
+          </>
+        )}
       </Row>
     );
   },
