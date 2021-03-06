@@ -200,7 +200,7 @@ export default function MangoFees() {
       </Row>
       {showModal ? (
         <CustomDepositModal
-          balance={mangoSrmAccounts?.[0].amount}
+          balance={mangoSrmAccounts?.[0]?.amount}
           accounts={walletSrmAccounts}
           currency="SRM"
           currencies={['SRM']}
