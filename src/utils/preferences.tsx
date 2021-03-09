@@ -20,26 +20,26 @@ export function PreferencesProvider({ children }) {
   const connection = useConnection();
   // const [selectedTokenAccounts] = useSelectedTokenAccounts();
 
-  useInterval(() => {
-    const autoSettle = async () => {
-      const markets = (marketList || []).map((m) => m.market);
-      try {
-        if (!mangoGroup || !marginAccount) return;
-        await settleAll(
-          connection,
-          mango_options.mango_program_id,
-          mangoGroup,
-          marginAccount,
-          markets,
-          wallet,
-        );
-      } catch (e) {
-        console.log('Error auto settling funds: ' + e.message);
-      }
-    };
+  // useInterval(() => {
+  //   const autoSettle = async () => {
+  //     const markets = (marketList || []).map((m) => m.market);
+  //     try {
+  //       if (!mangoGroup || !marginAccount) return;
+  //       await settleAll(
+  //         connection,
+  //         mango_options.mango_program_id,
+  //         mangoGroup,
+  //         marginAccount,
+  //         markets,
+  //         wallet,
+  //       );
+  //     } catch (e) {
+  //       console.log('Error auto settling funds: ' + e.message);
+  //     }
+  //   };
 
-    connected && wallet?.autoApprove && autoSettleEnabled && autoSettle();
-  }, 10000);
+  //   connected && wallet?.autoApprove && autoSettleEnabled && autoSettle();
+  // }, 10000);
 
   return (
     <PreferencesContext.Provider
