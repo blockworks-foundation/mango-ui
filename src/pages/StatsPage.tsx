@@ -221,8 +221,8 @@ export default function StatsPage() {
                         <div style={{ width: '100%' }}>{stat.symbol}</div>
                       </Button>
                     </Col>
-                    <Col span={4}>{stat.totalDeposits.toFixed(4)}</Col>
-                    <Col span={4}>{stat.totalBorrows.toFixed(4)}</Col>
+                    <Col span={4}>{stat.totalDeposits.toFixed(DECIMALS[stat.symbol])}</Col>
+                    <Col span={4}>{stat.totalBorrows.toFixed(DECIMALS[stat.symbol])}</Col>
                     <Col span={4}>{stat.depositInterest.toFixed(2)}%</Col>
                     <Col span={4}>{stat.borrowInterest.toFixed(2)}%</Col>
                     <Col span={4}>{(parseFloat(stat.utilization) * 100).toFixed(2)}%</Col>
