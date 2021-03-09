@@ -23,14 +23,12 @@ const AccountSelector = ({ currency, setTokenAccount, tokenAccount }) => {
     return mangoGroupTokenAccounts[currency] && mangoGroupTokenAccounts[currency].length > 0 ? (
       mangoGroupTokenAccounts[currency].map((account: TokenAccount, i: number) => (
         <Option key={i} value={account.pubkey.toString()}>
-          <Text code>
-            {account.pubkey.toString().substr(0, 9) + '...' + account.pubkey.toString().substr(-9)}
-          </Text>
+          {account.pubkey.toString()}
         </Option>
       ))
     ) : (
       <Option
-        value="No Token Account"
+        value={`No wallet address found for ${currency}`}
         key=""
         disabled={true}
         style={{
@@ -38,9 +36,7 @@ const AccountSelector = ({ currency, setTokenAccount, tokenAccount }) => {
           backgroundColor: 'rgb(39, 44, 61)',
         }}
       >
-        <Text keyboard type="warning">
-          No Account
-        </Text>
+        <Text type="warning">No wallet address found for {currency}</Text>
       </Option>
     );
   }, [currency, mangoGroupTokenAccounts]);
@@ -74,8 +70,8 @@ const AccountSelector = ({ currency, setTokenAccount, tokenAccount }) => {
       <Select
         size="middle"
         listHeight={150}
-        style={{ width: '200px' }}
-        placeholder={'Select an account'}
+        style={{ width: '320px' }}
+        placeholder={'Select a wallet address'}
         value={tokenAccount ? tokenAccount.pubkey.toString() : undefined}
         // @ts-ignore
         onChange={handleChange}
