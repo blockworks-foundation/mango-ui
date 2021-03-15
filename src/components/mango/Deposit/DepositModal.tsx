@@ -2,7 +2,7 @@ import React from 'react';
 // Get our currency input component
 import { CurrencyInput } from '../CurrencyInput';
 // Components from antd
-import { Modal, Col } from 'antd';
+import { Modal, Col, Typography, Row } from 'antd';
 // Styled components
 import { RowBox, ActionButton } from '../componentStyles';
 // TYpe annotation
@@ -51,11 +51,26 @@ const DepositModal = React.forwardRef(
         />
         <RowBox align="middle" justify="center">
           <Col span={8}>
-            <ActionButton block size="middle" onClick={props.handleClick} loading={props.working}>
+            <ActionButton
+              block
+              size="middle"
+              onClick={props.handleClick}
+              loading={props.working}
+              style={{ background: '#141026' }}
+            >
               {props.operation}
             </ActionButton>
           </Col>
         </RowBox>
+        <Row align="middle" justify="center">
+          <Typography>
+            <Typography.Paragraph
+              style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px', marginBottom: 0 }}
+            >
+              <em>You may need to approve the transaction in Sollet.</em>
+            </Typography.Paragraph>
+          </Typography>
+        </Row>
       </Modal>
     );
   },
