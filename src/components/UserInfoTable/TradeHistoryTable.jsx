@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useEffect, useRef } from 'react';
-import { Row, Col, Tag } from 'antd';
+import { Row, Col, Tag, Typography } from 'antd';
 import { ReloadOutlined } from '@ant-design/icons';
 import { ActionButton } from '../mango/componentStyles';
 import DataTable from '../layout/DataTable';
@@ -68,7 +68,6 @@ const useTradeHistory = () => {
   }, [marginAccount]);
 
   useEffect(() => {
-    console.log('fills: ', eventQueueFills, tradeHistory);
     if (
       eventQueueFills &&
       eventQueueFills.length > 0 &&
@@ -147,10 +146,12 @@ export default function TradeHistoryTable() {
             }
           />
           {tradeHistory.length > 0 ? (
-            <div style={{ marginTop: '-32px' }}>
-              <ActionButton onClick={fetchTradeHistory} style={{ marginTop: '-32px' }}>
-                <ReloadOutlined spin={loadingHistory} />
-              </ActionButton>
+            <div style={{ position: 'absolute', bottom: 0, left: 0 }}>
+              <Typography>
+                <Typography.Paragraph style={{ color: 'rgba(255,255,255,0.5)' }}>
+                  <em>Reflects trades placed after March 15th 04:00am UTC</em>
+                </Typography.Paragraph>
+              </Typography>
             </div>
           ) : null}
         </Col>
