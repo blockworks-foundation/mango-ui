@@ -1,5 +1,6 @@
 import BalancesTable from './BalancesTable';
 import OpenOrderTable from './OpenOrderTable';
+import TradeHistoryTable from './TradeHistoryTable';
 import React from 'react';
 import { Tabs, Typography } from 'antd';
 import FillsTable from './FillsTable';
@@ -27,7 +28,7 @@ export default function Index() {
         <TabPane tab="Open Orders" key="orders">
           <OpenOrdersTab />
         </TabPane>
-        <TabPane tab="Recent Trade History" key="fills">
+        <TabPane tab="Recent Trades" key="fills">
           <FillsTable />
         </TabPane>
         <TabPane tab="Balances" key="balances">
@@ -38,6 +39,9 @@ export default function Index() {
             <MangoFees />
           </TabPane>
         ) : null}
+        <TabPane tab="Trade History" key="history">
+          <TradeHistoryTable />
+        </TabPane>
       </Tabs>
     </FloatingElement>
   );
