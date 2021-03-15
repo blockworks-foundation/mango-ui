@@ -630,7 +630,7 @@ export function useFeeDiscountKeys(): [
       return null;
     }
     const feeDiscountKey = await market.findFeeDiscountKeys(connection, wallet.publicKey);
-    if (feeDiscountKey) {
+    if (feeDiscountKey.length) {
       setStoredFeeDiscountKey(feeDiscountKey[0].pubkey.toBase58());
     }
     return feeDiscountKey;

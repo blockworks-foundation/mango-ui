@@ -3,7 +3,6 @@ import OpenOrderTable from './OpenOrderTable';
 import TradeHistoryTable from './TradeHistoryTable';
 import React from 'react';
 import { Tabs, Typography } from 'antd';
-import FillsTable from './FillsTable';
 import FloatingElement from '../layout/FloatingElement';
 import { useOpenOrders, useBalances, useMarket } from '../../utils/markets';
 import MangoFees from './MangoFees';
@@ -27,9 +26,6 @@ export default function Index() {
       <Tabs defaultActiveKey="orders">
         <TabPane tab="Open Orders" key="orders">
           <OpenOrdersTab />
-        </TabPane>
-        <TabPane tab="Recent Trades" key="fills">
-          <FillsTable />
         </TabPane>
         <TabPane tab="Balances" key="balances">
           <BalancesTab />
