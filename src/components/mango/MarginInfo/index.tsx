@@ -11,8 +11,50 @@ import { useConnection } from '../../../utils/connection';
 import { settleAllBorrows } from '../../../utils/mango';
 // Wallet hook
 import { useWallet } from '../../../utils/wallet';
+import { groupBy } from '../../../utils/utils';
+import { useTradeHistory } from '../../../utils/useTradeHistory';
+import { nativeToUi } from '@blockworks-foundation/mango-client/lib/utils';
 
 const { Text } = Typography;
+
+const calculatePnl = (tradeHistory, prices, mangoGroup) => {
+  const pnl = new Map();
+  const groupedTrades = groupBy(tradeHistory, (trade) => trade.marketName);
+  if (!prices.length) return '-';
+
+  const assetIndex = {
+    'BTC/USDT': 0,
+    'ETH/USDT': 1,
+    USDT: 2,
+  };
+
+  groupedTrades.forEach((val, key, map) => {
+    pnl.set(
+      key,
+      val.reduce(
+        (acc, current) => (current.side === 'sell' ? current.size * -1 : current.size) + acc,
+        0,
+      ),
+    );
+  });
+  const totalNativeUsdt = tradeHistory.reduce((acc, current) => {
+    return (
+      (current.side === 'sell'
+        ? parseInt(current.nativeQuantityPaid)
+        : parseInt(current.nativeQuantityPaid) * -1) + acc
+    );
+  }, 0);
+  pnl.set('USDT', nativeToUi(totalNativeUsdt, mangoGroup.mintDecimals[2]));
+
+  console.log('grouped Trades', groupedTrades);
+
+  let totalPnl = 0;
+  for (const [assetName, size] of pnl.entries()) {
+    totalPnl = totalPnl + size * prices[assetIndex[assetName]];
+  }
+
+  return totalPnl.toFixed(2);
+};
 
 export default function MarginInfo() {
   // Connection hook
@@ -27,6 +69,7 @@ export default function MarginInfo() {
   const [mAccountInfo, setMAccountInfo] = useState<
     { label: string; value: string; unit: string; desc: string; currency: string }[] | null
   >(null);
+  const { loadingHistory, tradeHistory, fetchTradeHistory } = useTradeHistory();
 
   // Settle bororows
   const settleBorrows = async () => {
@@ -83,6 +126,13 @@ export default function MarginInfo() {
             currency: '',
             desc: 'Total position size divided by account value',
           },
+          // {
+          //   label: 'PnL',
+          //   value: calculatePnl(tradeHistory, prices, mangoGroup),
+          //   unit: '',
+          //   currency: '$',
+          //   desc: 'PnL reflects trades placed after March 15th 2021 04:00 AM UTC.',
+          // },
           {
             // TODO: Get collaterization ratio
             label: 'Collateral Ratio',

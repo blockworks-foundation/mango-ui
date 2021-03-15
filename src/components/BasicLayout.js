@@ -11,7 +11,7 @@ const Alert = styled.div`
   font-size: 16px;
   background-color: #393260;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
 `;
 
@@ -23,6 +23,7 @@ export default function BasicLayout({ children }) {
       <Layout style={{ display: 'flex', minHeight: '100vh', flexDirection: 'column' }}>
         {showAlert ? (
           <Alert>
+            <div style={{ marginRight: 'auto' }}></div>
             <span style={{ letterSpacing: 0.5 }}>
               THIS IS AN UNAUDITED ALPHA RELEASE OF MANGO MARKETS. THE SOFTWARE IS PROVIDED 'AS IS'
               WITHOUT WARRANTY OF ANY KIND.
@@ -31,7 +32,7 @@ export default function BasicLayout({ children }) {
               size="large"
               type="link"
               onClick={() => setShowAlert(false)}
-              style={{ padding: '0px 15px', height: 'unset' }}
+              style={{ padding: '0px 15px', height: 'unset', marginLeft: 'auto' }}
             >
               <span>X</span>
             </Button>

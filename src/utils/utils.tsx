@@ -150,3 +150,21 @@ export function isEqual(obj1, obj2, keys) {
   }
   return true;
 }
+
+export function groupBy(list, keyGetter) {
+  const map = new Map();
+  list.forEach((item) => {
+    const key = keyGetter(item);
+    const collection = map.get(key);
+    if (!collection) {
+      map.set(key, [item]);
+    } else {
+      collection.push(item);
+    }
+  });
+  return map;
+}
+
+export function isDefined<T>(argument: T | undefined): argument is T {
+  return argument !== undefined;
+}
