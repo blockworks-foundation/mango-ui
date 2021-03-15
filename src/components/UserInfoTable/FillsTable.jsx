@@ -4,7 +4,7 @@ import { useFills, useMarket } from '../../utils/markets';
 import DataTable from '../layout/DataTable';
 
 export default function FillsTable() {
-  const fills = useFills();
+  const fills = useFills(1000);
 
   const { quoteCurrency } = useMarket();
 
@@ -19,10 +19,7 @@ export default function FillsTable() {
       dataIndex: 'side',
       key: 'side',
       render: (side) => (
-        <Tag
-          color={side === 'buy' ? '#41C77A' : '#F23B69'}
-          style={{ fontWeight: 700 }}
-        >
+        <Tag color={side === 'buy' ? '#41C77A' : '#F23B69'} style={{ fontWeight: 700 }}>
           {side.charAt(0).toUpperCase() + side.slice(1)}
         </Tag>
       ),
