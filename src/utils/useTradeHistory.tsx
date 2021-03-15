@@ -1,7 +1,6 @@
 import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { useFills } from './markets';
 import { useMarginAccount } from './marginAccounts';
-import { OpenOrders } from '@project-serum/serum';
 import { isDefined } from './utils';
 
 const byTimestamp = (a, b) => {
@@ -63,8 +62,6 @@ export const useTradeHistory = () => {
 
   useEffect(() => {
     if (marginAccount && tradeHistory.length === 0) {
-      console.log('==fetchingTradeHistory==');
-
       fetchTradeHistory();
     }
   }, [marginAccount]);

@@ -1,4 +1,4 @@
-import { Button, Input, Radio, Switch, Select } from 'antd';
+import { Button, Input, Radio, Switch, Select, Slider } from 'antd';
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { PublicKey } from '@solana/web3.js';
@@ -40,14 +40,6 @@ const BuyButton = styled(Button)`
   background: #9bd104;
   border-color: #9bd104;
 `;
-
-// const sliderMarks = {
-//   0: '0%',
-//   25: '25%',
-//   50: '50%',
-//   75: '75%',
-//   100: '100%',
-// };
 
 export default function TradeForm({
   style,
@@ -397,7 +389,6 @@ export default function TradeForm({
         {/* <Slider
           value={sizeFraction}
           tipFormatter={(value) => `${value}%`}
-          marks={sliderMarks}
           onChange={onSliderChange}
         /> */}
         <div style={{ paddingTop: 18 }}>

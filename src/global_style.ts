@@ -40,7 +40,8 @@ input[type=number]:focus::-webkit-inner-spin-button {
 .ant-slider-handle,
 .ant-slider-handle-click-focused,
 .ant-slider:hover .ant-slider-handle:not(.ant-tooltip-open)  {
-  border: 2px solid #f2c94c; 
+  border: 2px solid #f2c94c;
+  background-color: #f2c94c; 
 }
 .ant-table-tbody > tr.ant-table-row:hover > td {
   background: #3a3745;
