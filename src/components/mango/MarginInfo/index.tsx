@@ -141,12 +141,12 @@ export default function MarginInfo() {
             desc: 'Total position size divided by account value',
           },
           {
-            label: 'Total P&L',
+            label: 'Total PNL',
             value: calculatePL(tradeHistory, prices, mangoGroup),
             unit: '',
             currency: '$',
             desc:
-              'Total Profit and Loss calculation reflects trades placed on Mango after March 15th 2021 04:00 AM UTC.  Visit the Learn link in the top menu for more information.',
+              'Total PNL calculation reflects trades placed on Mango after March 15th 2021 04:00 AM UTC.  Visit the Learn link in the top menu for more information.',
           },
           {
             // TODO: Get collaterization ratio
