@@ -17,7 +17,7 @@ import { nativeToUi } from '@blockworks-foundation/mango-client/lib/utils';
 
 const { Text } = Typography;
 
-const calculatePL = (tradeHistory, prices, mangoGroup) => {
+const calculatePNL = (tradeHistory, prices, mangoGroup) => {
   if (!tradeHistory.length) return '0.00';
   const profitAndLoss = {};
   const groupedTrades = groupBy(tradeHistory, (trade) => trade.marketName);
@@ -142,7 +142,7 @@ export default function MarginInfo() {
           },
           {
             label: 'Total PNL',
-            value: calculatePL(tradeHistory, prices, mangoGroup),
+            value: calculatePNL(tradeHistory, prices, mangoGroup),
             unit: '',
             currency: '$',
             desc:
