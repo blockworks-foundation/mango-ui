@@ -406,7 +406,7 @@ export default function TradeForm({
       {ipAllowed ? (
         side === 'buy' ? (
           <BuyButton
-            disabled={(!price && tradeType === 'Limit') || !baseSize}
+            disabled={(!price && tradeType === 'Limit') || !baseSize || !connected}
             onClick={onSubmit}
             block
             type="primary"
@@ -417,7 +417,7 @@ export default function TradeForm({
           </BuyButton>
         ) : (
           <SellButton
-            disabled={(!price && tradeType === 'Limit') || !baseSize}
+            disabled={(!price && tradeType === 'Limit') || !baseSize || !connected}
             onClick={onSubmit}
             block
             type="primary"
