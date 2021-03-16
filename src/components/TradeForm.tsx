@@ -1,20 +1,9 @@
 import { Button, Input, Radio, Switch, Select, Slider } from 'antd';
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { PublicKey } from '@solana/web3.js';
 import { IDS } from '@blockworks-foundation/mango-client';
-import {
-  useSelectedBaseCurrencyBalances,
-  useSelectedQuoteCurrencyBalances,
-  useMarket,
-  useMarkPrice,
-  useOrderbook,
-  useSelectedOpenOrdersAccount,
-  useSelectedBaseCurrencyAccount,
-  useSelectedQuoteCurrencyAccount,
-  useFeeDiscountKeys,
-  useLocallyStoredFeeDiscountKey,
-} from '../utils/markets';
+import { useMarket, useMarkPrice, useOrderbook } from '../utils/markets';
 import { useWallet } from '../utils/wallet';
 import { notify } from '../utils/notifications';
 import { getDecimalCount, roundToDecimal, floorToDecimal } from '../utils/utils';
@@ -27,6 +16,7 @@ import { SwitchChangeEventHandler } from 'antd/es/switch';
 import { refreshCache } from '../utils/fetch-loop';
 import tuple from 'immutable-tuple';
 import { useMarginAccount } from '../utils/marginAccounts';
+import { NUM_TOKENS } from '@blockworks-foundation/mango-client/lib/layout';
 
 const SellButton = styled(Button)`
   margin: 20px 0px 0px 0px;
@@ -41,6 +31,33 @@ const BuyButton = styled(Button)`
   border-color: #9bd104;
 `;
 
+interface MarginInfo {
+  leverage: number;
+  prices: number[];
+  equity: number;
+  liabsVal: number;
+  assetsVal: number;
+  deposits: number[];
+}
+
+const calculateMarketPrice = (orderBook: Array<any>, size: number, side: string) => {
+  let acc = 0;
+  let selectedOrder;
+  for (let order of orderBook) {
+    acc += order[1];
+    if (acc >= size) {
+      selectedOrder = order;
+      break;
+    }
+  }
+
+  if (side === 'buy') {
+    return selectedOrder[0] * 1.05;
+  } else {
+    return selectedOrder[0] * 0.95;
+  }
+};
+
 export default function TradeForm({
   style,
   setChangeOrderRef,
@@ -50,11 +67,6 @@ export default function TradeForm({
 }) {
   const [side, setSide] = useState<'buy' | 'sell'>('buy');
   const { address, baseCurrency, quoteCurrency, market } = useMarket();
-  const baseCurrencyBalances = useSelectedBaseCurrencyBalances();
-  const quoteCurrencyBalances = useSelectedQuoteCurrencyBalances();
-  const baseCurrencyAccount = useSelectedBaseCurrencyAccount();
-  const quoteCurrencyAccount = useSelectedQuoteCurrencyAccount();
-  const openOrdersAccount = useSelectedOpenOrdersAccount(true);
   const { wallet, connected } = useWallet();
   const sendConnection = useSendConnection();
 
@@ -64,8 +76,6 @@ export default function TradeForm({
   const markPrice = useMarkPrice();
   const [orderbook] = useOrderbook();
 
-  useFeeDiscountKeys();
-  const { storedFeeDiscountKey: feeDiscountKey } = useLocallyStoredFeeDiscountKey();
   const { ipAllowed } = useIpAddress();
 
   const [postOnly, setPostOnly] = useState(false);
@@ -76,12 +86,20 @@ export default function TradeForm({
   const [submitting, setSubmitting] = useState(false);
   const [sizeFraction, setSizeFraction] = useState(0);
   const [tradeType, setTradeType] = useState('Limit');
+  const [marginInfo, setMarginInfo] = useState<MarginInfo>({
+    leverage: 0,
+    prices: [],
+    equity: 0,
+    liabsVal: 0,
+    deposits: [],
+    assetsVal: 0,
+  });
 
-  const availableQuote =
-    openOrdersAccount && market ? market.quoteSplSizeToNumber(openOrdersAccount.quoteTokenFree) : 0;
+  // const availableQuote =
+  //   openOrdersAccount && market ? market.quoteSplSizeToNumber(openOrdersAccount.quoteTokenFree) : 0;
 
-  let quoteBalance = (quoteCurrencyBalances || 0) + (availableQuote || 0);
-  let baseBalance = baseCurrencyBalances || 0;
+  // let quoteBalance = (quoteCurrencyBalances || 0) + (availableQuote || 0);
+  // let baseBalance = baseCurrencyBalances || 0;
   let sizeDecimalCount = market?.minOrderSize && getDecimalCount(market.minOrderSize);
   let priceDecimalCount = market?.tickSize && getDecimalCount(market.tickSize);
 
@@ -90,23 +108,49 @@ export default function TradeForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setChangeOrderRef]);
 
-  useEffect(() => {
-    baseSize && price && onSliderChange(sizeFraction);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [side]);
+  // useEffect(() => {
+  //   baseSize && price && onSliderChange(0);
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [side]);
 
   useEffect(() => {
-    updateSizeFraction();
+    if (!price && markPrice && tradeType !== 'Market') {
+      setPrice(markPrice);
+    }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [price, baseSize]);
+  }, [price, baseSize, quoteSize]);
+
+  useEffect(() => {
+    const calculateAccountMarginInfo = async () => {
+      if (!mangoGroup || !marginAccount) return;
+      const prices = await mangoGroup.getPrices(connection);
+      const equity = marginAccount.computeValue(mangoGroup, prices);
+      const leverage = equity ? 1 / (marginAccount.getCollateralRatio(mangoGroup, prices) - 1) : 0;
+      const liabsVal = marginAccount.getLiabsVal(mangoGroup, prices);
+      const assetsVal = marginAccount.getAssetsVal(mangoGroup, prices);
+      const deposits = marginAccount.getDeposits(mangoGroup);
+
+      setMarginInfo((prevMarginInfo) => ({
+        ...prevMarginInfo,
+        leverage,
+        prices,
+        equity,
+        liabsVal,
+        deposits,
+        assetsVal,
+      }));
+    };
+    calculateAccountMarginInfo();
+  }, [connection, mangoGroup, marginAccount]);
 
   // Set the price from the balance comp
   useEffect(() => {
     if (size.currency) {
       if (size.currency === baseCurrency) {
-        onSetBaseSize(size.size);
+        // onSetBaseSize(size.size);
       } else {
-        onSetQuoteSize(size.size);
+        // onSetQuoteSize(size.size);
       }
     }
   }, [size]);
@@ -121,7 +165,7 @@ export default function TradeForm({
         const startTime = getUnixTs();
         console.log(`Refreshing accounts for ${market.address}`);
         await market?.findOpenOrdersAccountsForOwner(sendConnection, wallet.publicKey);
-        await market?.findBestFeeDiscountKey(sendConnection, wallet.publicKey);
+        // await market?.findBestFeeDiscountKey(sendConnection, wallet.publicKey);
         const endTime = getUnixTs();
         console.log(
           `Finished refreshing accounts for ${market.address} after ${endTime - startTime}`,
@@ -174,38 +218,46 @@ export default function TradeForm({
     formattedPrice && setPrice(formattedPrice);
   };
 
-  const updateSizeFraction = () => {
-    const rawMaxSize = side === 'buy' ? quoteBalance / (price || markPrice || 1) : baseBalance;
-    const maxSize = floorToDecimal(rawMaxSize, sizeDecimalCount);
-    const sizeFraction = Math.min(((baseSize || 0) / maxSize) * 100, 100);
-    setSizeFraction(sizeFraction);
+  const onSliderChange = (value) => {
+    if (marginAccount && mangoGroup && typeof value === 'number') {
+      setSizeFraction(value);
+      value ? onSetBaseSize(value) : onSetBaseSize(undefined);
+    }
   };
 
-  const onSliderChange = (value) => {
-    if (!price && markPrice) {
-      let formattedMarkPrice: number | string = priceDecimalCount
-        ? markPrice.toFixed(priceDecimalCount)
-        : markPrice;
-      setPrice(
-        typeof formattedMarkPrice === 'number'
-          ? formattedMarkPrice
-          : parseFloat(formattedMarkPrice),
-      );
-    }
+  const getSliderMax = () => {
+    if (marginInfo.equity && orderbook.asks.length && sizeDecimalCount && market && mangoGroup) {
+      // const marketIndex = mangoGroup.getMarketIndex(market);
 
-    let newSize;
-    if (side === 'buy') {
-      if (price || markPrice) {
-        newSize = ((quoteBalance / (price || markPrice || 1)) * value) / 100;
+      const marketPrice = side === 'buy' ? orderbook.asks[0][0] : orderbook.bids[0][0];
+      let marketOrLimitPrice = marketPrice;
+      if (tradeType === 'Limit') {
+        marketOrLimitPrice = price ? price : marketPrice;
       }
+
+      const maxSize = (marginInfo.equity / marketOrLimitPrice) * 5.5;
+      const assetsVal = marginInfo.assetsVal / marketPrice;
+
+      // const sliderMax = side === 'buy' ? maxSize - marginInfo.deposits[marketIndex] : maxSize;
+      const sliderMax = side === 'buy' ? maxSize - assetsVal : maxSize;
+
+      return floorToDecimal(sliderMax < 0 ? 0 : sliderMax, sizeDecimalCount);
     } else {
-      newSize = (baseBalance * value) / 100;
+      return 0;
     }
+  };
 
-    // round down to minOrderSize increment
-    let formatted = floorToDecimal(newSize, sizeDecimalCount);
+  const getSliderStep = () => {
+    // console.log('slider step: ', sizeDecimalCount ? 1 / 10 ** sizeDecimalCount : 0);
+    return sizeDecimalCount ? 1 / 10 ** sizeDecimalCount : 0;
+  };
 
-    onSetBaseSize(formatted);
+  const getSliderMin = () => {
+    if (getSliderMax() === 0) {
+      return 1;
+    } else {
+      return 0;
+    }
   };
 
   const postOnChange: SwitchChangeEventHandler = (checked) => {
@@ -247,31 +299,13 @@ export default function TradeForm({
     if (!mangoGroup || !address || !marginAccount || !market) return;
     setSubmitting(true);
 
-    const calculateMarketPrice = (orderBook) => {
-      let acc = 0;
-      let selectedOrder;
-      for (let order of orderBook) {
-        acc += order[1];
-        if (acc >= size.size) {
-          selectedOrder = order;
-          break;
-        }
-      }
-
-      if (side === 'buy') {
-        return selectedOrder[0] * 1.05;
-      } else {
-        return selectedOrder[0] * 0.95;
-      }
-    };
-
     try {
       let calculatedPrice;
       if (tradeType === 'Market') {
         calculatedPrice =
           side === 'buy'
-            ? calculateMarketPrice(orderbook.asks)
-            : calculateMarketPrice(orderbook.bids);
+            ? calculateMarketPrice(orderbook.asks, size.size, side)
+            : calculateMarketPrice(orderbook.bids, size.size, side);
       }
 
       await placeOrderAndSettle(
@@ -304,9 +338,13 @@ export default function TradeForm({
 
   const handleTradeTypeChange = (tradeType) => {
     setTradeType(tradeType);
-    setIoc(true);
     if (tradeType === 'Market') {
+      setIoc(true);
       setPrice(undefined);
+    } else {
+      const limitPrice = side === 'buy' ? orderbook.asks[0][0] : orderbook.bids[0][0];
+      setPrice(limitPrice);
+      setIoc(false);
     }
   };
 
@@ -386,22 +424,29 @@ export default function TradeForm({
             onChange={(e) => onSetQuoteSize(parseFloat(e.target.value))}
           />
         </Input.Group>
-        {/* <Slider
-          value={sizeFraction}
-          tipFormatter={(value) => `${value}%`}
-          onChange={onSliderChange}
-        /> */}
-        <div style={{ paddingTop: 18 }}>
-          {'POST '}
-          <Switch
-            checked={postOnly}
-            onChange={postOnChange}
-            style={{ marginRight: 40 }}
-            disabled={tradeType === 'Market'}
+        {connected && marginInfo.prices.length ? (
+          <Slider
+            value={sizeFraction}
+            onChange={onSliderChange}
+            min={getSliderMin()}
+            max={getSliderMax()}
+            step={getSliderStep()}
+            tooltipVisible={false}
           />
-          {'IOC '}
-          <Switch checked={ioc} onChange={iocOnChange} disabled={tradeType === 'Market'} />
-        </div>
+        ) : null}
+        {tradeType !== 'Market' ? (
+          <div style={{ paddingTop: 18 }}>
+            {'POST '}
+            <Switch
+              checked={postOnly}
+              onChange={postOnChange}
+              style={{ marginRight: 40 }}
+              disabled={tradeType === 'Market'}
+            />
+            {'IOC '}
+            <Switch checked={ioc} onChange={iocOnChange} disabled={tradeType === 'Market'} />
+          </div>
+        ) : null}
       </div>
       {ipAllowed ? (
         side === 'buy' ? (
@@ -413,7 +458,7 @@ export default function TradeForm({
             size="large"
             loading={submitting}
           >
-            {connected ? `Buy ${baseCurrency}` : 'Connect a wallet'}
+            {connected ? `Buy ${baseCurrency}` : 'CONNECT WALLET TO TRADE'}
           </BuyButton>
         ) : (
           <SellButton
@@ -424,7 +469,7 @@ export default function TradeForm({
             size="large"
             loading={submitting}
           >
-            {connected ? `Sell ${baseCurrency}` : 'Connect a wallet'}
+            {connected ? `Sell ${baseCurrency}` : 'CONNECT WALLET TO TRADE'}
           </SellButton>
         )
       ) : (
