@@ -146,7 +146,7 @@ export default function MarginInfo() {
             unit: '',
             currency: '$',
             desc:
-              'Total PNL calculation reflects trades placed on Mango after March 15th 2021 04:00 AM UTC.  Visit the Learn link in the top menu for more information.',
+              'Total PNL reflects trades placed after March 15th 2021 04:00 AM UTC. Visit the Learn link in the top menu for more information.',
           },
           {
             // TODO: Get collaterization ratio

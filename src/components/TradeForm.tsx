@@ -413,7 +413,7 @@ export default function TradeForm({
             size="large"
             loading={submitting}
           >
-            Buy {baseCurrency}
+            {connected ? `Buy ${baseCurrency}` : 'Connect a wallet'}
           </BuyButton>
         ) : (
           <SellButton
@@ -424,7 +424,7 @@ export default function TradeForm({
             size="large"
             loading={submitting}
           >
-            Sell {baseCurrency}
+            {connected ? `Sell ${baseCurrency}` : 'Connect a wallet'}
           </SellButton>
         )
       ) : (
