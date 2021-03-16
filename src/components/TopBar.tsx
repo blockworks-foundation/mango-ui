@@ -114,11 +114,7 @@ export default function TopBar() {
             </Menu.Item>
           )}
           <Menu.Item key="/learn" style={{ margin: '0 10px' }}>
-            <a
-              href="https://www.notion.so/Mango-Markets-8de7c02f243240769b917c6a500d8693"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <a href="https://docs.mango.markets/" target="_blank" rel="noopener noreferrer">
               <Title level={5} style={{ fontWeight: 300, lineHeight: 3, marginBottom: 0 }}>
                 Learn
               </Title>

@@ -17,8 +17,9 @@ import { nativeToUi } from '@blockworks-foundation/mango-client/lib/utils';
 
 const { Text } = Typography;
 
-const calculatePnl = (tradeHistory, prices, mangoGroup) => {
-  const pnl = new Map();
+const calculatePNL = (tradeHistory, prices, mangoGroup) => {
+  if (!tradeHistory.length) return '0.00';
+  const profitAndLoss = {};
   const groupedTrades = groupBy(tradeHistory, (trade) => trade.marketName);
   if (!prices.length) return '-';
 
@@ -29,31 +30,42 @@ const calculatePnl = (tradeHistory, prices, mangoGroup) => {
   };
 
   groupedTrades.forEach((val, key, map) => {
-    pnl.set(
-      key,
-      val.reduce(
-        (acc, current) => (current.side === 'sell' ? current.size * -1 : current.size) + acc,
-        0,
-      ),
+    profitAndLoss[key] = val.reduce(
+      (acc, current) => (current.side === 'sell' ? current.size * -1 : current.size) + acc,
+      0,
     );
   });
+
+  console.log('groupedTrades', groupedTrades);
+  console.log('tradeHistory', tradeHistory);
+
   const totalNativeUsdt = tradeHistory.reduce((acc, current) => {
-    return (
-      (current.side === 'sell'
-        ? parseInt(current.nativeQuantityPaid)
-        : parseInt(current.nativeQuantityPaid) * -1) + acc
-    );
+    const usdtAmount =
+      current.side === 'sell'
+        ? parseInt(current.nativeQuantityReleased)
+        : parseInt(current.nativeQuantityPaid) * -1;
+    console.log('usdt amount', usdtAmount);
+
+    return usdtAmount + acc;
   }, 0);
-  pnl.set('USDT', nativeToUi(totalNativeUsdt, mangoGroup.mintDecimals[2]));
 
-  console.log('grouped Trades', groupedTrades);
+  console.log(
+    'totalNativeUsdt',
+    totalNativeUsdt,
+    nativeToUi(totalNativeUsdt, mangoGroup.mintDecimals[2]),
+  );
 
-  let totalPnl = 0;
-  for (const [assetName, size] of pnl.entries()) {
-    totalPnl = totalPnl + size * prices[assetIndex[assetName]];
+  profitAndLoss['USDT'] = nativeToUi(totalNativeUsdt, mangoGroup.mintDecimals[2]);
+
+  let total = 0;
+  for (const assetName in profitAndLoss) {
+    total = total + profitAndLoss[assetName] * prices[assetIndex[assetName]];
   }
+  // console.log('prices', prices);
 
-  return totalPnl.toFixed(2);
+  // console.log('pnl', profitAndLoss);
+
+  return total.toFixed(2);
 };
 
 export default function MarginInfo() {
@@ -96,6 +108,8 @@ export default function MarginInfo() {
   };
   useEffect(() => {
     if (mangoGroup) {
+      console.log('fetching prices-=');
+
       mangoGroup.getPrices(connection).then((prices) => {
         const collateralRatio = marginAccount
           ? marginAccount.getCollateralRatio(mangoGroup, prices)
@@ -126,13 +140,14 @@ export default function MarginInfo() {
             currency: '',
             desc: 'Total position size divided by account value',
           },
-          // {
-          //   label: 'PnL',
-          //   value: calculatePnl(tradeHistory, prices, mangoGroup),
-          //   unit: '',
-          //   currency: '$',
-          //   desc: 'PnL reflects trades placed after March 15th 2021 04:00 AM UTC.',
-          // },
+          {
+            label: 'Total PNL',
+            value: calculatePNL(tradeHistory, prices, mangoGroup),
+            unit: '',
+            currency: '$',
+            desc:
+              'Total PNL reflects trades placed after March 15th 2021 04:00 AM UTC. Visit the Learn link in the top menu for more information.',
+          },
           {
             // TODO: Get collaterization ratio
             label: 'Collateral Ratio',
@@ -166,7 +181,7 @@ export default function MarginInfo() {
           mAccountInfo.map((entry, i) => (
             <Row key={i} justify="space-around" style={{ padding: '10px' }}>
               <Popover content={entry.desc} placement="topLeft" trigger="hover">
-                <LeftCol span={14}>
+                <LeftCol span={6}>
                   <Text ellipsis={true} style={{ cursor: 'help' }}>
                     {entry.label}
                   </Text>

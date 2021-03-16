@@ -406,25 +406,25 @@ export default function TradeForm({
       {ipAllowed ? (
         side === 'buy' ? (
           <BuyButton
-            disabled={(!price && tradeType === 'Limit') || !baseSize}
+            disabled={(!price && tradeType === 'Limit') || !baseSize || !connected}
             onClick={onSubmit}
             block
             type="primary"
             size="large"
             loading={submitting}
           >
-            Buy {baseCurrency}
+            {connected ? `Buy ${baseCurrency}` : 'Connect a wallet'}
           </BuyButton>
         ) : (
           <SellButton
-            disabled={(!price && tradeType === 'Limit') || !baseSize}
+            disabled={(!price && tradeType === 'Limit') || !baseSize || !connected}
             onClick={onSubmit}
             block
             type="primary"
             size="large"
             loading={submitting}
           >
-            Sell {baseCurrency}
+            {connected ? `Sell ${baseCurrency}` : 'Connect a wallet'}
           </SellButton>
         )
       ) : (
