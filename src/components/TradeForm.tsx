@@ -22,7 +22,7 @@ import { useSendConnection, useConnection, useConnectionConfig } from '../utils/
 import { useIpAddress } from '../utils/useIpAddress';
 import FloatingElement from './layout/FloatingElement';
 import { getUnixTs } from '../utils/send';
-import { placeOrderAndSettle } from '../utils/mango';
+import { placeAndSettle } from '../utils/mango';
 import { SwitchChangeEventHandler } from 'antd/es/switch';
 import { refreshCache } from '../utils/fetch-loop';
 import tuple from 'immutable-tuple';
@@ -282,7 +282,7 @@ export default function TradeForm({
             : calculateMarketPrice(orderbook.bids);
       }
 
-      await placeOrderAndSettle(
+      await placeAndSettle(
         connection,
         new PublicKey(IDS[endpointInfo!.name].mango_program_id),
         mangoGroup,
