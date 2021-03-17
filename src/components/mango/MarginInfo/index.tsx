@@ -1,5 +1,4 @@
-import { Row, Col, Popover, Typography } from 'antd';
-import { ActionButton } from '../componentStyles';
+import { Row, Popover, Typography } from 'antd';
 import React, { useEffect, useState } from 'react';
 import FloatingElement from '../../layout/FloatingElement';
 // Styled antd components
@@ -7,10 +6,6 @@ import { RowBox, LeftCol, RightCol, BalanceCol } from '../componentStyles';
 import { useMarginAccount } from '../../../utils/marginAccounts';
 // Connection hook
 import { useConnection } from '../../../utils/connection';
-// Mango client library
-import { settleAllBorrows } from '../../../utils/mango';
-// Wallet hook
-import { useWallet } from '../../../utils/wallet';
 import { groupBy } from '../../../utils/utils';
 import { useTradeHistory } from '../../../utils/useTradeHistory';
 import { nativeToUi } from '@blockworks-foundation/mango-client/lib/utils';
@@ -36,24 +31,24 @@ const calculatePNL = (tradeHistory, prices, mangoGroup) => {
     );
   });
 
-  console.log('groupedTrades', groupedTrades);
-  console.log('tradeHistory', tradeHistory);
+  // console.log('groupedTrades', groupedTrades);
+  // console.log('tradeHistory', tradeHistory);
 
   const totalNativeUsdt = tradeHistory.reduce((acc, current) => {
     const usdtAmount =
       current.side === 'sell'
         ? parseInt(current.nativeQuantityReleased)
         : parseInt(current.nativeQuantityPaid) * -1;
-    console.log('usdt amount', usdtAmount);
+    // console.log('usdt amount', usdtAmount);
 
     return usdtAmount + acc;
   }, 0);
 
-  console.log(
-    'totalNativeUsdt',
-    totalNativeUsdt,
-    nativeToUi(totalNativeUsdt, mangoGroup.mintDecimals[2]),
-  );
+  // console.log(
+  //   'totalNativeUsdt',
+  //   totalNativeUsdt,
+  //   nativeToUi(totalNativeUsdt, mangoGroup.mintDecimals[2]),
+  // );
 
   profitAndLoss['USDT'] = nativeToUi(totalNativeUsdt, mangoGroup.mintDecimals[2]);
 
@@ -72,40 +67,16 @@ export default function MarginInfo() {
   // Connection hook
   const connection = useConnection();
   // Wallet hook
-  const { wallet } = useWallet();
   // Get our account info
-  const { marginAccount, mango_options, mangoGroup } = useMarginAccount();
+  const { marginAccount, mangoGroup } = useMarginAccount();
   // Working state
-  const [working, setWorking] = useState(false);
   // Hold the margin account info
   const [mAccountInfo, setMAccountInfo] = useState<
     { label: string; value: string; unit: string; desc: string; currency: string }[] | null
   >(null);
-  const { loadingHistory, tradeHistory, fetchTradeHistory } = useTradeHistory();
+  const { tradeHistory } = useTradeHistory();
 
   // Settle bororows
-  const settleBorrows = async () => {
-    // Set that we are working
-    if (mangoGroup && marginAccount) {
-      setWorking(true);
-      let borrows = mangoGroup.tokens.map((_token, i) => {
-        return marginAccount.getUiBorrow(mangoGroup, i);
-      });
-      // Call settle on each token
-      // @ts-ignore
-      settleAllBorrows(
-        connection,
-        mango_options.mango_program_id,
-        mangoGroup,
-        marginAccount,
-        wallet,
-        mangoGroup.tokens,
-        borrows,
-      )
-        .then(() => setWorking(false))
-        .catch((err) => console.error('Error settling borrows', err));
-    }
-  };
   useEffect(() => {
     if (mangoGroup) {
       console.log('fetching prices-=');
@@ -179,7 +150,7 @@ export default function MarginInfo() {
       <React.Fragment>
         {mAccountInfo ? (
           mAccountInfo.map((entry, i) => (
-            <Row key={i} justify="space-around" style={{ padding: '10px' }}>
+            <Row key={i} justify="space-between" style={{ padding: '4px' }}>
               <Popover content={entry.desc} placement="topLeft" trigger="hover">
                 <LeftCol span={6}>
                   <Text ellipsis={true} style={{ cursor: 'help' }}>
@@ -200,19 +171,15 @@ export default function MarginInfo() {
             <BalanceCol></BalanceCol>
           </RowBox>
         )}
-        <RowBox align="middle" justify="space-around">
-          <Col span={10}>
-            <ActionButton
-              block
-              size="middle"
-              disabled={marginAccount ? false : true}
-              onClick={settleBorrows}
-              loading={working}
+        <Row align="middle" justify="center">
+          <Typography>
+            <Typography.Paragraph
+              style={{ color: 'rgba(255,255,255,0.4)', fontSize: '14px', margin: '12px 0 4px 0' }}
             >
-              Settle Borrows
-            </ActionButton>
-          </Col>
-        </RowBox>
+              Settle funds in the Balances tab
+            </Typography.Paragraph>
+          </Typography>
+        </Row>
       </React.Fragment>
     </FloatingElement>
   );
