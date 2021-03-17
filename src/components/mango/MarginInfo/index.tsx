@@ -79,8 +79,6 @@ export default function MarginInfo() {
   // Settle bororows
   useEffect(() => {
     if (mangoGroup) {
-      console.log('fetching prices-=');
-
       mangoGroup.getPrices(connection).then((prices) => {
         const collateralRatio = marginAccount
           ? marginAccount.getCollateralRatio(mangoGroup, prices)
