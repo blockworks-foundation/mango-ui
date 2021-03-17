@@ -1,4 +1,5 @@
-import { Button, Input, Radio, Switch, Select, Slider } from 'antd';
+import { Button, Input, Radio, Switch, Select } from 'antd';
+import ReactSlider from 'react-slider';
 import React, { useCallback, useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { PublicKey } from '@solana/web3.js';
@@ -16,6 +17,7 @@ import { SwitchChangeEventHandler } from 'antd/es/switch';
 import { refreshCache } from '../utils/fetch-loop';
 import tuple from 'immutable-tuple';
 import { useMarginAccount } from '../utils/marginAccounts';
+import { NUM_TOKENS } from '@blockworks-foundation/mango-client/lib/layout';
 
 const SellButton = styled(Button)`
   margin: 20px 0px 0px 0px;
@@ -29,6 +31,38 @@ const BuyButton = styled(Button)`
   background: #9bd104;
   border-color: #9bd104;
 `;
+
+const StyledSlider = styled(ReactSlider)`
+  margin-top: 5px;
+  width: 100%;
+  height: 15px;
+`;
+
+const StyledThumb = styled.div`
+  height: 15px;
+  line-height: 15px;
+  width: 15px;
+  text-align: center;
+  background-color: #f2c94c;
+  color: #f2c94c;
+  border-radius: 50%;
+  cursor: grab;
+  outline: none;
+`;
+
+const Thumb = (props, state) => <StyledThumb {...props}></StyledThumb>;
+
+const StyledTrack = styled.div`
+  top: 0;
+  bottom: 0;
+  background: ${(props) =>
+    props.index === 2 ? '#f00' : props.index === 1 ? '#f2c94c' : '#f2c94c'};
+  border-radius: 999px;
+  height: 5px;
+  margin: auto;
+`;
+
+const Track = (props, state) => <StyledTrack {...props} index={state.index} />;
 
 interface MarginInfo {
   leverage: number;
@@ -213,7 +247,7 @@ export default function TradeForm({
 
   const onSliderChange = (value) => {
     console.log('value', value);
-
+    console.log('value', value);
     if (marginAccount && mangoGroup && typeof value === 'number') {
       setSizeFraction(value);
       value ? onSetBaseSize(value) : onSetBaseSize(undefined);
@@ -221,12 +255,16 @@ export default function TradeForm({
   };
 
   const getSliderMax = () => {
-    // leverage = 1 / (marginInfo.assetsVal / marginInfo.liabsVal - 1)
-
-    // side === 'buy' ?
-
-    if (marginInfo.equity && orderbook.asks.length && sizeDecimalCount && market && mangoGroup) {
+    if (
+      marginInfo.equity &&
+      orderbook.asks.length &&
+      sizeDecimalCount &&
+      market &&
+      mangoGroup &&
+      marginAccount
+    ) {
       const marketIndex = mangoGroup.getMarketIndex(market);
+      const otherCurrencyIndex = marketIndex === 1 ? 0 : 1;
 
       const marketPrice = side === 'buy' ? orderbook.asks[0][0] : orderbook.bids[0][0];
       let marketOrLimitPrice = marketPrice;
@@ -234,22 +272,34 @@ export default function TradeForm({
         marketOrLimitPrice = price ? price : marketPrice;
       }
 
-      const maxSize = (marginInfo.equity / marketOrLimitPrice) * 6;
+      let maxSize = (marginInfo.equity * 5) / marketOrLimitPrice;
 
-      // const liabsVal = marginInfo.liabsVal / marketPrice;
-      // const assetsVal = marginInfo.assetsVal / marketPrice;
+      const otherCurrencyLiabVal =
+        (marginAccount.getUiBorrow(mangoGroup, otherCurrencyIndex) *
+          marginInfo.prices[otherCurrencyIndex]) /
+        marketPrice;
 
-      // console.log('assetsVal, liabsVal', assetsVal, liabsVal);
-      // const sliderMax = side === 'buy' ? maxSize - marginInfo.deposits[marketIndex] : maxSize;
-      // console.log('-maxSize-btc dep-', maxSize, marginInfo.deposits[marketIndex]);
+      const remainingToBorrow = marginInfo.equity * 4.5 - marginInfo.liabsVal;
+      let remainingToBorrowBase = remainingToBorrow / marketOrLimitPrice;
 
-      const sliderMax =
-        side === 'buy'
-          ? maxSize - marginInfo.deposits[marketIndex]
-          : maxSize + marginInfo.deposits[marketIndex];
-      console.log('max=======', roundToDecimal(sliderMax < 0 ? 0 : sliderMax, sizeDecimalCount));
+      console.log('remainingToBorrow', remainingToBorrowBase);
+      let sliderMax;
+      if (side === 'buy') {
+        if (marginInfo.borrows[marketIndex] > 0) {
+          sliderMax = marginInfo.borrows[marketIndex] + maxSize - otherCurrencyLiabVal;
+        } else {
+          sliderMax = remainingToBorrowBase;
+        }
+      } else {
+        if (marginInfo.deposits[marketIndex] > 0) {
+          sliderMax = marginInfo.deposits[marketIndex] + maxSize - otherCurrencyLiabVal;
+          console.log('sliderMax when deposits', sliderMax);
+        } else {
+          sliderMax = remainingToBorrowBase;
+        }
+      }
 
-      return roundToDecimal(sliderMax < 0 ? 0 : sliderMax, sizeDecimalCount);
+      return floorToDecimal(sliderMax < 0 ? 0 : sliderMax, sizeDecimalCount);
     } else {
       return 0;
     }
@@ -431,16 +481,18 @@ export default function TradeForm({
             onChange={(e) => onSetQuoteSize(parseFloat(e.target.value))}
           />
         </Input.Group>
-        {/* {connected && marginInfo.prices.length ? (
-          <Slider
+        {connected && marginInfo.prices.length ? (
+          <StyledSlider
             value={sizeFraction}
             onChange={onSliderChange}
             min={getSliderMin()}
             max={getSliderMax()}
             step={getSliderStep()}
             tooltipVisible={false}
+            renderTrack={Track}
+            renderThumb={Thumb}
           />
-        ) : null} */}
+        ) : null}
         {tradeType !== 'Market' ? (
           <div style={{ paddingTop: 18 }}>
             {'POST '}
