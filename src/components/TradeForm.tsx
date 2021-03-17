@@ -16,7 +16,6 @@ import { SwitchChangeEventHandler } from 'antd/es/switch';
 import { refreshCache } from '../utils/fetch-loop';
 import tuple from 'immutable-tuple';
 import { useMarginAccount } from '../utils/marginAccounts';
-import { NUM_TOKENS } from '@blockworks-foundation/mango-client/lib/layout';
 
 const SellButton = styled(Button)`
   margin: 20px 0px 0px 0px;
@@ -38,6 +37,7 @@ interface MarginInfo {
   liabsVal: number;
   assetsVal: number;
   deposits: number[];
+  borrows: number[];
 }
 
 const calculateMarketPrice = (orderBook: Array<any>, size: number, side: string) => {
@@ -93,13 +93,9 @@ export default function TradeForm({
     liabsVal: 0,
     deposits: [],
     assetsVal: 0,
+    borrows: [],
   });
 
-  // const availableQuote =
-  //   openOrdersAccount && market ? market.quoteSplSizeToNumber(openOrdersAccount.quoteTokenFree) : 0;
-
-  // let quoteBalance = (quoteCurrencyBalances || 0) + (availableQuote || 0);
-  // let baseBalance = baseCurrencyBalances || 0;
   let sizeDecimalCount = market?.minOrderSize && getDecimalCount(market.minOrderSize);
   let priceDecimalCount = market?.tickSize && getDecimalCount(market.tickSize);
 
@@ -107,11 +103,6 @@ export default function TradeForm({
     setChangeOrderRef && setChangeOrderRef(doChangeOrder);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setChangeOrderRef]);
-
-  // useEffect(() => {
-  //   baseSize && price && onSliderChange(0);
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [side]);
 
   useEffect(() => {
     if (!price && markPrice && tradeType !== 'Market') {
@@ -130,6 +121,7 @@ export default function TradeForm({
       const liabsVal = marginAccount.getLiabsVal(mangoGroup, prices);
       const assetsVal = marginAccount.getAssetsVal(mangoGroup, prices);
       const deposits = marginAccount.getDeposits(mangoGroup);
+      const borrows = marginAccount.getLiabs(mangoGroup);
 
       setMarginInfo((prevMarginInfo) => ({
         ...prevMarginInfo,
@@ -139,6 +131,7 @@ export default function TradeForm({
         liabsVal,
         deposits,
         assetsVal,
+        borrows,
       }));
     };
     calculateAccountMarginInfo();
@@ -226,8 +219,12 @@ export default function TradeForm({
   };
 
   const getSliderMax = () => {
+    // leverage = 1 / (marginInfo.assetsVal / marginInfo.liabsVal - 1)
+
+    // side === 'buy' ?
+
     if (marginInfo.equity && orderbook.asks.length && sizeDecimalCount && market && mangoGroup) {
-      // const marketIndex = mangoGroup.getMarketIndex(market);
+      const marketIndex = mangoGroup.getMarketIndex(market);
 
       const marketPrice = side === 'buy' ? orderbook.asks[0][0] : orderbook.bids[0][0];
       let marketOrLimitPrice = marketPrice;
@@ -235,20 +232,24 @@ export default function TradeForm({
         marketOrLimitPrice = price ? price : marketPrice;
       }
 
-      const maxSize = (marginInfo.equity / marketOrLimitPrice) * 5.5;
+      const maxSize = (marginInfo.equity / marketOrLimitPrice) * 6;
+      const liabsVal = marginInfo.liabsVal / marketPrice;
       const assetsVal = marginInfo.assetsVal / marketPrice;
 
+      console.log('assetsVal, liabsVal', assetsVal, liabsVal);
       // const sliderMax = side === 'buy' ? maxSize - marginInfo.deposits[marketIndex] : maxSize;
-      const sliderMax = side === 'buy' ? maxSize - assetsVal : maxSize;
+      console.log('-maxSize-btc dep-', maxSize, marginInfo.deposits[marketIndex]);
 
-      return floorToDecimal(sliderMax < 0 ? 0 : sliderMax, sizeDecimalCount);
+      const sliderMax =
+        side === 'buy' ? maxSize - assetsVal + liabsVal : maxSize + assetsVal - liabsVal;
+
+      return roundToDecimal(sliderMax < 0 ? 0 : sliderMax, sizeDecimalCount);
     } else {
       return 0;
     }
   };
 
   const getSliderStep = () => {
-    // console.log('slider step: ', sizeDecimalCount ? 1 / 10 ** sizeDecimalCount : 0);
     return sizeDecimalCount ? 1 / 10 ** sizeDecimalCount : 0;
   };
 
@@ -424,7 +425,7 @@ export default function TradeForm({
             onChange={(e) => onSetQuoteSize(parseFloat(e.target.value))}
           />
         </Input.Group>
-        {connected && marginInfo.prices.length ? (
+        {/* {connected && marginInfo.prices.length ? (
           <Slider
             value={sizeFraction}
             onChange={onSliderChange}
@@ -433,7 +434,7 @@ export default function TradeForm({
             step={getSliderStep()}
             tooltipVisible={false}
           />
-        ) : null}
+        ) : null} */}
         {tradeType !== 'Market' ? (
           <div style={{ paddingTop: 18 }}>
             {'POST '}

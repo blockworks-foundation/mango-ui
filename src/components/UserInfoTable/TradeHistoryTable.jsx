@@ -6,7 +6,7 @@ import { useTradeHistory } from '../../utils/useTradeHistory';
 
 export default function TradeHistoryTable() {
   const { loadingHistory, tradeHistory, fetchTradeHistory } = useTradeHistory();
-
+  console.log('tradeHistory', tradeHistory);
   const columns = [
     {
       title: 'Market',
