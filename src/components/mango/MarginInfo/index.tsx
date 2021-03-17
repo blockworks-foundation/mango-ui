@@ -79,8 +79,6 @@ export default function MarginInfo() {
   // Settle bororows
   useEffect(() => {
     if (mangoGroup) {
-      console.log('fetching prices-=');
-
       mangoGroup.getPrices(connection).then((prices) => {
         const collateralRatio = marginAccount
           ? marginAccount.getCollateralRatio(mangoGroup, prices)
@@ -171,15 +169,6 @@ export default function MarginInfo() {
             <BalanceCol></BalanceCol>
           </RowBox>
         )}
-        <Row align="middle" justify="center">
-          <Typography>
-            <Typography.Paragraph
-              style={{ color: 'rgba(255,255,255,0.4)', fontSize: '14px', margin: '12px 0 4px 0' }}
-            >
-              Settle funds in the Balances tab
-            </Typography.Paragraph>
-          </Typography>
-        </Row>
       </React.Fragment>
     </FloatingElement>
   );

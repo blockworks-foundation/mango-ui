@@ -16,7 +16,7 @@ const formatTradeHistory = (newTradeHistory) => {
         marketName: trade.marketName
           ? trade.marketName
           : `${trade.baseCurrency}/${trade.quoteCurrency}`,
-        key: `${trade.orderId}${trade.side}`,
+        key: `${trade.orderId}${trade.side}${trade.uuid}`,
         liquidity: trade.maker ? 'Maker' : 'Taker',
       };
     })
@@ -37,7 +37,7 @@ export const useTradeHistory = () => {
   const eventQueueFills = useFills(1000);
   const [tradeHistory, setTradeHistory] = useState<any[]>([]);
   const [loadingHistory, setloadingHistory] = useState(false);
-  const previousEventQueueFills = usePrevious(eventQueueFills);
+  const [allTrades, setAllTrades] = useState<any[]>([]);
   const { marginAccount } = useMarginAccount();
 
   const fetchTradeHistory = useCallback(async () => {
@@ -57,6 +57,7 @@ export const useTradeHistory = () => {
     );
 
     setTradeHistory(formatTradeHistory(results));
+    setAllTrades(formatTradeHistory(results));
     setloadingHistory(false);
   }, [marginAccount, eventQueueFills]);
 
@@ -67,21 +68,18 @@ export const useTradeHistory = () => {
   }, [marginAccount]);
 
   useEffect(() => {
-    if (
-      eventQueueFills &&
-      eventQueueFills.length > 0 &&
-      JSON.stringify(eventQueueFills) !== JSON.stringify(previousEventQueueFills)
-    ) {
-      const newFills = eventQueueFills.filter((fill) => {
-        return !tradeHistory.find((t) => t.orderId === fill.orderId.toString());
-      });
-      if (newFills.length > 0) {
-        const newTradeHistory = [...newFills, ...tradeHistory];
+    if (eventQueueFills && eventQueueFills.length > 0) {
+      const newFills = eventQueueFills.filter(
+        (fill) => !tradeHistory.find((t) => t.orderId === fill.orderId.toString()),
+      );
+      const newTradeHistory = [...newFills, ...tradeHistory];
+      if (newFills.length > 0 && newTradeHistory.length !== allTrades.length) {
         const formattedTradeHistory = formatTradeHistory(newTradeHistory);
-        setTradeHistory(formattedTradeHistory);
+
+        setAllTrades(formattedTradeHistory);
       }
     }
   }, [tradeHistory, eventQueueFills]);
 
-  return { tradeHistory, loadingHistory, fetchTradeHistory };
+  return { tradeHistory: allTrades, loadingHistory, fetchTradeHistory };
 };

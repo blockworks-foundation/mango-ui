@@ -194,6 +194,15 @@ export default function BalancesDisplay({ style }: { style?: any }) {
             </ActionButton>
           </Col>
         </RowBox>
+        <Row align="middle" justify="center">
+          <Typography>
+            <Typography.Paragraph
+              style={{ color: 'rgba(255,255,255,0.4)', fontSize: '14px', margin: '0 0 4px 0' }}
+            >
+              Settle funds in the Balances tab
+            </Typography.Paragraph>
+          </Typography>
+        </Row>
         {showDeposit && DepositModal}
       </React.Fragment>
     </FloatingElement>
