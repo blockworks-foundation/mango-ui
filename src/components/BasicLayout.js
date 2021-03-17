@@ -25,7 +25,7 @@ export default function BasicLayout({ children }) {
           <Alert>
             <div style={{ marginRight: 'auto' }}></div>
             <span style={{ letterSpacing: 0.5 }}>
-              THIS IS AN UNAUDITED ALPHA RELEASE OF MANGO MARKETS. THE SOFTWARE IS PROVIDED 'AS IS'
+              THIS IS AN UNAUDITED BETA RELEASE OF MANGO MARKETS. THE SOFTWARE IS PROVIDED 'AS IS'
               WITHOUT WARRANTY OF ANY KIND.
             </span>
             <Button
