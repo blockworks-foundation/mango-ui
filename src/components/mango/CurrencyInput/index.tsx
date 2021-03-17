@@ -24,7 +24,10 @@ export const CurrencyInput = React.forwardRef(
     const handleCurrencyChange = (value) => {
       if (value === 'SRM') return;
       // Set the first account for the token
-      if (mangoGroupTokenAccounts[value] && mangoGroupTokenAccounts[value].length > 0) {
+      if (mangoGroupTokenAccounts[value] && mangoGroupTokenAccounts[value].length === 1) {
+        setTokenAccount(mangoGroupTokenAccounts[value][0]);
+        console.log('one account', mangoGroupTokenAccounts);
+      } else if (mangoGroupTokenAccounts[value] && mangoGroupTokenAccounts[value].length > 1) {
         // Set the account with highest balance
         let hAccount: TokenAccount = mangoGroupTokenAccounts[value][0];
         mangoGroupTokenAccounts[value].forEach((account: TokenAccount, i: number) => {
@@ -44,36 +47,6 @@ export const CurrencyInput = React.forwardRef(
       }
       setCurrency(value);
     };
-
-    // Let's create a memoized select and options for each mango group currency
-    const createCurrencyOptions = useMemo(() => {
-      return (
-        <Select
-          size="large"
-          style={{ minWidth: 150 }}
-          value={currency}
-          onChange={handleCurrencyChange}
-        >
-          {currencies.map((currency: string, i: number) => {
-            return (
-              <Option key={i} value={currency} name={currency} title={currency}>
-                <img
-                  alt=""
-                  width="20"
-                  height="20"
-                  src={require(`../../../assets/icons/${currency.toLowerCase()}.svg`)}
-                  style={{
-                    marginRight: 5,
-                    alignSelf: 'center',
-                  }}
-                />
-                {currency}
-              </Option>
-            );
-          })}
-        </Select>
-      );
-    }, [currencies, currency, setCurrency]);
 
     // Create a memoized currency input
     const NumInput = useMemo(
@@ -101,7 +74,30 @@ export const CurrencyInput = React.forwardRef(
         <div className="ccy-input-header" style={{ padding: '0px 10px 5px 7px' }}>
           {NumInput}
           <div className="ccy-input-header-right" style={{ display: 'felx' }}>
-            {createCurrencyOptions}
+            <Select
+              size="large"
+              style={{ minWidth: 150 }}
+              value={currency}
+              onChange={handleCurrencyChange}
+            >
+              {currencies.map((currency: string, i: number) => {
+                return (
+                  <Option key={i} value={currency} name={currency} title={currency}>
+                    <img
+                      alt=""
+                      width="20"
+                      height="20"
+                      src={require(`../../../assets/icons/${currency.toLowerCase()}.svg`)}
+                      style={{
+                        marginRight: 5,
+                        alignSelf: 'center',
+                      }}
+                    />
+                    {currency}
+                  </Option>
+                );
+              })}
+            </Select>
           </div>
         </div>
       </Card>

@@ -906,8 +906,8 @@ export function useBalances(): Balances[] {
   const nativeBaseLocked = openOrders ? openOrders.baseTokenTotal - nativeBaseFree : 0;
   const nativeQuoteLocked = openOrders ? openOrders?.quoteTokenTotal - nativeQuoteFree : 0;
 
-  const nativeBase = openOrders?.baseTokenFree || 0;
-  const nativeQuote = openOrders?.quoteTokenFree || 0;
+  const nativeBaseUnsettled = openOrders?.baseTokenFree || 0;
+  const nativeQuoteUnsettled = openOrders?.quoteTokenFree || 0;
   const tokenIndex = marketIndex;
 
   const net = (borrows, currencyIndex) => {
@@ -931,7 +931,7 @@ export function useBalances(): Balances[] {
       borrows: marginAccount.getUiBorrow(mangoGroup, baseCurrencyIndex),
       orders: nativeToUi(nativeBaseLocked, mangoGroup.mintDecimals[tokenIndex]),
       openOrders,
-      unsettled: nativeToUi(nativeBase, mangoGroup.mintDecimals[tokenIndex]),
+      unsettled: nativeToUi(nativeBaseUnsettled, mangoGroup.mintDecimals[tokenIndex]),
       net: nativeToUi(net(nativeBaseLocked, tokenIndex), mangoGroup.mintDecimals[tokenIndex]),
     },
     {
@@ -946,7 +946,7 @@ export function useBalances(): Balances[] {
       borrows: marginAccount.getUiBorrow(mangoGroup, quoteCurrencyIndex),
       openOrders,
       orders: nativeToUi(nativeQuoteLocked, mangoGroup.mintDecimals[NUM_TOKENS - 1]),
-      unsettled: nativeToUi(nativeQuote, mangoGroup.mintDecimals[NUM_TOKENS - 1]),
+      unsettled: nativeToUi(nativeQuoteUnsettled, mangoGroup.mintDecimals[NUM_TOKENS - 1]),
       net: nativeToUi(
         net(nativeQuoteLocked, NUM_TOKENS - 1),
         mangoGroup.mintDecimals[NUM_TOKENS - 1],
