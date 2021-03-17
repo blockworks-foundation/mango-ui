@@ -42,8 +42,8 @@ export const TVChartContainer = () => {
     fullscreen: false,
     autosize: true,
     studiesOverrides: {
-      'volume.volume.color.0': '#AFD803',
-      'volume.volume.color.1': '#E54033',
+      'volume.volume.color.0': '#E54033',
+      'volume.volume.color.1': '#AFD803',
     },
   };
 
