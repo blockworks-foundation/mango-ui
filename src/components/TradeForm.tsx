@@ -212,6 +212,8 @@ export default function TradeForm({
   };
 
   const onSliderChange = (value) => {
+    console.log('value', value);
+
     if (marginAccount && mangoGroup && typeof value === 'number') {
       setSizeFraction(value);
       value ? onSetBaseSize(value) : onSetBaseSize(undefined);
@@ -233,15 +235,19 @@ export default function TradeForm({
       }
 
       const maxSize = (marginInfo.equity / marketOrLimitPrice) * 6;
-      const liabsVal = marginInfo.liabsVal / marketPrice;
-      const assetsVal = marginInfo.assetsVal / marketPrice;
 
-      console.log('assetsVal, liabsVal', assetsVal, liabsVal);
+      // const liabsVal = marginInfo.liabsVal / marketPrice;
+      // const assetsVal = marginInfo.assetsVal / marketPrice;
+
+      // console.log('assetsVal, liabsVal', assetsVal, liabsVal);
       // const sliderMax = side === 'buy' ? maxSize - marginInfo.deposits[marketIndex] : maxSize;
-      console.log('-maxSize-btc dep-', maxSize, marginInfo.deposits[marketIndex]);
+      // console.log('-maxSize-btc dep-', maxSize, marginInfo.deposits[marketIndex]);
 
       const sliderMax =
-        side === 'buy' ? maxSize - assetsVal + liabsVal : maxSize + assetsVal - liabsVal;
+        side === 'buy'
+          ? maxSize - marginInfo.deposits[marketIndex]
+          : maxSize + marginInfo.deposits[marketIndex];
+      console.log('max=======', roundToDecimal(sliderMax < 0 ? 0 : sliderMax, sizeDecimalCount));
 
       return roundToDecimal(sliderMax < 0 ? 0 : sliderMax, sizeDecimalCount);
     } else {
