@@ -1173,9 +1173,9 @@
     lodash "^4.17.19"
     to-fast-properties "^2.0.0"
 
-"@blockworks-foundation/mango-client@git+https://github.com/blockworks-foundation/mango-client-ts.git#place_order":
-  version "0.1.6"
-  resolved "git+https://github.com/blockworks-foundation/mango-client-ts.git#a118e0630cf516848c7e8677f5928136c3eaead5"
+"@blockworks-foundation/mango-client@git+https://github.com/blockworks-foundation/mango-client-ts.git":
+  version "0.1.8"
+  resolved "git+https://github.com/blockworks-foundation/mango-client-ts.git#01ca4959379225bdd1ae3823bd0e584ce516f722"
   dependencies:
     "@project-serum/serum" "^0.13.20"
     "@project-serum/sol-wallet-adapter" "^0.1.4"
