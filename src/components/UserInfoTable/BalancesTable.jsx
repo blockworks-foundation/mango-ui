@@ -1,43 +1,43 @@
 import { Button } from 'antd';
 import React from 'react';
-import { useMarket, useTokenAccounts, getSelectedTokenAccountForMint } from '../../utils/markets';
+import { useAllMarkets } from '../../utils/markets';
 import DataTable from '../layout/DataTable';
 import { useSendConnection, useConnectionConfig } from '../../utils/connection';
 import { useWallet } from '../../utils/wallet';
-import { settleFunds, settleFundsAndBorrows } from '../../utils/mango';
+import { settleAll } from '../../utils/mango';
 import { notify } from '../../utils/notifications';
 import { useMarginAccount } from '../../utils/marginAccounts';
 
-export default function BalancesTable({
-  balances,
-  showMarket,
-  hideWalletBalance,
-  onSettleSuccess,
-}) {
+export default function BalancesTable({ balances, showMarket, hideWalletBalance }) {
   const connection = useSendConnection();
   const { wallet } = useWallet();
   const { mangoProgramId } = useConnectionConfig();
   const { marginAccount, mangoGroup } = useMarginAccount();
+  const [marketList] = useAllMarkets();
 
-  async function onSettleFunds(market, openOrders) {
+  async function handleSettleAll() {
+    const markets = (marketList || []).map((m) => m.market);
+
     try {
-      await settleFundsAndBorrows(
-        connection,
-        mangoProgramId,
-        mangoGroup,
-        marginAccount,
-        wallet,
-        market,
-      );
-    } catch (e) {
+      await settleAll(connection, mangoProgramId, mangoGroup, marginAccount, markets, wallet);
       notify({
-        message: 'Error settling funds',
-        description: e.message,
-        type: 'error',
+        message: 'Successfully settled funds',
+        type: 'info',
       });
-      return;
+    } catch (e) {
+      if (e.message === 'No unsettled funds') {
+        notify({
+          message: 'There are no unsettled funds',
+          type: 'error',
+        });
+      } else {
+        notify({
+          message: 'Error settling funds',
+          description: e.message,
+          type: 'error',
+        });
+      }
     }
-    onSettleSuccess && onSettleSuccess();
   }
 
   const columns = [
@@ -85,27 +85,26 @@ export default function BalancesTable({
       dataIndex: 'net',
       key: 'net',
     },
-    {
-      key: 'action',
-      render: ({ market, openOrders, marketName }) => (
-        <div style={{ textAlign: 'right' }}>
-          <Button
-            ghost
-            style={{ marginRight: 12 }}
-            onClick={() => onSettleFunds(market, openOrders)}
-          >
-            Settle {marketName}
-          </Button>
-        </div>
-      ),
-    },
   ].filter((x) => x);
   return (
-    <DataTable
-      emptyLabel="No balances"
-      dataSource={balances}
-      columns={columns}
-      pagination={false}
-    />
+    <div>
+      {marginAccount ? (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '4px' }}>
+          <Button
+            ghost
+            style={{ marginRight: '12px', padding: '0 36px' }}
+            onClick={handleSettleAll}
+          >
+            Settle All
+          </Button>
+        </div>
+      ) : null}
+      <DataTable
+        emptyLabel="No balances"
+        dataSource={balances}
+        columns={columns}
+        pagination={false}
+      />
+    </div>
   );
 }

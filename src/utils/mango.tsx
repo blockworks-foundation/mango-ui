@@ -1180,7 +1180,11 @@ export async function settleAll(
     transaction.add(instruction);
   }
 
-  return await packageAndSend(transaction, connection, wallet, [], 'AutoSettle');
+  if (transaction.instructions.length === 0) {
+    throw new Error('No unsettled funds');
+  }
+
+  return await packageAndSend(transaction, connection, wallet, [], 'Settle All');
 }
 
 async function packageAndSend(
