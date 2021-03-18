@@ -246,8 +246,6 @@ export default function TradeForm({
   };
 
   const onSliderChange = (value) => {
-    console.log('value', value);
-    console.log('value', value);
     if (marginAccount && mangoGroup && typeof value === 'number') {
       setSizeFraction(value);
       value ? onSetBaseSize(value) : onSetBaseSize(undefined);
@@ -264,36 +262,31 @@ export default function TradeForm({
       marginAccount
     ) {
       const marketIndex = mangoGroup.getMarketIndex(market);
-      const otherCurrencyIndex = marketIndex === 1 ? 0 : 1;
-
       const marketPrice = side === 'buy' ? orderbook.asks[0][0] : orderbook.bids[0][0];
-      let marketOrLimitPrice = marketPrice;
-      if (tradeType === 'Limit') {
-        marketOrLimitPrice = price ? price : marketPrice;
-      }
+      const marketOrLimitPrice = tradeType === 'Limit' && price ? price : marketPrice;
 
-      let maxSize = (marginInfo.equity * 5) / marketOrLimitPrice;
+      const getRemainingToBorrowBase = (liabsVal) => {
+        return (marginInfo.equity * 5 - liabsVal) / marketOrLimitPrice;
+      };
+      const remainingToBorrowBase = getRemainingToBorrowBase(marginInfo.liabsVal);
 
-      const otherCurrencyLiabVal =
-        (marginAccount.getUiBorrow(mangoGroup, otherCurrencyIndex) *
-          marginInfo.prices[otherCurrencyIndex]) /
-        marketPrice;
-
-      const remainingToBorrow = marginInfo.equity * 4.5 - marginInfo.liabsVal;
-      let remainingToBorrowBase = remainingToBorrow / marketOrLimitPrice;
-
-      console.log('remainingToBorrow', remainingToBorrowBase);
       let sliderMax;
       if (side === 'buy') {
         if (marginInfo.borrows[marketIndex] > 0) {
-          sliderMax = marginInfo.borrows[marketIndex] + maxSize - otherCurrencyLiabVal;
+          sliderMax =
+            ((marginInfo.deposits[NUM_TOKENS - 1] -
+              marginInfo.borrows[marketIndex] * marginInfo.prices[marketIndex]) *
+              5) /
+            marketOrLimitPrice;
         } else {
           sliderMax = remainingToBorrowBase;
         }
       } else {
         if (marginInfo.deposits[marketIndex] > 0) {
-          sliderMax = marginInfo.deposits[marketIndex] + maxSize - otherCurrencyLiabVal;
-          console.log('sliderMax when deposits', sliderMax);
+          const newLiabs =
+            marginInfo.liabsVal - marginInfo.deposits[marketIndex] * marginInfo.prices[marketIndex];
+
+          sliderMax = getRemainingToBorrowBase(newLiabs);
         } else {
           sliderMax = remainingToBorrowBase;
         }
