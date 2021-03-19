@@ -474,7 +474,7 @@ export default function TradeForm({
             onChange={(e) => onSetQuoteSize(parseFloat(e.target.value))}
           />
         </Input.Group>
-        {connected && marginInfo.prices.length ? (
+        {/* {connected && marginInfo.prices.length ? (
           <StyledSlider
             value={sizeFraction}
             onChange={onSliderChange}
@@ -485,7 +485,7 @@ export default function TradeForm({
             renderTrack={Track}
             renderThumb={Thumb}
           />
-        ) : null}
+        ) : null} */}
         {tradeType !== 'Market' ? (
           <div style={{ paddingTop: 18 }}>
             {'POST '}
