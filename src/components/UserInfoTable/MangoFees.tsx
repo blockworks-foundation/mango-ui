@@ -62,15 +62,21 @@ export default function MangoFees() {
   }, []);
 
   const handleSubmit = (values) => {
+    console.log('submitting', values);
+
     if (!mangoGroup) return;
     setLoading(true);
     if (operation.current === 'Withdraw') {
       if (!mangoSrmAccounts) return;
+      let selectedSrmAccount = values.selectedSrmAccount
+        ? mangoSrmAccounts.find((m) => m.publicKey.toString() === values.selectedSrmAccount)
+        : mangoSrmAccounts[0];
+
       withdrawSrm(
         connection,
         new PublicKey(mango_options.mango_program_id),
         mangoGroup,
-        mangoSrmAccounts[0],
+        selectedSrmAccount || mangoSrmAccounts[0],
         wallet,
         new PublicKey(values.selectedAccount),
         values.amount,
@@ -200,7 +206,6 @@ export default function MangoFees() {
       </Row>
       {showModal ? (
         <CustomDepositModal
-          balance={mangoSrmAccounts?.[0]?.amount}
           accounts={walletSrmAccounts}
           currency="SRM"
           currencies={['SRM']}
@@ -209,6 +214,7 @@ export default function MangoFees() {
           operation={operation.current}
           onCancel={hideModal}
           handleSubmit={handleSubmit}
+          mangoSrmAccounts={mangoSrmAccounts}
           ref={inputRef}
         />
       ) : null}

@@ -4,6 +4,7 @@ import { Modal, Col, Select, Typography, Input, Card } from 'antd';
 import { RowBox, ActionButton } from '../componentStyles';
 import { nativeToUi } from '@blockworks-foundation/mango-client/lib/utils';
 import { SRM_DECIMALS } from '@project-serum/serum/lib/token-instructions';
+import { MangoSrmAccount } from '@blockworks-foundation/mango-client/lib/client';
 
 const formStateReducer = (state, action) => {
   switch (action.type) {
@@ -13,6 +14,8 @@ const formStateReducer = (state, action) => {
       return { ...state, selectedCurrency: action.value };
     case 'UPDATE_ACCOUNT':
       return { ...state, selectedAccount: action.value };
+    case 'UPDATE_SRM_ACCOUNT':
+      return { ...state, selectedSrmAccount: action.value };
     default:
       return state;
   }
@@ -26,7 +29,6 @@ const findAccount = (accounts, publicKey, accessor) => {
 const CustomDepositModal = React.forwardRef(
   (
     props: {
-      balance: number | undefined;
       accounts: Array<any>;
       visible: boolean;
       loading: boolean;
@@ -35,11 +37,11 @@ const CustomDepositModal = React.forwardRef(
       currency: string;
       currencies: Array<string>;
       handleSubmit: (x) => void;
+      mangoSrmAccounts: MangoSrmAccount[] | null;
     },
     ref: any,
   ) => {
     const {
-      balance,
       accounts,
       onCancel,
       visible,
@@ -48,6 +50,7 @@ const CustomDepositModal = React.forwardRef(
       operation,
       handleSubmit,
       loading,
+      mangoSrmAccounts,
     } = props;
     const publicKeyAccessor = operation === 'Deposit' ? 'pubkey' : 'pubkey';
 
@@ -69,6 +72,7 @@ const CustomDepositModal = React.forwardRef(
       selectedCurrency: currency ?? currencies[0],
       amount: '',
       selectedAccount: '',
+      selectedSrmAccount: mangoSrmAccounts?.[0]?.publicKey?.toString(),
     });
 
     const handleTextInput = (e) => {
@@ -82,9 +86,10 @@ const CustomDepositModal = React.forwardRef(
 
     const selectedAccount = findAccount(accounts, formState.selectedAccount, publicKeyAccessor);
 
-    const displayBalance = () => {
-      if (operation === 'Withdraw' && balance) {
-        return nativeToUi(balance, SRM_DECIMALS);
+    const displayBalance = (values) => {
+      if (operation === 'Withdraw') {
+        const srmAccount = findAccount(mangoSrmAccounts, formState.selectedSrmAccount, 'publicKey');
+        return nativeToUi(srmAccount.amount, SRM_DECIMALS);
       } else if (operation === 'Deposit') {
         return selectedAccount?.amount ? nativeToUi(selectedAccount.amount, SRM_DECIMALS) : 0;
       } else {
@@ -135,7 +140,7 @@ const CustomDepositModal = React.forwardRef(
         <Card className="ccy-input" style={{ borderRadius: 20 }} bodyStyle={{ padding: 0 }}>
           <div className="ccy-input-header">
             <div className="ccy-input-header-left">Amount</div>
-            <div className="ccy-input-header-right">Balance: {displayBalance()}</div>
+            <div className="ccy-input-header-right">Balance: {displayBalance(formState)}</div>
           </div>
           <div className="ccy-input-header" style={{ padding: '0px 10px 5px 7px' }}>
             <Input
@@ -179,6 +184,24 @@ const CustomDepositModal = React.forwardRef(
             </div>
           </div>
         </Card>
+        <RowBox align="middle" justify="center" style={{ padding: 0 }}>
+          {mangoSrmAccounts && mangoSrmAccounts.length > 1 && operation === 'Withdraw' ? (
+            <Select
+              size="middle"
+              listHeight={150}
+              style={{ width: '300px' }}
+              placeholder={'Select a Mango Srm Account'}
+              value={formState.selectedSrmAccount}
+              onChange={(value) => dispatch({ type: 'UPDATE_SRM_ACCOUNT', value })}
+            >
+              {mangoSrmAccounts.map((acct, i) => (
+                <Select.Option key={i} value={acct.publicKey.toString()}>
+                  <Typography.Text code>{acct.publicKey.toString()}</Typography.Text>
+                </Select.Option>
+              ))}
+            </Select>
+          ) : null}
+        </RowBox>
         <RowBox align="middle" justify="center">
           <Col span={8}>
             <ActionButton
