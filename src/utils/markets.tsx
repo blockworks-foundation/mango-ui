@@ -36,7 +36,7 @@ export const USE_MARKETS: MarketInfo[] = _IGNORE_DEPRECATED
 export function useMarketsList() {
   const { endpointInfo } = useConnectionConfig();
   const spotMarkets =
-    IDS[endpointInfo!.name]?.mango_groups[DEFAULT_MANGO_GROUP].spot_market_symbols || {};
+    IDS[endpointInfo!.name]?.mango_groups[DEFAULT_MANGO_GROUP]?.spot_market_symbols || {};
 
   // If no market for the endpoint, return
   const dexProgram = IDS[endpointInfo!.name]?.dex_program_id || '';
