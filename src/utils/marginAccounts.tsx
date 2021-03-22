@@ -26,6 +26,7 @@ export const tokenPrecision = {
   ETH: 3,
   USDC: 2,
   USDT: 2,
+  WUSDT: 2,
 };
 
 // Create the margin account provider
@@ -244,11 +245,11 @@ const useMarginAccountHelper = () => {
     if (!mangoGroup) {
       // No mango group yet, get the default
       // Did the user make any selection ??
-      // Use default mango group of ETH_BTC_USDC
+      // Use default mango group of ETH_BTC_USDT
       // Set up default mango group
-      // Get the Mango group. For now we use our default BTC_ETH_USDC
+      // Get the Mango group. For now we use our default BTC_ETH_USDT
       // TODO: Allow to select a mango group
-      let MangoGroup = mangoOptions.mango_groups.BTC_ETH_USDT;
+      let MangoGroup = mangoOptions.mango_groups.BTC_ETH_WUSDT;
       let mangoGroupPk = new PublicKey(MangoGroup.mango_group_pk);
       let srmVaultPk = new PublicKey(MangoGroup.srm_vault_pk);
       mangoClient

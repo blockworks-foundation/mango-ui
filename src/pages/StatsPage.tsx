@@ -12,13 +12,14 @@ import usdcIcon from '../assets/icons/usdc.svg';
 import FloatingElement from '../components/layout/FloatingElement';
 import { DEFAULT_MANGO_GROUP } from '../utils/mango';
 
-const CLUSTER = 'mainnet-beta';
+const CLUSTER = 'devnet';
 
 const DECIMALS = {
   BTC: 4,
   ETH: 3,
   USDT: 2,
   USDC: 2,
+  WUSDT: 2,
 };
 
 const icons = {
@@ -26,6 +27,7 @@ const icons = {
   ETH: ethIcon,
   USDT: usdtIcon,
   USDC: usdcIcon,
+  WUSDT: usdtIcon,
 };
 
 const Wrapper = styled.div`

@@ -13,6 +13,7 @@ import {
   Balances,
   MarketContextValues,
   MarketInfo,
+  FullMarketInfo,
   SelectedTokenAccounts,
   TokenAccount,
 } from './types';
@@ -175,6 +176,39 @@ export const DEFAULT_MARKET = USE_MARKETS.find(
   ({ name, deprecated }) => name === 'SRM/USDT' && !deprecated,
 );
 
+const formatTokenMints = (symbols: { [name: string]: string }) => {
+  return Object.entries(symbols).map(([name, address]) => {
+    return {
+      address: new PublicKey(address),
+      name: name,
+    };
+  });
+};
+
+export function getMarketDetails(
+  market: Market | undefined | null,
+  endpointInfo = { name: 'devnet' },
+): FullMarketInfo {
+  if (!market) {
+    return {};
+  }
+  const TOKEN_MINTS = formatTokenMints(IDS[endpointInfo!.name]?.symbols);
+
+  const baseCurrency =
+    (market?.baseMintAddress &&
+      TOKEN_MINTS.find((token) => token.address.equals(market.baseMintAddress))?.name) ||
+    'UNKNOWN';
+  const quoteCurrency =
+    (market?.quoteMintAddress &&
+      TOKEN_MINTS.find((token) => token.address.equals(market.quoteMintAddress))?.name) ||
+    'UNKNOWN';
+
+  return {
+    baseCurrency,
+    quoteCurrency,
+  };
+}
+
 export function MarketProvider({ marketAddress, setMarketAddress, children }) {
   const address = marketAddress && new PublicKey(marketAddress);
   const connection = useConnection();
@@ -238,6 +272,7 @@ export function MarketProvider({ marketAddress, setMarketAddress, children }) {
         market,
         marketName: marketInfo?.name,
         setMarketAddress,
+        ...getMarketDetails(market, endpointInfo),
       }}
     >
       {children}

@@ -73,6 +73,7 @@ export default function BalancesDisplay({ style }: { style?: any }) {
     ),
     [marginAccounts, marginAccount, keyMappings, setMarginAccount],
   );
+  console.log('mango Group', mangoGroup);
 
   return (
     <FloatingElement style={{ flex: 0.5, padding: 10, ...style }}>
@@ -89,6 +90,8 @@ export default function BalancesDisplay({ style }: { style?: any }) {
           mango_groups.map((token, i) => {
             let depo = marginAccount ? marginAccount.getUiDeposit(mangoGroup, i) : 0;
             let borr = marginAccount ? marginAccount.getUiBorrow(mangoGroup, i) : 0;
+            console.log('depo/borr', depo, borr);
+
             return (
               <Row key={i} style={{ marginBottom: 10 }}>
                 <Col span={6}>

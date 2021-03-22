@@ -50,9 +50,21 @@ export const TVChartContainer = () => {
   const tvWidgetRef = React.useRef<IChartingLibraryWidget | null>(null);
   const { market, marketName } = useMarket();
 
+  let parsedMarketName;
+  switch (marketName) {
+    case 'BTC/WUSDT':
+      parsedMarketName = 'BTC/USDT';
+      break;
+    case 'ETH/WUSDT':
+      parsedMarketName = 'ETH/USDT';
+      break;
+    default:
+      parsedMarketName = marketName;
+  }
+
   React.useEffect(() => {
     const widgetOptions: ChartingLibraryWidgetOptions = {
-      symbol: marketName,
+      symbol: parsedMarketName,
       // BEWARE: no trailing slash is expected in feed URL
       // tslint:disable-next-line:no-any
       datafeed: new (window as any).Datafeeds.UDFCompatibleDatafeed(defaultProps.datafeedUrl),

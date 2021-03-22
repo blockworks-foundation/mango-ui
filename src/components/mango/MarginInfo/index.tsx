@@ -20,8 +20,11 @@ const calculatePNL = (tradeHistory, prices, mangoGroup) => {
 
   const assetIndex = {
     'BTC/USDT': 0,
+    'BTC/WUSDT': 0,
     'ETH/USDT': 1,
+    'ETH/WUSDT': 1,
     USDT: 2,
+    WUSDT: 2,
   };
 
   groupedTrades.forEach((val, key, map) => {
