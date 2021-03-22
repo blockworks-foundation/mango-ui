@@ -3,14 +3,12 @@ import bs58 from 'bs58';
 import { AccountInfo, Connection, PublicKey } from '@solana/web3.js';
 import { WRAPPED_SOL_MINT } from '@project-serum/serum/lib/token-instructions';
 import { TokenAccount } from './types';
-import { TOKEN_MINTS } from '@project-serum/serum';
-import { useAllMarkets, useCustomMarkets, useTokenAccounts } from './markets';
+import { useAllMarkets, useTokenAccounts } from './markets';
 import { getMultipleSolanaAccounts } from './send';
 import { useConnection } from './connection';
 import { useAsyncData } from './fetch-loop';
 import tuple from 'immutable-tuple';
 import BN from 'bn.js';
-import { useMemo } from 'react';
 
 export const ACCOUNT_LAYOUT = BufferLayout.struct([
   BufferLayout.blob(32, 'mint'),
@@ -67,9 +65,7 @@ export function getOwnedAccountsFilters(publicKey: PublicKey) {
   ];
 }
 
-export const TOKEN_PROGRAM_ID = new PublicKey(
-  'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
-);
+export const TOKEN_PROGRAM_ID = new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
 
 export async function getOwnedTokenAccounts(
   connection: Connection,
@@ -86,10 +82,7 @@ export async function getOwnedTokenAccounts(
   ]);
   if (resp.error) {
     throw new Error(
-      'failed to get token accounts owned by ' +
-        publicKey.toBase58() +
-        ': ' +
-        resp.error.message,
+      'failed to get token accounts owned by ' + publicKey.toBase58() + ': ' + resp.error.message,
     );
   }
   return resp.result
@@ -110,10 +103,7 @@ export async function getOwnedTokenAccounts(
         } else if (filter.memcmp) {
           let filterBytes = bs58.decode(filter.memcmp.bytes);
           return accountInfo.data
-            .slice(
-              filter.memcmp.offset,
-              filter.memcmp.offset + filterBytes.length,
-            )
+            .slice(filter.memcmp.offset, filter.memcmp.offset + filterBytes.length)
             .equals(filterBytes);
         }
         return false;
@@ -121,58 +111,23 @@ export async function getOwnedTokenAccounts(
     });
 }
 
-export async function getTokenAccountInfo(
-  connection: Connection,
-  ownerAddress: PublicKey,
-) {
+export async function getTokenAccountInfo(connection: Connection, ownerAddress: PublicKey) {
   let [splAccounts, account] = await Promise.all([
     getOwnedTokenAccounts(connection, ownerAddress),
     connection.getAccountInfo(ownerAddress),
   ]);
-  const parsedSplAccounts: TokenAccount[] = splAccounts.map(
-    ({ publicKey, accountInfo }) => {
-      return {
-        pubkey: publicKey,
-        account: accountInfo,
-        effectiveMint: parseTokenAccountData(accountInfo.data).mint,
-      };
-    },
-  );
+  const parsedSplAccounts: TokenAccount[] = splAccounts.map(({ publicKey, accountInfo }) => {
+    return {
+      pubkey: publicKey,
+      account: accountInfo,
+      effectiveMint: parseTokenAccountData(accountInfo.data).mint,
+    };
+  });
   return parsedSplAccounts.concat({
     pubkey: ownerAddress,
     account,
     effectiveMint: WRAPPED_SOL_MINT,
   });
-}
-
-export function useMintToTickers(): { [mint: string]: string } {
-  const { customMarkets } = useCustomMarkets();
-  const [markets] = useAllMarkets();
-  return useMemo(() => {
-    const mintsToTickers = Object.fromEntries(
-      TOKEN_MINTS.map((mint) => [mint.address.toBase58(), mint.name]),
-    );
-    for (let market of markets || []) {
-      const customMarketInfo = customMarkets.find(
-        (customMarket) =>
-          customMarket.address === market.market.address.toBase58(),
-      );
-      if (!(market.market.baseMintAddress.toBase58() in mintsToTickers)) {
-        if (customMarketInfo) {
-          mintsToTickers[market.market.baseMintAddress.toBase58()] =
-            customMarketInfo.baseLabel || `${customMarketInfo.name}_BASE`;
-        }
-      }
-      if (!(market.market.quoteMintAddress.toBase58() in mintsToTickers)) {
-        if (customMarketInfo) {
-          mintsToTickers[market.market.quoteMintAddress.toBase58()] =
-            customMarketInfo.quoteLabel || `${customMarketInfo.name}_QUOTE`;
-        }
-      }
-    }
-    return mintsToTickers;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [markets?.length, customMarkets.length]);
 }
 
 const _VERY_SLOW_REFRESH_INTERVAL = 5000 * 1000;
@@ -196,14 +151,8 @@ export function useMintInfos(): [
 
   const allMints = (tokenAccounts || [])
     .map((account) => account.effectiveMint)
-    .concat(
-      (allMarkets || []).map((marketInfo) => marketInfo.market.baseMintAddress),
-    )
-    .concat(
-      (allMarkets || []).map(
-        (marketInfo) => marketInfo.market.quoteMintAddress,
-      ),
-    );
+    .concat((allMarkets || []).map((marketInfo) => marketInfo.market.baseMintAddress))
+    .concat((allMarkets || []).map((marketInfo) => marketInfo.market.quoteMintAddress));
   const uniqueMints = [...new Set(allMints.map((mint) => mint.toBase58()))].map(
     (stringMint) => new PublicKey(stringMint),
   );
@@ -220,12 +169,7 @@ export function useMintInfos(): [
 
   return useAsyncData(
     getAllMintInfo,
-    tuple(
-      'getAllMintInfo',
-      connection,
-      (tokenAccounts || []).length,
-      (allMarkets || []).length,
-    ),
+    tuple('getAllMintInfo', connection, (tokenAccounts || []).length, (allMarkets || []).length),
     { refreshInterval: _VERY_SLOW_REFRESH_INTERVAL },
   );
 }

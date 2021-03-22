@@ -56,8 +56,6 @@ export interface FullMarketInfo {
 export interface MarketContextValues extends FullMarketInfo {
   market: Market | undefined | null;
   setMarketAddress: (newMarketAddress: string) => void;
-  customMarkets: CustomMarketInfo[];
-  setCustomMarkets: (newCustomMarkets: CustomMarketInfo[]) => void;
 }
 
 export interface TokenAccount {

@@ -6,19 +6,12 @@ import UserInfoTable from '../components/UserInfoTable';
 import BalancesDisplay from '../components/mango/Balances/BalancesDisplay';
 import MarginInfo from '../components/mango/MarginInfo';
 import FloatingElement from '../components/layout/FloatingElement';
-import {
-  getTradePageUrl,
-  MarketProvider,
-  useMarket,
-  useMarketsList,
-  useUnmigratedDeprecatedMarkets,
-} from '../utils/markets';
+import { getTradePageUrl, MarketProvider, useMarket, useMarketsList } from '../utils/markets';
 import { TVChartContainer } from '../components/TradingView';
 import TradeForm from '../components/TradeForm';
 import TradesTable from '../components/TradesTable';
 import LinkAddress from '../components/LinkAddress';
-import DeprecatedMarketsInstructions from '../components/DeprecatedMarketsInstructions';
-import { DeleteOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { InfoCircleOutlined } from '@ant-design/icons';
 import { useHistory, useParams } from 'react-router-dom';
 import AppTitle from '../components/AppTitle';
 
@@ -53,9 +46,8 @@ export default function TradePage() {
 }
 
 function TradePageInner() {
-  const { market, marketName, customMarkets, setCustomMarkets } = useMarket();
+  const { market, marketName } = useMarket();
   const markets = useMarketsList();
-  const [handleDeprecated, setHandleDeprecated] = useState(false);
   const [dimensions, setDimensions] = useState({
     height: window.innerHeight,
     width: window.innerWidth,
@@ -89,9 +81,7 @@ function TradePageInner() {
     onSize: useCallback((size) => changeOrderRef.current && changeOrderRef.current({ size }), []),
   };
   const component = (() => {
-    if (handleDeprecated) {
-      return <DeprecatedMarketsPage switchToLiveMarkets={() => setHandleDeprecated(false)} />;
-    } else if (width < 1000) {
+    if (width < 1000) {
       return <RenderSmaller {...componentProps} />;
     } else if (width < 1600) {
       return <RenderSmall {...componentProps} />;
@@ -100,23 +90,12 @@ function TradePageInner() {
     }
   })();
 
-  const onDeleteCustomMarket = (address) => {
-    const newCustomMarkets = customMarkets.filter((m) => m.address !== address);
-    setCustomMarkets(newCustomMarkets);
-  };
-
   return (
     <>
       <Wrapper>
         <Row align="middle" style={{ paddingLeft: 5, paddingRight: 5 }} gutter={16}>
           <Col>
-            <MarketSelector
-              markets={markets}
-              setHandleDeprecated={setHandleDeprecated}
-              placeholder={'Select market'}
-              customMarkets={customMarkets}
-              onDeleteCustomMarket={onDeleteCustomMarket}
-            />
+            <MarketSelector markets={markets} placeholder={'Select market'} />
           </Col>
           {market ? (
             <Col>
@@ -137,17 +116,10 @@ function TradePageInner() {
   );
 }
 
-function MarketSelector({
-  markets,
-  placeholder,
-  setHandleDeprecated,
-  customMarkets,
-  onDeleteCustomMarket,
-}) {
+function MarketSelector({ markets, placeholder }) {
   const { market, setMarketAddress } = useMarket();
 
   const onSetMarketAddress = (marketAddress) => {
-    setHandleDeprecated(false);
     setMarketAddress(marketAddress);
   };
 
@@ -172,37 +144,6 @@ function MarketSelector({
         option?.name?.toLowerCase().indexOf(input.toLowerCase()) >= 0
       }
     >
-      {customMarkets && customMarkets.length > 0 && (
-        <OptGroup label="Custom">
-          {customMarkets.map(({ address, name }, i) => (
-            <Option
-              value={address}
-              key={address}
-              name={name}
-              style={{
-                padding: '10px',
-                // @ts-ignore
-                backgroundColor: i % 2 === 0 ? 'rgb(39, 44, 61)' : null,
-              }}
-            >
-              <Row>
-                <Col flex="auto">{name}</Col>
-                {selectedMarket !== address && (
-                  <Col>
-                    <DeleteOutlined
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        e.nativeEvent.stopImmediatePropagation();
-                        onDeleteCustomMarket && onDeleteCustomMarket(address);
-                      }}
-                    />
-                  </Col>
-                )}
-              </Row>
-            </Option>
-          ))}
-        </OptGroup>
-      )}
       <OptGroup label="Markets">
         {markets
           .sort((a, b) =>
@@ -237,18 +178,6 @@ function MarketSelector({
     </Select>
   );
 }
-
-const DeprecatedMarketsPage = ({ switchToLiveMarkets }) => {
-  return (
-    <>
-      <Row>
-        <Col flex="auto">
-          <DeprecatedMarketsInstructions switchToLiveMarkets={switchToLiveMarkets} />
-        </Col>
-      </Row>
-    </>
-  );
-};
 
 const RenderNormal = ({ onChangeOrderRef, onPrice, onSize }) => {
   return (
