@@ -31,24 +31,14 @@ const calculatePNL = (tradeHistory, prices, mangoGroup) => {
     );
   });
 
-  // console.log('groupedTrades', groupedTrades);
-  // console.log('tradeHistory', tradeHistory);
-
   const totalNativeUsdt = tradeHistory.reduce((acc, current) => {
     const usdtAmount =
       current.side === 'sell'
         ? parseInt(current.nativeQuantityReleased)
         : parseInt(current.nativeQuantityPaid) * -1;
-    // console.log('usdt amount', usdtAmount);
 
     return usdtAmount + acc;
   }, 0);
-
-  // console.log(
-  //   'totalNativeUsdt',
-  //   totalNativeUsdt,
-  //   nativeToUi(totalNativeUsdt, mangoGroup.mintDecimals[2]),
-  // );
 
   profitAndLoss['USDT'] = nativeToUi(totalNativeUsdt, mangoGroup.mintDecimals[2]);
 
@@ -56,9 +46,6 @@ const calculatePNL = (tradeHistory, prices, mangoGroup) => {
   for (const assetName in profitAndLoss) {
     total = total + profitAndLoss[assetName] * prices[assetIndex[assetName]];
   }
-  // console.log('prices', prices);
-
-  // console.log('pnl', profitAndLoss);
 
   return total.toFixed(2);
 };
