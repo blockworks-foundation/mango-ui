@@ -38,7 +38,7 @@ import { Order } from '@project-serum/serum/lib/market';
 import { SRM_DECIMALS } from '@project-serum/serum/lib/token-instructions';
 import { MangoSrmAccount } from '@blockworks-foundation/mango-client/lib/client';
 
-export const DEFAULT_MANGO_GROUP = 'BTC_ETH_WUSDT';
+export const DEFAULT_MANGO_GROUP = 'BTC_ETH_USDT';
 
 export async function initMarginAccount(
   connection: Connection,
