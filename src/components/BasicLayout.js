@@ -47,8 +47,9 @@ export default function BasicLayout({ children }) {
           <UsdtAlert>
             <div style={{ marginRight: 'auto' }}></div>
             <span style={{ letterSpacing: 0.5 }}>
-              Wrapped USDT (wUSDT) is deprecated. Close your positions and withdraw assets then{' '}
-              <a href="https://trade.mango.markets">click here</a> to trade with native USDT.{' '}
+              This is the deprecated wrapped Tether (wUSDT) version of Mango. Please close
+              positions, withdraw funds, and continue trading on the{' '}
+              <a href="https://trade.mango.markets">native Tether Mango</a>.{' '}
               <a
                 href="https://docs.mango.markets/tutorials/transfer-funds-to-sollet-wallet#how-to-swap-wrapped-usdt-for-native-usdt"
                 target="_blank"
