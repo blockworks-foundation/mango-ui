@@ -11,8 +11,7 @@ import usdtIcon from '../assets/icons/usdt.svg';
 import usdcIcon from '../assets/icons/usdc.svg';
 import FloatingElement from '../components/layout/FloatingElement';
 import { DEFAULT_MANGO_GROUP } from '../utils/mango';
-
-const CLUSTER = 'devnet';
+import { useConnectionConfig } from '../utils/connection';
 
 const DECIMALS = {
   BTC: 4,
@@ -71,24 +70,26 @@ const useMangoStats = () => {
     },
   ]);
   const [latestStats, setLatestStats] = useState<any[]>([]);
+  const { endpointInfo } = useConnectionConfig();
 
   useEffect(() => {
     const fetchStats = async () => {
-      const response = await fetch(`https://mango-stats.herokuapp.com/`);
+      const response = await fetch(`https://mango-stats.herokuapp.com?mangoGroup=BTC_ETH_WUSDT`);
       const stats = await response.json();
 
       setStats(stats);
     };
 
     fetchStats();
-  }, []);
+  }, [endpointInfo]);
 
   useEffect(() => {
     const getLatestStats = async () => {
       const client = new MangoClient();
-      const connection = new Connection(IDS.cluster_urls[CLUSTER], 'singleGossip');
-      const assets = IDS[CLUSTER].mango_groups?.[DEFAULT_MANGO_GROUP]?.symbols;
-      const mangoGroupId = IDS[CLUSTER].mango_groups?.[DEFAULT_MANGO_GROUP]?.mango_group_pk;
+      const connection = new Connection(IDS.cluster_urls[endpointInfo!.name], 'singleGossip');
+      const assets = IDS[endpointInfo!.name].mango_groups?.[DEFAULT_MANGO_GROUP]?.symbols;
+      const mangoGroupId =
+        IDS[endpointInfo!.name].mango_groups?.[DEFAULT_MANGO_GROUP]?.mango_group_pk;
       if (!mangoGroupId) return;
       const mangoGroupPk = new PublicKey(mangoGroupId);
       const mangoGroup = await client.getMangoGroup(connection, mangoGroupPk);
@@ -110,7 +111,7 @@ const useMangoStats = () => {
     };
 
     getLatestStats();
-  }, []);
+  }, [endpointInfo]);
 
   return { latestStats, stats };
 };
