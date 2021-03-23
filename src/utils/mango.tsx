@@ -624,24 +624,24 @@ export async function placeOrderAndSettle(
   const data = encodeMangoInstruction({
     PlaceOrder: clientId
       ? {
-        side,
-        limitPrice,
-        maxBaseQuantity,
-        maxQuoteQuantity,
-        selfTradeBehavior,
-        orderType,
-        clientId,
-        limit: 65535,
-      }
+          side,
+          limitPrice,
+          maxBaseQuantity,
+          maxQuoteQuantity,
+          selfTradeBehavior,
+          orderType,
+          clientId,
+          limit: 65535,
+        }
       : {
-        side,
-        limitPrice,
-        maxBaseQuantity,
-        maxQuoteQuantity,
-        selfTradeBehavior,
-        orderType,
-        limit: 65535,
-      },
+          side,
+          limitPrice,
+          maxBaseQuantity,
+          maxQuoteQuantity,
+          selfTradeBehavior,
+          orderType,
+          limit: 65535,
+        },
   });
 
   const placeOrderInstruction = new TransactionInstruction({
@@ -797,7 +797,7 @@ export async function placeAndSettle(
     {
       isSigner: false,
       isWritable: true,
-      pubkey: mangoGroup.vaults[NUM_TOKENS-1],
+      pubkey: mangoGroup.vaults[NUM_TOKENS - 1],
     },
     { isSigner: false, isWritable: false, pubkey: mangoGroup.signerKey },
     {

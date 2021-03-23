@@ -1,16 +1,15 @@
 import React, { useEffect, useState } from 'react';
 
-import { ENDPOINTS, useConnection, useConnectionConfig } from '../utils/connection';
+import { useConnection, useConnectionConfig } from '../utils/connection';
 import { useWallet } from '../utils/wallet';
 
 import { MangoClient, IDS, MangoGroup, MarginAccount } from '@blockworks-foundation/mango-client';
 import { PublicKey } from '@solana/web3.js';
-import { zeroKey } from '@blockworks-foundation/mango-client/lib/utils';
 import { DEFAULT_MANGO_GROUP } from '../utils/mango';
 
 function MarginAccountList() {
   const connection = useConnection();
-  const { endpoint, endpointInfo } = useConnectionConfig();
+  const { endpointInfo } = useConnectionConfig();
 
   const client = new MangoClient();
   const { wallet, connected } = useWallet();
