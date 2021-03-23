@@ -114,6 +114,7 @@ export default function MangoFees() {
       )
         .then((mangoSrmAcct: PublicKey) => {
           getUserSrmInfo();
+          getSrmAccounts();
           setLoading(false);
           notify({
             // @ts-ignore
@@ -136,28 +137,28 @@ export default function MangoFees() {
     }
   };
 
-  useEffect(() => {
-    const getSrmAccounts = async () => {
-      if (wallet && connected) {
-        // connected wallet srm account info
-        const walletTokenAccount = await getTokenAccountInfo(connection, wallet.publicKey);
-        const walletSrmAccts = walletTokenAccount.filter(
-          (acct) => acct.effectiveMint.toString() === SRM_ADDRESS,
-        );
-        if (walletSrmAccts.length) {
-          const accountsWithAmount = walletSrmAccts.map((acc) => {
-            const amount = acc?.account?.data
-              ? parseTokenAccountData(acc?.account?.data).amount
-              : null;
-            return { ...acc, amount };
-          });
-          setWalletSrmAccounts(accountsWithAmount);
-        }
+  const getSrmAccounts = useCallback(async () => {
+    if (wallet && connected) {
+      // connected wallet srm account info
+      const walletTokenAccount = await getTokenAccountInfo(connection, wallet.publicKey);
+      const walletSrmAccts = walletTokenAccount.filter(
+        (acct) => acct.effectiveMint.toString() === SRM_ADDRESS,
+      );
+      if (walletSrmAccts.length) {
+        const accountsWithAmount = walletSrmAccts.map((acc) => {
+          const amount = acc?.account?.data
+            ? parseTokenAccountData(acc?.account?.data).amount
+            : null;
+          return { ...acc, amount };
+        });
+        setWalletSrmAccounts(accountsWithAmount);
       }
-    };
-
-    getSrmAccounts();
+    }
   }, [connection, wallet, connected, SRM_ADDRESS]);
+
+  useEffect(() => {
+    getSrmAccounts();
+  }, [getSrmAccounts]);
 
   return (
     <FeeWrapper>

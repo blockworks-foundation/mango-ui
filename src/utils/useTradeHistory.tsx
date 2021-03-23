@@ -17,7 +17,7 @@ const formatTradeHistory = (newTradeHistory) => {
           ? trade.marketName
           : `${trade.baseCurrency}/${trade.quoteCurrency}`,
         key: `${trade.orderId}${trade.side}${trade.uuid}`,
-        liquidity: trade.maker ? 'Maker' : 'Taker',
+        liquidity: trade.maker || trade?.eventFlags?.maker ? 'Maker' : 'Taker',
       };
     })
     .sort(byTimestamp);
