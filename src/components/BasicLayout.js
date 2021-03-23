@@ -47,8 +47,8 @@ export default function BasicLayout({ children }) {
           <UsdtAlert>
             <div style={{ marginRight: 'auto' }}></div>
             <span style={{ letterSpacing: 0.5 }}>
-              Serum DEX is transitioning all liquidity pairs from wrapped USDT (wUSDT) to native
-              USDT. <a href="https://trade.mango.markets">Click here</a> to trade Native USDT.{' '}
+              Serum is transitioning from wrapped USDT (wUSDT) to native USDT.{' '}
+              <a href="https://trade.mango.markets">Click here</a> to trade Native USDT.{' '}
               <a
                 href="https://docs.mango.markets/tutorials/transfer-funds-to-sollet-wallet#how-to-swap-wrapped-usdt-for-native-usdt"
                 target="_blank"
