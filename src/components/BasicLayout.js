@@ -47,8 +47,8 @@ export default function BasicLayout({ children }) {
           <UsdtAlert>
             <div style={{ marginRight: 'auto' }}></div>
             <span style={{ letterSpacing: 0.5 }}>
-              Serum is transitioning from wrapped USDT (wUSDT) to native USDT.{' '}
-              <a href="https://wusdt.mango.markets">Click here</a> to access and close your wrapped
+              Wrapped USDT (wUSDT) is now deprecated.{' '}
+              <a href="https://wusdt.mango.markets">Click here</a> to close and withdraw wrapped
               USDT positions.{' '}
               <a
                 href="https://docs.mango.markets/tutorials/transfer-funds-to-sollet-wallet#how-to-swap-wrapped-usdt-for-native-usdt"
