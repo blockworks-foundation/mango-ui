@@ -1175,7 +1175,7 @@
 
 "@blockworks-foundation/mango-client@git+https://github.com/blockworks-foundation/mango-client-ts.git#native_tether":
   version "0.1.8"
-  resolved "git+https://github.com/blockworks-foundation/mango-client-ts.git#b61c29f60fbb347127eca0a081caae988e998c83"
+  resolved "git+https://github.com/blockworks-foundation/mango-client-ts.git#33e81b9c93095f0c98670b416ed6f78f2f695587"
   dependencies:
     "@project-serum/serum" "^0.13.20"
     "@project-serum/sol-wallet-adapter" "^0.1.4"
@@ -1487,19 +1487,27 @@
     bn.js "^5.1.2"
     buffer-layout "^1.2.0"
 
-"@project-serum/serum@0.13.25", "@project-serum/serum@^0.13.20":
-  version "0.13.25"
-  resolved "https://registry.yarnpkg.com/@project-serum/serum/-/serum-0.13.25.tgz#40cbeaed03bb69e6a8c3e9117359b70ef155042e"
-  integrity sha512-IdK768TwM3tJHDPpt3iJ9AR7sMECrXD5B5i+oZhHR2+06Mun9djx/PtTTVYik161PjJXkuQozfWVk2a003s0CQ==
+"@project-serum/serum@^0.13.20":
+  version "0.13.31"
+  resolved "https://registry.yarnpkg.com/@project-serum/serum/-/serum-0.13.31.tgz#819d35980cdf6ebe0ada0418da5037a337aefbdd"
+  integrity sha512-vWNq4rqd5zu9yDIE0eDZEwOJhHiwiYgAyfPChyIP1zwV63st9SnGQCILeC+Xrw1rZQQo2CBAXEBNLhmY/wLmiw==
   dependencies:
     "@solana/web3.js" "^0.90.0"
     bn.js "^5.1.2"
     buffer-layout "^1.2.0"
 
-"@project-serum/sol-wallet-adapter@^0.1.1", "@project-serum/sol-wallet-adapter@^0.1.4":
+"@project-serum/sol-wallet-adapter@^0.1.1":
   version "0.1.5"
   resolved "https://registry.yarnpkg.com/@project-serum/sol-wallet-adapter/-/sol-wallet-adapter-0.1.5.tgz#b8376addcb5e364f0621be639692d1c3b6d28622"
   integrity sha512-g2ugWI3mZu/+aXWA/hpDRly0lTwjfTeOQXUs5DNuZCbxXRdNXe1LLfjzzoZEMpURavqO725UwBkKxC5acvgoMw==
+  dependencies:
+    bs58 "^4.0.1"
+    eventemitter3 "^4.0.4"
+
+"@project-serum/sol-wallet-adapter@^0.1.4":
+  version "0.1.6"
+  resolved "https://registry.yarnpkg.com/@project-serum/sol-wallet-adapter/-/sol-wallet-adapter-0.1.6.tgz#b77e94087eee9f0723332895f4f1e0dfd6aa5bb7"
+  integrity sha512-6CMFrL0Y6Bt9WwbvDX5b+In5majJLDCmx6j80LLLBG3y4vVJ/6vBoLnW4xPwC0UwHJfLOozwerUpJPYl2d9RwQ==
   dependencies:
     bs58 "^4.0.1"
     eventemitter3 "^4.0.4"
