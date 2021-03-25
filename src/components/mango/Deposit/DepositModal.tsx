@@ -49,7 +49,19 @@ const DepositModal = React.forwardRef(
           setTokenAccount={props.onSelectAccount}
           ref={ref}
         />
-        <RowBox align="middle" justify="center">
+        <RowBox align="middle" justify="center" gutter={[16, 16]}>
+          <Col span={8}>
+            <ActionButton
+              block
+              size="middle"
+              onClick={() => {
+                ref.current.setState({ value: props.userUiBalance() });
+              }}
+              style={{ background: '#141026' }}
+            >
+              Max
+            </ActionButton>
+          </Col>
           <Col span={8}>
             <ActionButton
               block
