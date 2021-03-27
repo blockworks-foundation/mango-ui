@@ -6,6 +6,10 @@ The code that runs https://trade.mango.markets We are welcoming contributions fr
 
 Run `yarn` to install dependencies, then run `yarn start` to start a development server or `yarn build` to create a production build that can be served by a static file server.
 
+### Solana program 🧬
+
+https://github.com/blockworks-foundation/mango
+
 ### Client API for bots 🤖
 
 https://github.com/blockworks-foundation/mango-client-ts
