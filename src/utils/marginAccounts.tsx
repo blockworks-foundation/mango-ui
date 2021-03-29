@@ -307,6 +307,20 @@ const useMarginAccountHelper = () => {
           // COuld not set margin account
           console.error(err);
         });
+      let MangoGroup = mangoOptions.mango_groups.BTC_ETH_USDT;
+      if (MangoGroup) {
+        let mangoGroupPk = new PublicKey(MangoGroup.mango_group_pk);
+        let srmVaultPk = new PublicKey(MangoGroup.srm_vault_pk);
+        mangoClient
+          .getMangoGroup(connection, mangoGroupPk, srmVaultPk)
+          .then((mangoGroup) => {
+            // Set the mango group
+            setMangoGroup(mangoGroup);
+          })
+          .catch((err) => {
+            console.error('Could not get mango group');
+          });
+      }
     }, 3000);
     intervalId.current = id;
     return () => {

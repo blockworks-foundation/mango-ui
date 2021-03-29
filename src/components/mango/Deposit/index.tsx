@@ -89,6 +89,16 @@ const Deposit = (props: {
       });
       return;
     }
+
+    if (marginAccount && wallet.publicKey.toString() !== marginAccount?.owner.toString()) {
+      notify({
+        message: 'Margin account owner does not match connected wallet',
+        description: 'Please refresh the page and reconnect wallet',
+        type: 'error',
+      });
+      return;
+    }
+
     // @ts-ignore
     if (Number(inputRef.current.state.value) > Number(userBalance())) {
       notify({
