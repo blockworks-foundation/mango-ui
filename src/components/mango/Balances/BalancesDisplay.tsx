@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useRef, useCallback } from 'react';
-import { Col, Typography, Row, Select, Divider, Skeleton } from 'antd';
+import { Col, Typography, Row, Select, Divider, Skeleton, Popover, Button } from 'antd';
 import { RowBox, SizeTitle, BalanceCol, ActionButton } from '../componentStyles';
 import FloatingElement from '../../layout/FloatingElement';
 // Let's get our account context
@@ -12,9 +12,49 @@ import Deposit from '../Deposit';
 // Connection hook
 import { useWallet } from '../../../utils/wallet';
 import { formatBalanceDisplay } from '../../../utils/utils';
+import { InfoCircleOutlined, LinkOutlined } from '@ant-design/icons';
 
 const { Option } = Select;
 const { Text } = Typography;
+
+const AddressTooltip = ({ owner, marginAccount }: { owner?: string; marginAccount?: string }) => {
+  return (
+    <>
+      {owner && marginAccount ? (
+        <>
+          <div>
+            Margin Account:
+            <Button
+              type="link"
+              icon={<LinkOutlined />}
+              href={'https://explorer.solana.com/address/' + marginAccount}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ cursor: 'pointer' }}
+            >
+              {marginAccount}
+            </Button>
+          </div>
+          <div>
+            Account Owner:
+            <Button
+              type="link"
+              icon={<LinkOutlined />}
+              href={'https://explorer.solana.com/address/' + owner}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ cursor: 'pointer' }}
+            >
+              {owner}
+            </Button>
+          </div>
+        </>
+      ) : (
+        'Connect a wallet and deposit funds to start trading'
+      )}
+    </>
+  );
+};
 
 export default function BalancesDisplay({ style }: { style?: any }) {
   // Connection hook
@@ -73,12 +113,25 @@ export default function BalancesDisplay({ style }: { style?: any }) {
     ),
     [marginAccounts, marginAccount, keyMappings, setMarginAccount],
   );
-  console.log('mango Group', mangoGroup);
 
   return (
     <FloatingElement style={{ flex: 0.5, padding: 10, ...style }}>
       <React.Fragment>
-        <Divider>Margin Account</Divider>
+        <Divider>
+          Margin Account{' '}
+          <Popover
+            content={
+              <AddressTooltip
+                owner={marginAccount?.owner.toString()}
+                marginAccount={marginAccount?.publicKey.toString()}
+              />
+            }
+            placement="topLeft"
+            trigger="hover"
+          >
+            <InfoCircleOutlined style={{ color: '#F2C94C' }} />
+          </Popover>
+        </Divider>
         {marginAccounts.length > 1 && MAccountSelector}
         <SizeTitle>
           <BalanceCol span={6}>Assets</BalanceCol>
@@ -90,7 +143,6 @@ export default function BalancesDisplay({ style }: { style?: any }) {
           mango_groups.map((token, i) => {
             let depo = marginAccount ? marginAccount.getUiDeposit(mangoGroup, i) : 0;
             let borr = marginAccount ? marginAccount.getUiBorrow(mangoGroup, i) : 0;
-            console.log('depo/borr', depo, borr);
 
             return (
               <Row key={i} style={{ marginBottom: 10 }}>
