@@ -120,6 +120,11 @@ export default function TopBar() {
               </Title>
             </a>
           </Menu.Item>
+          <Menu.Item key="/alerts" style={{ margin: '0 10px' }}>
+            <Title level={5} style={{ fontWeight: 300, lineHeight: 3, marginBottom: 0 }}>
+              Alerts
+            </Title>
+          </Menu.Item>
         </Menu>
         {/* <div
           style={{

@@ -150,20 +150,32 @@ export interface SwapContextValues {
   programIds: () => { token: PublicKey; swap: PublicKey };
 }
 
+// Group Margin Account Type declaration
+export interface MarginAccountWithGroup {
+  mangoGroup: MangoGroup | null;
+  marginAccount: MarginAccount | null;
+  equity: number;
+}
+
 // Margin Account Type declaration
 export interface MarginAccountContextValues {
   marginAccount: MarginAccount | null; // The current margin account trading with
   marginAccounts: MarginAccount[] | []; // List of all margin account pk in a mango group
+  marginAccountWithGroup: MarginAccountWithGroup | null; // List of all margin account pk in a mango group
+  marginAccountsWithGroups: MarginAccountWithGroup[] | []; // List of all margin account pk in a mango group
   mango_groups: Array<string>; // Identifier for the mango group
   mangoOptions: any; //The different parameters for our mango program
   mangoClient: MangoClient; // Instance of mango clinet
   mangoGroup: MangoGroup | null; // The current mango group
   setMarginAccount: (marginAccount: null | MarginAccount) => void;
   setMarginAccounts: (marginAccounts: MarginAccount[]) => void;
+  setMarginAccountWithGroup: (marginAccountWithGroup: MarginAccountWithGroup | null) => void;
+  setMarginAccountsWithGroups: (marginAccountsWithGroups: MarginAccountWithGroup[]) => void;
   createMarginAccount: () => Promise<MarginAccount | null>; // For creating a margin account
   maPending: any; // Is the context updating
   setMAPending: (any) => void; // Set the pending states on margin account transactions
   getMarginAccount: (pubKey: PublicKey | undefined) => Promise<MarginAccount | null>;
+  getAllMarginAccountsForAllGroups: () => Promise<MarginAccountWithGroup[]>;
   size: { currency: string; size: number }; // The size of buy or sell on tradeform
   setSize: (size: { currency: string; size: number }) => void; // Set the size on trade form
   srmFeeRates: FeeRates | null;

@@ -3,6 +3,7 @@ import TradePage from './pages/TradePage';
 import React from 'react';
 import BasicLayout from './components/BasicLayout';
 import StatsPage from './pages/StatsPage';
+import AlertPage from './pages/AlertPage';
 import { useDefaultMarket } from './utils/markets';
 
 export function Routes() {
@@ -21,6 +22,7 @@ export function Routes() {
               <TradePage />
             </Route>
             <Route exact path="/stats" component={StatsPage} />
+            <Route exact path="/alerts" component={AlertPage} />
           </Switch>
         </BasicLayout>
       </HashRouter>
