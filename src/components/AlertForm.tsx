@@ -218,12 +218,19 @@ export default function AlertForm({
           resetForm();
         }
       }).catch(err => {
-        err.text().then((errorMessage: string) => {
+        if (typeof err.text === 'function') {
+          err.text().then((errorMessage: string) => {
+            notify({
+              message: errorMessage,
+              type: 'error',
+            });
+          })
+        } else {
           notify({
-            message: errorMessage,
+            message: 'Something went wrong',
             type: 'error',
           });
-        })
+        }
       });
   }
 
