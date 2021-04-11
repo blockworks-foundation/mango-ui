@@ -10,7 +10,7 @@ import { useConnection, useConnectionConfig } from '../utils/connection';
 import { useWallet } from '../utils/wallet';
 // Type annotations
 import { PublicKey } from '@solana/web3.js';
-import { FeeRates, MarginAccountContextValues } from '../utils/types';
+import { FeeRates, MarginAccountContextValues, MarginAccountWithGroup } from '../utils/types';
 import { nativeToUi } from '@blockworks-foundation/mango-client/lib/utils';
 import { SRM_DECIMALS } from '@project-serum/serum/lib/token-instructions';
 import { getFeeTier, getFeeRates } from '@project-serum/serum';
@@ -35,6 +35,8 @@ export function MarginAccountProvider({ children }) {
   const {
     marginAccount,
     marginAccounts,
+    marginAccountWithGroup,
+    marginAccountsWithGroups,
     mango_groups,
     mangoOptions,
     mangoGroup,
@@ -42,9 +44,12 @@ export function MarginAccountProvider({ children }) {
     createMarginAccount,
     setMarginAccount,
     setMarginAccounts,
+    setMarginAccountWithGroup,
+    setMarginAccountsWithGroups,
     maPending,
     setMAPending,
     getMarginAccount,
+    getAllMarginAccountsForAllGroups,
     size,
     setSize,
     srmFeeRates,
@@ -59,6 +64,8 @@ export function MarginAccountProvider({ children }) {
       value={{
         marginAccount,
         marginAccounts,
+        marginAccountWithGroup,
+        marginAccountsWithGroups,
         mango_groups,
         mangoOptions,
         mangoClient,
@@ -66,9 +73,12 @@ export function MarginAccountProvider({ children }) {
         createMarginAccount,
         setMarginAccount,
         setMarginAccounts,
+        setMarginAccountWithGroup,
+        setMarginAccountsWithGroups,
         maPending,
         setMAPending,
         getMarginAccount,
+        getAllMarginAccountsForAllGroups,
         size,
         setSize,
         srmFeeRates,
@@ -89,6 +99,10 @@ const useMarginAccountHelper = () => {
   const [marginAccounts, setMarginAccounts] = useState<MarginAccount[] | []>([]);
   // Current margin account
   const [marginAccount, setMarginAccount] = useState<MarginAccount | null>(null);
+  // User's margin account with corresponding mango group
+  const [marginAccountWithGroup, setMarginAccountWithGroup] = useState<MarginAccountWithGroup | null>(null);
+  // All user's margin accounts with all corresponding mango groups
+  const [marginAccountsWithGroups, setMarginAccountsWithGroups] = useState<MarginAccountWithGroup[] | []>([]);
   // Get the current connection
   // The current mango group state.
   const [mangoGroup, setMangoGroup] = useState<MangoGroup | null>(null);
@@ -331,9 +345,38 @@ const useMarginAccountHelper = () => {
   }, [marginAccount, connected]);
   // TODO: Should the mango group change, reset our margin accounts and account
 
+  const getAllMarginAccountsForAllGroups = async () => {
+    const allMarginAccountsWithGroups : MarginAccountWithGroup[] = [];
+    for (let mangoGroupKey of Object.keys(mangoOptions.mango_groups)) {
+      const MangoGroup = mangoOptions.mango_groups[mangoGroupKey];
+      let mangoGroupPk = new PublicKey(MangoGroup.mango_group_pk);
+      let srmVaultPk = new PublicKey(MangoGroup.srm_vault_pk);
+      const mangoGroup = await mangoClient.getMangoGroup(connection, mangoGroupPk, srmVaultPk);
+      const marginAccounts = await mangoClient
+        .getMarginAccountsForOwner(
+          connection,
+          new PublicKey(mangoOptions.mango_program_id),
+          mangoGroup,
+          wallet,
+        );
+      if (marginAccounts) {
+        mangoGroup.getPrices(connection).then((prices) => {
+          marginAccounts.forEach((marginAcc: MarginAccount) => {
+            const marginAccountWithGroup = {
+              mangoGroup: MangoGroup,
+              marginAccount: marginAcc,
+              equity: marginAcc.computeValue(mangoGroup, prices)
+            };
+            allMarginAccountsWithGroups.push(marginAccountWithGroup);
+          });
+        });
+      }
+    }
+    return allMarginAccountsWithGroups;
+  }
+
   const getSrmFeeInfo = useCallback(async () => {
     if (!mangoGroup) return;
-
     const srmAccountInfo = await connection.getAccountInfo(mangoGroup.srmVault);
     if (!srmAccountInfo) return;
     const accountData = parseTokenAccountData(srmAccountInfo.data);
@@ -373,6 +416,8 @@ const useMarginAccountHelper = () => {
   return {
     marginAccount,
     marginAccounts,
+    marginAccountWithGroup,
+    marginAccountsWithGroups,
     mangoGroup,
     mangoOptions,
     mango_groups,
@@ -380,9 +425,12 @@ const useMarginAccountHelper = () => {
     createMarginAccount,
     setMarginAccount,
     setMarginAccounts,
+    setMarginAccountWithGroup,
+    setMarginAccountsWithGroups,
     maPending,
     setMAPending,
     getMarginAccount,
+    getAllMarginAccountsForAllGroups,
     size,
     setSize,
     srmFeeRates,
@@ -415,6 +463,8 @@ export function useMarginAccount() {
   return {
     marginAccount: marginAccountContext.marginAccount,
     marginAccounts: marginAccountContext.marginAccounts,
+    marginAccountWithGroup: marginAccountContext.marginAccountWithGroup,
+    marginAccountsWithGroups: marginAccountContext.marginAccountsWithGroups,
     mango_groups: marginAccountContext.mango_groups,
     mango_options: marginAccountContext.mangoOptions,
     mangoClient: marginAccountContext.mangoClient,
@@ -422,9 +472,12 @@ export function useMarginAccount() {
     createMarginAccount: marginAccountContext.createMarginAccount,
     setMarginAccount: marginAccountContext.setMarginAccount,
     setMarginAccounts: marginAccountContext.setMarginAccounts,
+    setMarginAccountWithGroup: marginAccountContext.setMarginAccountWithGroup,
+    setMarginAccountsWithGroups: marginAccountContext.setMarginAccountsWithGroups,
     maPending: marginAccountContext.maPending,
     setMAPending: marginAccountContext.setMAPending,
     getMarginAccount: marginAccountContext.getMarginAccount,
+    getAllMarginAccountsForAllGroups: marginAccountContext.getAllMarginAccountsForAllGroups,
     size: marginAccountContext.size,
     setSize: marginAccountContext.setSize,
     keyMappings: buildPubKeytoAcountMapping,
