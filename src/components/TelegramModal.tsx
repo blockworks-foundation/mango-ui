@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Card, Modal } from 'antd';
 
 export default function TelegramModal (props, ref) {
