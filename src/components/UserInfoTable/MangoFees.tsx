@@ -200,7 +200,9 @@ export default function MangoFees() {
                 </RowBox>
               </>
             ) : (
-              `Connect a wallet to deposit SRM`
+              <ActionButton size="large" onClick={wallet.connect} style={{ color: '#f2c94c' }}>
+                Connect a wallet to deposit SRM
+              </ActionButton>
             )}
           </DepositWrapper>
         </Col>
